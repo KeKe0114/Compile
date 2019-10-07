@@ -137,6 +137,7 @@ token lexicalAnalysis::genSym()
 
 token lexicalAnalysis::getSym()
 {
+    assert(hasSym());
     if (pivot != symbolics.end())
     {
         return *pivot++;
@@ -158,7 +159,8 @@ void lexicalAnalysis::unGetSym()
 
 token lexicalAnalysis::peek()
 {
-     if (pivot != symbolics.end())
+    assert(hasSym());
+    if (pivot != symbolics.end())
     {
         return *pivot;
     }
