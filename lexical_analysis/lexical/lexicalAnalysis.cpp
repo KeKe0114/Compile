@@ -13,6 +13,7 @@ token_key lexicalAnalysis::checkReservedWord(string s)
 lexicalAnalysis::lexicalAnalysis(string filename)
 {
     in.open(filename);
+    pivot = symbolics.begin();
     for (int i = RESERVED_BEGIN; i < RESERVED_END; i++)
     {
         reverseWord.insert(TOKEN_VALUE[i], i);
@@ -21,6 +22,10 @@ lexicalAnalysis::lexicalAnalysis(string filename)
 
 bool lexicalAnalysis::hasSym()
 {
+    if (pivot != symbolics.end())
+    {
+        return true;
+    }
     char c = in.peek();
     while (isspace(c))
     {
@@ -132,13 +137,22 @@ token lexicalAnalysis::genSym()
 
 token lexicalAnalysis::getSym()
 {
+    if (pivot != symbolics.end())
+    {
+        return *pivot++;
+    }
     token tk = genSym();
-    DEBUG(1, "getSym()::token::\t" + tk.getName() + "\t" + tk.getValue());
+    DEBUG(1, "genSym()::token::\t" + tk.getName() + "\t" + tk.getValue());
     symbolics.push_back(tk);
+    pivot++;
     return tk;
 }
 
-list<token> lexicalAnalysis::getAllSym()
+void lexicalAnalysis::unGetSym()
 {
-    return symbolics;
+    assert(pivot != symbolics.begin()); /*BUG outside:: reach the begin of the Syms but call the lexicalAnalysis::unGetSym()*/
+    if (pivot != symbolics.begin())
+    {
+        pivot--;
+    }
 }
