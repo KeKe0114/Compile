@@ -142,7 +142,6 @@ token lexicalAnalysis::getSym()
         return *pivot++;
     }
     token tk = genSym();
-    DEBUG(1, "genSym()::token::\t" + tk.getName() + "\t" + tk.getValue());
     symbolics.push_back(tk);
     pivot++;
     return tk;
@@ -155,4 +154,15 @@ void lexicalAnalysis::unGetSym()
     {
         pivot--;
     }
+}
+
+token lexicalAnalysis::peek()
+{
+     if (pivot != symbolics.end())
+    {
+        return *pivot;
+    }
+    token tk = genSym();
+    symbolics.push_back(tk);
+    return tk;
 }

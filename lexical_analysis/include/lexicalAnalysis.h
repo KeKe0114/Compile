@@ -23,6 +23,7 @@ public:
     lexicalAnalysis(string filename);
     bool hasSym();
     token getSym();
+    token peek();
     void unGetSym();
 };
 #endif
