@@ -6,12 +6,12 @@ syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(
 
 void syntacticAnalysis::printToken(token key)
 {
-    out << key.getName() << " " << key.getValue() << endl;
+    cout << key.getName() << " " << key.getValue() << endl;
 }
 
 void syntacticAnalysis::printLine(string s)
 {
-    out << s << endl;
+    cout << s << endl;
 }
 
 bool syntacticAnalysis::isTypeIdentifier(token key)
@@ -268,6 +268,7 @@ void syntacticAnalysis::variableDefine()
         {
             printToken(sym);
 
+            sym = lexical.getSym();
             unsignedInteger();
 
             assert(sym.getKey() == RBRACK);
@@ -282,6 +283,7 @@ void syntacticAnalysis::variableDefine()
 void syntacticAnalysis::funcWithReturn()
 {
     string name = stateHead();
+    funcWithRet.insert(name);
     assert(sym.getKey() == LPARENT);
     printToken(sym);
     sym = lexical.getSym();
@@ -299,7 +301,6 @@ void syntacticAnalysis::funcWithReturn()
     printToken(sym);
 
     sym = lexical.getSym();
-    funcWithRet.insert(name);
     printLine("<有返回值函数定义>");
 }
 
@@ -310,7 +311,7 @@ void syntacticAnalysis::funcWithoutReturn()
 
     sym = lexical.getSym();
     assert(sym.getKey() == IDENFR);
-    string name = sym.getValue();
+    funcWithoutRet.insert(sym.getValue());
     printToken(sym);
 
     sym = lexical.getSym();
@@ -332,7 +333,6 @@ void syntacticAnalysis::funcWithoutReturn()
     printToken(sym);
 
     sym = lexical.getSym();
-    funcWithoutRet.insert(name);
     printLine("<无返回值函数定义>");
 }
 
@@ -340,12 +340,10 @@ void syntacticAnalysis::compoundStatement()
 {
     if (sym.getKey() == CONSTTK)
     {
-        sym = lexical.getSym();
         constState();
     }
     if (isTypeIdentifier(sym))
     {
-        sym = lexical.getSym();
         variableState();
     }
     statementList();
@@ -514,6 +512,8 @@ void syntacticAnalysis::statement()
     }
     else if (sym.getKey() == LBRACE)
     {
+        printToken(sym);
+        sym = lexical.getSym();
         statementList();
         assert(sym.getKey() == RBRACE);
         printToken(sym);
@@ -524,15 +524,15 @@ void syntacticAnalysis::statement()
     {
         if (sym.getKey() == IDENFR)
         {
-            if (isFuncWithRet(lexical.peek()))
+            if (isFuncWithRet(sym))
             {
                 invokeFuncWithReturn();
             }
-            else if (isFuncWithoutRet(lexical.peek()))
+            else if (isFuncWithoutRet(sym))
             {
                 invokeFuncWithoutReturn();
             }
-            else if (lexical.peek().getKey() == ASSIGN)
+            else if (lexical.peek().getKey() == ASSIGN || lexical.peek().getKey() == LBRACK)
             {
                 assignmentStatement();
             }
@@ -694,6 +694,10 @@ void syntacticAnalysis::loopStatement()
 
         sym = lexical.getSym();
         assert(sym.getKey() == ASSIGN);
+        printToken(sym);
+
+        sym = lexical.getSym();
+        assert(sym.getKey() == IDENFR);
         printToken(sym);
 
         sym = lexical.getSym();
