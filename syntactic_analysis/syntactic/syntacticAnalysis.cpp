@@ -500,6 +500,7 @@ void syntacticAnalysis::statement()
 {
     if (sym.getKey() == SEMICN)
     {
+        printToken(sym);
         sym = lexical.getSym();
     }
     else if (sym.getKey() == IFTK)
