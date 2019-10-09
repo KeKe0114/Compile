@@ -661,10 +661,6 @@ void syntacticAnalysis::loopStatement()
         printToken(sym);
 
         sym = lexical.getSym();
-        assert(sym.getKey() == SEMICN);
-        printToken(sym);
-
-        sym = lexical.getSym();
     }
     else if (sym.getKey() == FORTK)
     {
