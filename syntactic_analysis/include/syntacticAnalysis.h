@@ -7,11 +7,12 @@
 #include <fstream>
 using namespace std;
 
-const set<token_key> typeIdentifier = {INTCON, CHARCON};
+const set<token_key> typeIdentifier = {INTTK, CHARTK};
 const set<token_key> addOp = {PLUS, MINU};
 const set<token_key> mulOp = {MULT, DIV};
 const set<token_key> relOp = {LSS, LEQ, GRE, GEQ, EQL, NEQ};
 const set<token_key> chars = {CHARCON};
+const set<token_key> statementPrefix = {SEMICN, IFTK, WHILETK, FORTK, DOTK, LBRACE, IDENFR, SCANFTK, RETURNTK, PRINTFTK};
 
 class syntacticAnalysis
 {
@@ -31,11 +32,11 @@ private:
     bool isRelOp(token key);
     bool isTypeIdentifier(token key);
     bool isFuncWithRet(token key);
+    bool isStatementPrefix(token key);
     bool isFuncWithoutRet(token key);
     bool isCharacter(token key);
 
     void strConCheck();
-    void procedureCheck();
     void constState();
     void constDefine();
     void unsignedInteger();
@@ -69,5 +70,6 @@ private:
 
 public:
     syntacticAnalysis(string filename, string outfile);
+    void procedureCheck();
 };
 #endif

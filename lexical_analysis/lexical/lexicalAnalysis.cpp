@@ -144,7 +144,7 @@ token lexicalAnalysis::getSym()
     }
     token tk = genSym();
     symbolics.push_back(tk);
-    pivot++;
+    //pivot++;
     return tk;
 }
 
@@ -166,5 +166,6 @@ token lexicalAnalysis::peek()
     }
     token tk = genSym();
     symbolics.push_back(tk);
+    pivot--;
     return tk;
 }

@@ -11,19 +11,14 @@ using namespace std;
 
 // #define FLUSH_FORCE 0
 
-// #define ASSERT_OPEN
+//是否打开assert检查
+//#define NDEBUG
 
 // #define LOG_FILE "log.txt"
 
 //以上部分是选项
 //***************************************
 //以下部分是实现
-
-//是否打开assert检查
-#define NDEBUG
-#ifndef ASSERT_OPEN
-#undef NDEBUG
-#endif
 #include <cassert>
 
 //是否对log重定向
