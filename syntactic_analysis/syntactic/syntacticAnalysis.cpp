@@ -6,12 +6,12 @@ syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(
 
 void syntacticAnalysis::printToken(token key)
 {
-    cout << key.getName() << " " << key.getValue() << endl;
+    out << key.getName() << " " << key.getValue() << endl;
 }
 
 void syntacticAnalysis::printLine(string s)
 {
-    cout << s << endl;
+    out << s << endl;
 }
 
 bool syntacticAnalysis::isTypeIdentifier(token key)
