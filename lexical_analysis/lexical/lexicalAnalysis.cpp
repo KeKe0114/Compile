@@ -12,7 +12,7 @@ token_key lexicalAnalysis::checkReservedWord(string s)
 
 lexicalAnalysis::lexicalAnalysis(string filename)
 {
-    line = 0;
+    line = 1;
     in.open(filename);
     pivot = symbolics.begin();
     for (int i = RESERVED_BEGIN; i < RESERVED_END; i++)
@@ -97,6 +97,14 @@ token lexicalAnalysis::genSym()
             c = in.get();
         }
         value = ss.str();
+        if (!(isalnum(value[0]) || value[0] == '_' || value[0] == '+' || value[0] == '-'))
+        {
+            cout << line << " a" << endl;
+        }
+        if (value.size() > 1)
+        {
+            cout << line << " a" << endl;
+        }
         return token(CHARCON, value, line);
     }
 
@@ -110,6 +118,14 @@ token lexicalAnalysis::genSym()
             c = in.get();
         }
         value = ss.str();
+        for (int i = 0; i < value.size(); i++)
+        {
+            if (!((35 <= value[i] && value[i] <= 126) || value[i] == 32 || value[i] == 33))
+            {
+                cout << line << " a" << endl;
+            }
+        }
+
         return token(STRCON, value, line);
     }
 
@@ -141,7 +157,7 @@ token lexicalAnalysis::genSym()
 
     // 下面的部分不可能被执行,除非有bug
     assert(false);
-    return token((token_key)0, "ERROR", line);
+    return token(ERROR, "ERROR", line);
 }
 
 token lexicalAnalysis::getSym()
@@ -152,7 +168,14 @@ token lexicalAnalysis::getSym()
         return *pivot++;
     }
     token tk = genSym();
-    symbolics.push_back(tk);
+    if (tk.getKey() == ERROR)
+    {
+        cout << tk.getLine() << " a" << endl;
+    }
+    else
+    {
+        symbolics.push_back(tk);
+    }
     //pivot++;
     return tk;
 }

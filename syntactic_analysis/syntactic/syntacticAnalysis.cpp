@@ -1,9 +1,17 @@
 #include "syntacticAnalysis.h"
-#include "symbols.cpp"
 
 void ERROR_PRINT(int line, string err_code)
 {
     cout << line << " " << err_code << endl;
+}
+
+inline symType transferKeyToType(token_key key)
+{
+    if (key == INTTK)
+        return INT;
+    else if (key == CHARTK)
+        return CHAR;
+    assert(false); /* 如果执行到此处说明有bug */
 }
 
 syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(filename), sym(lexical.getSym()), out(outfile)
@@ -12,12 +20,12 @@ syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(
 
 void syntacticAnalysis::printToken(token key)
 {
-    out << key.getName() << " " << key.getValue() << endl;
+    cout << key.getName() << " " << key.getValue() << endl;
 }
 
 void syntacticAnalysis::printLine(string s)
 {
-    out << s << endl;
+    cout << s << endl;
 }
 
 bool syntacticAnalysis::isTypeIdentifier(token key)
@@ -144,12 +152,14 @@ void syntacticAnalysis::constDefine()
             assert(sym.getKey() == IDENFR);
             printToken(sym);
 
-            if (symbolist.hasNowSeg(sym.getName()))
+            if (symbolist.hasNowSeg(sym.getValue()))
             {
+                symbolist.DEBUG_PRINT_LIST();
+                ERROR_PRINT(sym.getLine(), "b");
             }
             else
             {
-                symAttr attr = {sym.getName(), symType::INT, symKind::CONST};
+                symAttr attr = {sym.getValue(), symType::INT, symKind::CONST};
                 symbolist.insert(attr);
             }
 
@@ -171,8 +181,15 @@ void syntacticAnalysis::constDefine()
             assert(sym.getKey() == IDENFR);
             printToken(sym);
 
-            symAttr attr = {sym.getName(), symType::CHAR, symKind::CONST};
-            symbolist.insert(attr);
+            if (symbolist.hasNowSeg(sym.getValue()))
+            {
+                ERROR_PRINT(sym.getLine(), "b");
+            }
+            else
+            {
+                symAttr attr = {sym.getValue(), symType::CHAR, symKind::CONST};
+                symbolist.insert(attr);
+            }
 
             sym = lexical.getSym();
             assert(sym.getKey() == ASSIGN);
@@ -221,10 +238,22 @@ string syntacticAnalysis::stateHead()
     assert(isTypeIdentifier(sym));
     printToken(sym);
 
+    symType symtype = transferKeyToType(sym.getKey());
+
     sym = lexical.getSym();
     assert(sym.getKey() == IDENFR);
     string name = sym.getValue();
     printToken(sym);
+
+    if (symbolist.hasNowSeg(name))
+    {
+        ERROR_PRINT(sym.getLine(), "b");
+    }
+    else
+    {
+        symAttr attr = {name, symtype, FUNC};
+        symbolist.insert(attr);
+    }
 
     sym = lexical.getSym();
     printLine("<声明头部>");
@@ -275,15 +304,7 @@ void syntacticAnalysis::variableDefine()
 {
     assert(isTypeIdentifier(sym));
 
-    symType symtype;
-    if (sym.getKey() == INTTK)
-        symtype = INT;
-    else if (sym.getKey() == CHARTK)
-        symtype = CHAR;
-    else
-    {
-        assert(false);
-    }
+    symType symtype = transferKeyToType(sym.getKey());
 
     do
     {
@@ -292,7 +313,11 @@ void syntacticAnalysis::variableDefine()
         assert(sym.getKey() == IDENFR);
         printToken(sym);
 
-        string symname = sym.getName();
+        string symname = sym.getValue();
+        if (symbolist.hasNowSeg(symname))
+        {
+            ERROR_PRINT(sym.getLine(), "b");
+        }
 
         sym = lexical.getSym();
         if (sym.getKey() == LBRACK)
@@ -303,7 +328,7 @@ void syntacticAnalysis::variableDefine()
             unsignedInteger();
 
             //TODO: 数组类型和相应的属性
-            symAttr attr = {symname, symtype, symKind::VAR};
+            symAttr attr = {symname, symtype, symKind::VAR, 1};
             symbolist.insert(attr);
 
             assert(sym.getKey() == RBRACK);
@@ -324,6 +349,9 @@ void syntacticAnalysis::funcWithReturn()
 {
     string name = stateHead();
     funcWithRet.insert(name);
+
+    symbolist.direct();
+
     assert(sym.getKey() == LPARENT);
     printToken(sym);
     sym = lexical.getSym();
@@ -342,6 +370,8 @@ void syntacticAnalysis::funcWithReturn()
 
     sym = lexical.getSym();
     printLine("<有返回值函数定义>");
+
+    symbolist.redirect();
 }
 
 void syntacticAnalysis::funcWithoutReturn()
@@ -353,6 +383,17 @@ void syntacticAnalysis::funcWithoutReturn()
     assert(sym.getKey() == IDENFR);
     funcWithoutRet.insert(sym.getValue());
     printToken(sym);
+
+    if (symbolist.hasNowSeg(sym.getValue()))
+    {
+        ERROR_PRINT(sym.getLine(), "b");
+    }
+    else
+    {
+        symAttr attr = {sym.getValue(), VOID, FUNC};
+        symbolist.insert(attr);
+    }
+    symbolist.direct();
 
     sym = lexical.getSym();
     assert(sym.getKey() == LPARENT);
@@ -374,6 +415,8 @@ void syntacticAnalysis::funcWithoutReturn()
 
     sym = lexical.getSym();
     printLine("<无返回值函数定义>");
+
+    symbolist.redirect();
 }
 
 void syntacticAnalysis::compoundStatement()
@@ -404,6 +447,15 @@ void syntacticAnalysis::argumentList()
     sym = lexical.getSym();
     assert(sym.getKey() == IDENFR);
     printToken(sym);
+    if (symbolist.hasNowSeg(sym.getValue()))
+    {
+        ERROR_PRINT(sym.getLine(), "b");
+    }
+    else
+    {
+        symAttr attr = {sym.getValue(), VOID, FUNC};
+        symbolist.insert(attr);
+    }
 
     sym = lexical.getSym();
     while (sym.getKey() == COMMA)
@@ -417,6 +469,15 @@ void syntacticAnalysis::argumentList()
         sym = lexical.getSym();
         assert(sym.getKey() == IDENFR);
         printToken(sym);
+        if (symbolist.hasNowSeg(sym.getValue()))
+        {
+            ERROR_PRINT(sym.getLine(), "b");
+        }
+        else
+        {
+            symAttr attr = {sym.getValue(), VOID, FUNC};
+            symbolist.insert(attr);
+        }
 
         sym = lexical.getSym();
     }
@@ -431,6 +492,17 @@ void syntacticAnalysis::mainFunc()
     sym = lexical.getSym();
     assert(sym.getKey() == MAINTK);
     printToken(sym);
+
+    if (symbolist.hasNowSeg(sym.getValue()))
+    {
+        ERROR_PRINT(sym.getLine(), "b");
+    }
+    else
+    {
+        symAttr attr = {sym.getValue(), VOID, FUNC};
+        symbolist.insert(attr);
+    }
+    symbolist.direct();
 
     sym = lexical.getSym();
     assert(sym.getKey() == LPARENT);
@@ -449,6 +521,8 @@ void syntacticAnalysis::mainFunc()
     assert(sym.getKey() == RBRACE);
     printToken(sym);
     printLine("<主函数>");
+
+    symbolist.redirect();
 }
 
 void syntacticAnalysis::expression()

@@ -2,9 +2,11 @@
 #define SYNTACTIC_ANALYSIS_H
 #include "debug.h"
 #include "lexicalAnalysis.h"
+#include "symbols.h"
 #include <set>
 #include <string>
 #include <fstream>
+
 using namespace std;
 
 const set<token_key> typeIdentifier = {INTTK, CHARTK};

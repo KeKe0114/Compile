@@ -8,6 +8,7 @@ using namespace std;
 //token key 以及映射:key转name,key转value
 enum token_key
 {
+    ERROR = -1,
     IDENFR,
 
     INTCON,
