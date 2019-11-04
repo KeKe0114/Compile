@@ -76,15 +76,7 @@ void syntacticAnalysis::procedureCheck()
 
         sym = lexical.getSym();
 
-        if (sym.getKey() == COMMA || sym.getKey() == LBRACK || sym.getKey() == SEMICN)
-        {
-            lexical.unGetSym();
-            lexical.unGetSym();
-            lexical.unGetSym();
-            sym = lexical.getSym();
-            variableState();
-        }
-        else if (sym.getKey() == LPARENT)
+        if (sym.getKey() == LPARENT)
         {
             lexical.unGetSym();
             lexical.unGetSym();
@@ -92,10 +84,19 @@ void syntacticAnalysis::procedureCheck()
             sym = lexical.getSym();
             funcWithReturn();
         }
+        // else if (sym.getKey() == COMMA || sym.getKey() == LBRACK || sym.getKey() == SEMICN)
         else
         {
-            assert(false); /*程序到达此处说明有BUG*/
+            lexical.unGetSym();
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            variableState();
         }
+        // else
+        // {
+        //     assert(false); /*程序到达此处说明有BUG*/
+        // }
     }
 
     while (!(sym.getKey() == VOIDTK && lexical.peek().getKey() == MAINTK))
@@ -133,9 +134,20 @@ void syntacticAnalysis::constState()
         printToken(sym);
         sym = lexical.getSym();
         constDefine();
-        assert(sym.getKey() == SEMICN);
-        printToken(sym);
-        sym = lexical.getSym();
+        // assert(sym.getKey() == SEMICN);
+        if (sym.getKey() != SEMICN)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "k");
+            sym = lexical.getSym();
+        }
+        else
+        {
+            printToken(sym);
+            sym = lexical.getSym();
+        }
     }
     printLine("<常量说明>");
 }
@@ -265,8 +277,18 @@ void syntacticAnalysis::variableState()
     do
     {
         variableDefine();
-        assert(sym.getKey() == SEMICN);
-        printToken(sym);
+        // assert(sym.getKey() == SEMICN);
+        if (sym.getKey() != SEMICN)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "k");
+        }
+        else
+        {
+            printToken(sym);
+        }
 
         sym = lexical.getSym();
         if (!isTypeIdentifier(sym))
@@ -286,6 +308,15 @@ void syntacticAnalysis::variableState()
         sym = lexical.getSym();
         if (!(sym.getKey() == LBRACK || sym.getKey() == SEMICN || sym.getKey() == COMMA))
         {
+            //  CHEN::走到这里的两种情况 1.这是一个有返回值的函数的定义;2.这句变量声明缺分号了.
+            if (sym.getKey() != LPARENT)
+            {
+                lexical.unGetSym();
+                lexical.unGetSym();
+                lexical.unGetSym();
+                sym = lexical.getSym();
+                continue;
+            }
             lexical.unGetSym();
             lexical.unGetSym();
             lexical.unGetSym();
@@ -680,9 +711,20 @@ void syntacticAnalysis::statement()
         {
             assert(false);
         }
-        assert(sym.getKey() == SEMICN);
-        printToken(sym);
-        sym = lexical.getSym();
+        // assert(sym.getKey() == SEMICN);
+        if (sym.getKey() != SEMICN)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "k");
+            sym = lexical.getSym();
+        }
+        else
+        {
+            printToken(sym);
+            sym = lexical.getSym();
+        }
     }
     printLine("<语句>");
 }
@@ -827,13 +869,33 @@ void syntacticAnalysis::loopStatement()
 
         sym = lexical.getSym();
         expression();
-        assert(sym.getKey() == SEMICN);
-        printToken(sym);
+        // assert(sym.getKey() == SEMICN);
+        if (sym.getKey() != SEMICN)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "k");
+        }
+        else
+        {
+            printToken(sym);
+        }
 
         sym = lexical.getSym();
         condition();
-        assert(sym.getKey() == SEMICN);
-        printToken(sym);
+        // assert(sym.getKey() == SEMICN);
+        if (sym.getKey() != SEMICN)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "k");
+        }
+        else
+        {
+            printToken(sym);
+        }
 
         sym = lexical.getSym();
         assert(sym.getKey() == IDENFR);
