@@ -5,7 +5,6 @@ using namespace std;
 
 enum symKind
 {
-    NOTFOUND = -1,
     CONST,
     VAR,
 };
@@ -24,11 +23,12 @@ public:
     string name;
     symType type;
     symKind kind;
+    int dim;
 
     void SHOW_ATTR()
     {
         // cout << name << "\t" << type << "\t" << kind << endl;
-        printf("%15s\t%d\t%d\n", name.c_str(), type, kind);
+        printf("%10s\t%d\t%d\t%d\n", name.c_str(), type, kind, dim);
     }
 };
 
@@ -37,16 +37,18 @@ class symbols
 private:
     vector<int> indexes;
     vector<symAttr> symStack;
-    symAttr NOTFOUND = {"NOTFOUND", STRING, symKind::NOTFOUND};
 
 public:
     symbols();
     void direct();
     void redirect();
-    symAttr search(string name);
-    symAttr searchNowSeg(string name);
-    bool founded(symAttr searchRst);
+
     void insert(symAttr item);
+
+    bool has(string name);
+    bool hasNowSeg(string name);
+    symAttr get(string name);
+    symAttr getNowSeg(string name);
 
     void DEBUG_PRINT_LIST();
 };
@@ -70,7 +72,19 @@ void symbols::redirect()
     indexes.pop_back();
 }
 
-symAttr symbols::search(string name)
+bool symbols::has(string name)
+{
+    for (int i = symStack.size() - 1; i >= 0; i--)
+    {
+        if (symStack[i].name == name)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+symAttr symbols::get(string name)
 {
     for (int i = symStack.size() - 1; i >= 0; i--)
     {
@@ -79,10 +93,21 @@ symAttr symbols::search(string name)
             return symStack[i];
         }
     }
-    return NOTFOUND;
 }
 
-symAttr symbols::searchNowSeg(string name)
+bool symbols::hasNowSeg(string name)
+{
+    for (int i = symStack.size() - 1; i >= indexes[indexes.size() - 1]; i--)
+    {
+        if (symStack[i].name == name)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+symAttr symbols::getNowSeg(string name)
 {
     for (int i = symStack.size() - 1; i >= indexes[indexes.size() - 1]; i--)
     {
@@ -91,21 +116,10 @@ symAttr symbols::searchNowSeg(string name)
             return symStack[i];
         }
     }
-    return NOTFOUND;
-}
-
-bool symbols::founded(symAttr item)
-{
-    return item.kind != symKind::NOTFOUND;
 }
 
 void symbols::insert(symAttr item)
 {
-    if (item.kind == symKind::NOTFOUND)
-    {
-        printf("insert item with NOTFOUND kind!");
-        exit(0);
-    }
     symStack.push_back(item);
 }
 
@@ -129,37 +143,17 @@ void symbols::DEBUG_PRINT_LIST()
     printf("*********************************\n");
 }
 
-// int main(int argc, char const *argv[])
-// {
-//     symbols symbols;
-//     symAttr attr = {"cheney", STRING, CONST};
-//     symbols.insert(attr);
-//     symbols.direct();
-//     symAttr attr2 = {"num", INT, VAR};
-//     symbols.insert(attr2);
+int main(int argc, char const *argv[])
+{
+    symbols symbols;
+    symAttr attr = {"cheney", STRING, CONST};
+    symbols.insert(attr);
+    symbols.direct();
+    symAttr attr2 = {"num", INT, VAR};
+    symbols.insert(attr2);
 
-//     symAttr ans = symbols.search("cheney");
-//     if (symbols.founded(ans))
-//     {
-//         cout << "found: ";
-//         ans.SHOW_ATTR();
-//     }
+    symAttr ans = symbols.get("cheney");
 
-//     symbols.DEBUG_PRINT_LIST();
-
-//     ans = symbols.searchNowSeg("cheney");
-//     if (symbols.founded(ans))
-//     {
-//         cout << "found: ";
-//         ans.SHOW_ATTR();
-//     }
-
-//     ans = symbols.searchNowSeg("num");
-//     if (symbols.founded(ans))
-//     {
-//         cout << "found: ";
-//         ans.SHOW_ATTR();
-//     }
-
-//     return 0;
-// }
+    symbols.DEBUG_PRINT_LIST();
+    return 0;
+}

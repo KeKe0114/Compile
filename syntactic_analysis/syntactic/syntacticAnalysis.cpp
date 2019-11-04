@@ -1,5 +1,11 @@
 #include "syntacticAnalysis.h"
 #include "symbols.cpp"
+
+void ERROR_PRINT(int line, string err_code)
+{
+    cout << line << " " << err_code << endl;
+}
+
 syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(filename), sym(lexical.getSym()), out(outfile)
 {
 }
@@ -138,6 +144,15 @@ void syntacticAnalysis::constDefine()
             assert(sym.getKey() == IDENFR);
             printToken(sym);
 
+            if (symbolist.hasNowSeg(sym.getName()))
+            {
+            }
+            else
+            {
+                symAttr attr = {sym.getName(), symType::INT, symKind::CONST};
+                symbolist.insert(attr);
+            }
+
             sym = lexical.getSym();
             assert(sym.getKey() == ASSIGN);
             printToken(sym);
@@ -155,6 +170,9 @@ void syntacticAnalysis::constDefine()
             sym = lexical.getSym();
             assert(sym.getKey() == IDENFR);
             printToken(sym);
+
+            symAttr attr = {sym.getName(), symType::CHAR, symKind::CONST};
+            symbolist.insert(attr);
 
             sym = lexical.getSym();
             assert(sym.getKey() == ASSIGN);
@@ -256,12 +274,25 @@ void syntacticAnalysis::variableState()
 void syntacticAnalysis::variableDefine()
 {
     assert(isTypeIdentifier(sym));
+
+    symType symtype;
+    if (sym.getKey() == INTTK)
+        symtype = INT;
+    else if (sym.getKey() == CHARTK)
+        symtype = CHAR;
+    else
+    {
+        assert(false);
+    }
+
     do
     {
         printToken(sym);
         sym = lexical.getSym();
         assert(sym.getKey() == IDENFR);
         printToken(sym);
+
+        string symname = sym.getName();
 
         sym = lexical.getSym();
         if (sym.getKey() == LBRACK)
@@ -271,10 +302,19 @@ void syntacticAnalysis::variableDefine()
             sym = lexical.getSym();
             unsignedInteger();
 
+            //TODO: 数组类型和相应的属性
+            symAttr attr = {symname, symtype, symKind::VAR};
+            symbolist.insert(attr);
+
             assert(sym.getKey() == RBRACK);
             printToken(sym);
 
             sym = lexical.getSym();
+        }
+        else
+        {
+            symAttr attr = {symname, symtype, symKind::VAR};
+            symbolist.insert(attr);
         }
     } while (sym.getKey() == COMMA);
     printLine("<变量定义>");
