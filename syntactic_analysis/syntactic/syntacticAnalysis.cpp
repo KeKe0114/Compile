@@ -564,6 +564,10 @@ void syntacticAnalysis::factor()
         }
         else if (lexical.peek().getKey() == LBRACK)
         {
+            if (!symbolist.has(sym.getValue()))
+            {
+                ERROR_PRINT(sym.getLine(), "c");
+            }
             printToken(sym);
             sym = lexical.getSym();
             printToken(sym);
@@ -575,6 +579,10 @@ void syntacticAnalysis::factor()
         }
         else
         {
+            if (!symbolist.has(sym.getValue()))
+            {
+                ERROR_PRINT(sym.getLine(), "c");
+            }
             printToken(sym);
             sym = lexical.getSym();
         }
@@ -708,6 +716,10 @@ void syntacticAnalysis::assignmentStatement()
 {
     assert(sym.getKey() == IDENFR);
     printToken(sym);
+    if (!symbolist.has(sym.getValue()))
+    {
+        ERROR_PRINT(sym.getLine(), "c");
+    }
 
     sym = lexical.getSym();
     if (sym.getKey() == LBRACK)
@@ -788,6 +800,10 @@ void syntacticAnalysis::loopStatement()
         sym = lexical.getSym();
         assert(sym.getKey() == IDENFR);
         printToken(sym);
+        if (!symbolist.has(sym.getValue()))
+        {
+            ERROR_PRINT(sym.getLine(), "c");
+        }
 
         sym = lexical.getSym();
         assert(sym.getKey() == ASSIGN);
@@ -806,6 +822,10 @@ void syntacticAnalysis::loopStatement()
         sym = lexical.getSym();
         assert(sym.getKey() == IDENFR);
         printToken(sym);
+        if (!symbolist.has(sym.getValue()))
+        {
+            ERROR_PRINT(sym.getLine(), "c");
+        }
 
         sym = lexical.getSym();
         assert(sym.getKey() == ASSIGN);
@@ -814,6 +834,10 @@ void syntacticAnalysis::loopStatement()
         sym = lexical.getSym();
         assert(sym.getKey() == IDENFR);
         printToken(sym);
+        if (!symbolist.has(sym.getValue()))
+        {
+            ERROR_PRINT(sym.getLine(), "c");
+        }
 
         sym = lexical.getSym();
         assert(isAddOp(sym));
@@ -845,6 +869,10 @@ void syntacticAnalysis::invokeFuncWithReturn()
 {
     assert(sym.getKey() == IDENFR);
     printToken(sym);
+    if (!symbolist.has(sym.getValue()))
+    {
+        ERROR_PRINT(sym.getLine(), "c");
+    }
 
     sym = lexical.getSym();
     assert(sym.getKey() == LPARENT);
@@ -863,6 +891,10 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 {
     assert(sym.getKey() == IDENFR);
     printToken(sym);
+    if (!symbolist.has(sym.getValue()))
+    {
+        ERROR_PRINT(sym.getLine(), "c");
+    }
 
     sym = lexical.getSym();
     assert(sym.getKey() == LPARENT);
@@ -918,6 +950,10 @@ void syntacticAnalysis::readStatement()
         sym = lexical.getSym();
         assert(sym.getKey() == IDENFR);
         printToken(sym);
+        if (!symbolist.has(sym.getValue()))
+        {
+            ERROR_PRINT(sym.getLine(), "c");
+        }
 
         sym = lexical.getSym();
     } while (sym.getKey() == COMMA);
