@@ -720,6 +720,14 @@ void syntacticAnalysis::assignmentStatement()
     {
         ERROR_PRINT(sym.getLine(), "c");
     }
+    else
+    {
+        symAttr findRst = symbolist.get(sym.getValue());
+        if (findRst.kind == CONST)
+        {
+            ERROR_PRINT(sym.getLine(), "j");
+        }
+    }
 
     sym = lexical.getSym();
     if (sym.getKey() == LBRACK)
@@ -804,6 +812,14 @@ void syntacticAnalysis::loopStatement()
         {
             ERROR_PRINT(sym.getLine(), "c");
         }
+        else
+        {
+            symAttr findRst = symbolist.get(sym.getValue());
+            if (findRst.kind == CONST)
+            {
+                ERROR_PRINT(sym.getLine(), "j");
+            }
+        }
 
         sym = lexical.getSym();
         assert(sym.getKey() == ASSIGN);
@@ -825,6 +841,14 @@ void syntacticAnalysis::loopStatement()
         if (!symbolist.has(sym.getValue()))
         {
             ERROR_PRINT(sym.getLine(), "c");
+        }
+        else
+        {
+            symAttr findRst = symbolist.get(sym.getValue());
+            if (findRst.kind == CONST)
+            {
+                ERROR_PRINT(sym.getLine(), "j");
+            }
         }
 
         sym = lexical.getSym();
