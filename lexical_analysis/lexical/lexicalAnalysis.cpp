@@ -156,7 +156,6 @@ token lexicalAnalysis::genSym()
     }
 
     // 下面的部分不可能被执行,除非有bug
-    assert(false);
     return token(ERROR, "ERROR", line);
 }
 
@@ -168,14 +167,12 @@ token lexicalAnalysis::getSym()
         return *pivot++;
     }
     token tk = genSym();
-    if (tk.getKey() == ERROR)
+    while (tk.getKey() == ERROR)
     {
         cout << tk.getLine() << " a" << endl;
+        tk = genSym();
     }
-    else
-    {
-        symbolics.push_back(tk);
-    }
+    symbolics.push_back(tk);
     //pivot++;
     return tk;
 }
@@ -197,6 +194,11 @@ token lexicalAnalysis::peek()
         return *pivot;
     }
     token tk = genSym();
+    while (tk.getKey() == ERROR)
+    {
+        cout << tk.getLine() << " a" << endl;
+        tk = genSym();
+    }
     symbolics.push_back(tk);
     pivot--;
     return tk;
