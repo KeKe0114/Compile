@@ -154,12 +154,14 @@ class token
 private:
     token_key key;
     string value;
+    int line;
 
 public:
-    token(token_key key);
-    token(token_key key, string value);
+    token(token_key key, int line);
+    token(token_key key, string value, int line);
     token_key getKey();
     string getName();
     string getValue();
+    int getLine();
 };
 #endif

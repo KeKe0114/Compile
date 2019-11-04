@@ -12,6 +12,7 @@ token_key lexicalAnalysis::checkReservedWord(string s)
 
 lexicalAnalysis::lexicalAnalysis(string filename)
 {
+    line = 0;
     in.open(filename);
     pivot = symbolics.begin();
     for (int i = RESERVED_BEGIN; i < RESERVED_END; i++)
@@ -29,6 +30,10 @@ bool lexicalAnalysis::hasSym()
     char c = in.peek();
     while (isspace(c))
     {
+        if (c == '\n')
+        {
+            line++;
+        }
         c = in.get();
         c = in.peek();
     }
@@ -44,6 +49,10 @@ token lexicalAnalysis::genSym()
     // SPACE
     while (isspace(c))
     {
+        if (c == '\n')
+        {
+            line++;
+        }
         c = in.get();
     }
 
@@ -60,9 +69,9 @@ token lexicalAnalysis::genSym()
         token_key key = checkReservedWord(value);
         if (key)
         {
-            return token(key);
+            return token(key, line);
         }
-        return token(key, value);
+        return token(key, value, line);
     }
 
     // DIGIT
@@ -75,7 +84,7 @@ token lexicalAnalysis::genSym()
         }
         in.unget();
         value = ss.str();
-        return token(INTCON, value);
+        return token(INTCON, value, line);
     }
 
     // '' CHARCON
@@ -88,7 +97,7 @@ token lexicalAnalysis::genSym()
             c = in.get();
         }
         value = ss.str();
-        return token(CHARCON, value);
+        return token(CHARCON, value, line);
     }
 
     // "" STRCON
@@ -101,7 +110,7 @@ token lexicalAnalysis::genSym()
             c = in.get();
         }
         value = ss.str();
-        return token(STRCON, value);
+        return token(STRCON, value, line);
     }
 
     //具体请查看token.h
@@ -117,7 +126,7 @@ token lexicalAnalysis::genSym()
         value = ss.str();
         token_key key = checkReservedWord(value);
         assert(key != IDENFR); /*find nothing*/
-        return token(key);
+        return token(key, line);
     }
 
     //具体请查看token.h
@@ -127,12 +136,12 @@ token lexicalAnalysis::genSym()
         value = ss.str();
         token_key key = checkReservedWord(value);
         assert(key != IDENFR); /*find nothing*/
-        return token(key);
+        return token(key, line);
     }
 
     // 下面的部分不可能被执行,除非有bug
     assert(false);
-    return token((token_key)0, "ERROR");
+    return token((token_key)0, "ERROR", line);
 }
 
 token lexicalAnalysis::getSym()

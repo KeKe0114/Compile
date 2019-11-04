@@ -1,17 +1,19 @@
 #include "token.h"
 using namespace std;
 
-token::token(token_key key)
+token::token(token_key key, int line)
 {
     assert(key >= RESERVED_BEGIN);
     this->key = key;
     this->value = TOKEN_VALUE[key];
+    this->line = line;
 }
-token::token(token_key key, string value)
+token::token(token_key key, string value, int line)
 {
     assert(key < VALUE_REQUIRED_END);
     this->key = key;
     this->value = value;
+    this->line = line;
 }
 token_key token::getKey()
 {
@@ -24,6 +26,11 @@ string token::getName()
 string token::getValue()
 {
     return value;
+}
+
+int token::getLine()
+{
+    return line;
 }
 
 bool isOpPrefix(char c)

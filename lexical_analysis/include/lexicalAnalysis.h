@@ -12,6 +12,7 @@ using namespace std;
 class lexicalAnalysis
 {
 private:
+    int line;
     ifstream in;
     trieTree reverseWord;
     list<token> symbolics;
