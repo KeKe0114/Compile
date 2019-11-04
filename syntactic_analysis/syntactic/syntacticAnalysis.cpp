@@ -1,5 +1,5 @@
 #include "syntacticAnalysis.h"
-
+#include "symbols.cpp"
 syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(filename), sym(lexical.getSym()), out(outfile)
 {
 }

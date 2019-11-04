@@ -17,6 +17,7 @@ const set<token_key> statementPrefix = {SEMICN, IFTK, WHILETK, FORTK, DOTK, LBRA
 class syntacticAnalysis
 {
 private:
+    symbols symbolist;
     lexicalAnalysis lexical;
     token sym;
 
