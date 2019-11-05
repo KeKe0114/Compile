@@ -14,7 +14,7 @@ enum symKind
 
 enum symType
 {
-    ERROR = -1,
+    TYPERROR = -1,
     VOID,
     INT,
     CHAR,
@@ -67,6 +67,17 @@ public:
     symAttr get(string name);
     symAttr getNowSeg(string name);
     symAttr getNearFunc();
+    void addArgsForNearFunc(symType arg)
+    {
+        for (int i = symStack.size() - 1; i >= 0; i--)
+        {
+            if (symStack[i].kind == FUNC)
+            {
+                symStack[i].addArgs(arg);
+                return;
+            }
+        }
+    }
 
     void DEBUG_PRINT_LIST();
 };

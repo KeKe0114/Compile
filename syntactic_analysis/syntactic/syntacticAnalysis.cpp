@@ -295,8 +295,10 @@ string syntacticAnalysis::stateHead()
     }
     else
     {
+        cout << "symType into func list:\t " << symtype << endl;
         symAttr attr = {name, symtype, FUNC};
         symbolist.insert(attr);
+        cout << "get symType after insert:\t " << symbolist.getNearFunc().type << endl;
     }
 
     sym = lexical.getSym();
@@ -539,6 +541,12 @@ void syntacticAnalysis::argumentList(string funcName)
 
     assert(isTypeIdentifier(sym));
     printToken(sym);
+    symType arg1Type = transferKeyToType(sym.getKey());
+
+    symbolist.addArgsForNearFunc(transferKeyToType(sym.getKey()));
+    symAttr funcAttr = symbolist.get(funcName);
+    // funcAttr.addArgs(transferKeyToType(sym.getKey()));
+    cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
 
     sym = lexical.getSym();
     assert(sym.getKey() == IDENFR);
@@ -549,10 +557,8 @@ void syntacticAnalysis::argumentList(string funcName)
     }
     else
     {
-        symAttr attr = {sym.getValue(), VOID, FUNC};
+        symAttr attr = {sym.getValue(), arg1Type, VAR};
         symbolist.insert(attr);
-        symAttr funcAttr = symbolist.get(funcName);
-        funcAttr.addArgs(transferKeyToType(sym.getKey()));
     }
 
     sym = lexical.getSym();
@@ -563,6 +569,13 @@ void syntacticAnalysis::argumentList(string funcName)
         sym = lexical.getSym();
         assert(isTypeIdentifier(sym));
         printToken(sym);
+        arg1Type = transferKeyToType(sym.getKey());
+
+        symAttr funcAttr = symbolist.get(funcName);
+        cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
+        symbolist.addArgsForNearFunc(transferKeyToType(sym.getKey()));
+        // funcAttr.addArgs(transferKeyToType(sym.getKey()));
+        cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
 
         sym = lexical.getSym();
         assert(sym.getKey() == IDENFR);
@@ -573,10 +586,8 @@ void syntacticAnalysis::argumentList(string funcName)
         }
         else
         {
-            symAttr attr = {sym.getValue(), VOID, FUNC};
+            symAttr attr = {sym.getValue(), arg1Type, VAR};
             symbolist.insert(attr);
-            symAttr funcAttr = symbolist.get(funcName);
-            funcAttr.addArgs(transferKeyToType(sym.getKey()));
         }
 
         sym = lexical.getSym();
@@ -637,7 +648,7 @@ void syntacticAnalysis::mainFunc()
 
 symType syntacticAnalysis::expression()
 {
-    symType ret = ERROR;
+    symType ret = TYPERROR;
     if (isAddOp(sym))
     {
         printToken(sym);
@@ -682,7 +693,7 @@ symType syntacticAnalysis::term()
 
 symType syntacticAnalysis::factor()
 {
-    symType ret = ERROR;
+    symType ret = TYPERROR;
     if (sym.getKey() == IDENFR)
     {
         if (lexical.peek().getKey() == LPARENT)
@@ -1171,6 +1182,12 @@ void syntacticAnalysis::invokeFuncWithReturn()
     if (!symbolist.has(sym.getValue()))
     {
         ERROR_PRINT(sym.getLine(), "c");
+        while (sym.getKey() != RPARENT)
+        {
+            sym = lexical.getSym();
+        }
+        sym = lexical.getSym();
+        return;
     }
 
     sym = lexical.getSym();
@@ -1204,6 +1221,12 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
     if (!symbolist.has(sym.getValue()))
     {
         ERROR_PRINT(sym.getLine(), "c");
+        while (sym.getKey() != RPARENT)
+        {
+            sym = lexical.getSym();
+        }
+        sym = lexical.getSym();
+        return;
     }
 
     sym = lexical.getSym();
@@ -1233,9 +1256,10 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 void syntacticAnalysis::valueArgumentList(string funcName)
 {
     symAttr funcAttr = symbolist.get(funcName);
+    cout << "funcAttr.name:\t" << funcAttr.name << " args size:\t" << funcAttr.getArgs().size() << endl;
     vector<symType> argsTypes = funcAttr.getArgs();
     int count = 0;
-    if (argsTypes.size == 0 && sym.getKey() != RPARENT)
+    if (argsTypes.size() == 0 && sym.getKey() != RPARENT)
     {
         ERROR_PRINT(sym.getLine(), "l");
     }
@@ -1364,7 +1388,7 @@ void syntacticAnalysis::returnStatement()
 {
     assert(sym.getKey() == RETURNTK);
     printToken(sym);
-    symType chkType = ERROR;
+    symType chkType = TYPERROR;
     symType getType = VOID;
     if (!symbolist.hasNearFunc())
     {
@@ -1372,6 +1396,7 @@ void syntacticAnalysis::returnStatement()
     }
     else
     {
+        cout << "near function name:\t" << symbolist.getNearFunc().name << endl;
         chkType = symbolist.getNearFunc().type;
     }
     sym = lexical.getSym();
