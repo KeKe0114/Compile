@@ -12,6 +12,7 @@ inline symType transferKeyToType(token_key key)
     else if (key == CHARTK)
         return CHAR;
     assert(false); /* 如果执行到此处说明有bug */
+    return TYPERROR;
 }
 
 syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(filename), sym(lexical.getSym(out)), out(outfile)
@@ -469,7 +470,7 @@ void syntacticAnalysis::funcWithoutReturn()
     funcWithoutRet.insert(sym.getValue());
     printToken(sym);
 
-    string name = sym.getName();
+    string name = sym.getValue();
 
     if (symbolist.hasNowSeg(sym.getValue()))
     {
@@ -932,7 +933,6 @@ void syntacticAnalysis::assignmentStatement()
     sym = lexical.getSym(out);
     if (sym.getKey() == LBRACK)
     {
-        int lbkLine = sym.getLine();
         printToken(sym);
 
         sym = lexical.getSym(out);
@@ -1273,7 +1273,7 @@ void syntacticAnalysis::valueArgumentList(string funcName)
         return;
     }
     symType symtype = expression();
-    if (argsTypes[count] != symtype)
+    if (count < argsTypes.size() && argsTypes[count] != symtype)
     {
         ERROR_PRINT(sym.getLine(), "e");
     }
@@ -1283,7 +1283,7 @@ void syntacticAnalysis::valueArgumentList(string funcName)
         printToken(sym);
         sym = lexical.getSym(out);
         symtype = expression();
-        if (argsTypes[count] != symtype)
+        if (count < argsTypes.size() && argsTypes[count] != symtype)
         {
             ERROR_PRINT(sym.getLine(), "e");
         }
@@ -1436,7 +1436,7 @@ void syntacticAnalysis::returnStatement()
 
 int main(int argc, char const *argv[])
 {
-    syntacticAnalysis syntactic("testfile.txt", "output.txt");
+    syntacticAnalysis syntactic("testfile.txt", "error.txt");
     syntactic.procedureCheck();
     return 0;
 }

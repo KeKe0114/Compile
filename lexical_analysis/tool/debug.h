@@ -12,7 +12,7 @@ using namespace std;
 // #define FLUSH_FORCE 0
 
 //是否打开assert检查
-//#define NDEBUG
+// #define NDEBUG
 
 // #define LOG_FILE "log.txt"
 
