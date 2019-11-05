@@ -84,6 +84,10 @@ token lexicalAnalysis::genSym()
         }
         in.unget();
         value = ss.str();
+        if (value.size() > 1 && value[0] == '0')
+        {
+            cout << line << " a" << endl;
+        }
         return token(INTCON, value, line);
     }
 

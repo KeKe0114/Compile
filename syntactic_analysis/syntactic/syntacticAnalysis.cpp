@@ -180,6 +180,22 @@ void syntacticAnalysis::constDefine()
             printToken(sym);
 
             sym = lexical.getSym();
+            if (!(sym.getKey() == INTCON || isAddOp(sym)))
+            {
+                ERROR_PRINT(sym.getLine(), "o");
+                while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
+                {
+                    sym = lexical.getSym();
+                }
+                if (sym.getKey() == SEMICN)
+                {
+                    return;
+                }
+                else
+                {
+                    continue;
+                }
+            }
             integer();
         } while (sym.getKey() == COMMA);
     }
@@ -208,6 +224,22 @@ void syntacticAnalysis::constDefine()
             printToken(sym);
 
             sym = lexical.getSym();
+            if (!(isCharacter(sym)))
+            {
+                ERROR_PRINT(sym.getLine(), "o");
+                while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
+                {
+                    sym = lexical.getSym();
+                }
+                if (sym.getKey() == SEMICN)
+                {
+                    return;
+                }
+                else
+                {
+                    continue;
+                }
+            }
             character();
         } while (sym.getKey() == COMMA);
     }
