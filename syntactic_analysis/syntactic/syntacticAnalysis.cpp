@@ -1154,15 +1154,36 @@ void syntacticAnalysis::returnStatement()
 {
     assert(sym.getKey() == RETURNTK);
     printToken(sym);
+    symType chkType = ERROR;
+    symType getType = VOID;
+    if (!symbolist.hasNearFunc())
+    {
+        DEBUG(1, "NO FUNC Near");
+    }
+    else
+    {
+        chkType = symbolist.getNearFunc().type;
+    }
     sym = lexical.getSym();
     if (sym.getKey() == LPARENT)
     {
         printToken(sym);
         sym = lexical.getSym();
-        expression();
+        getType = expression();
         assert(sym.getKey() == RPARENT);
         printToken(sym);
         sym = lexical.getSym();
+    }
+    if (chkType != getType)
+    {
+        if (chkType == VOID)
+        {
+            ERROR_PRINT(sym.getLine(), "g");
+        }
+        else
+        {
+            ERROR_PRINT(sym.getLine(), "h");
+        }
     }
     printLine("<返回语句>");
 }

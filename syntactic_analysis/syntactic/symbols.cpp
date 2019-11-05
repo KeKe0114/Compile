@@ -90,6 +90,29 @@ void symbols::DEBUG_PRINT_LIST()
     printf("*********************************\n");
 }
 
+symAttr symbols::getNearFunc()
+{
+    for (int i = symStack.size() - 1; i >= 0; i--)
+    {
+        if (symStack[i].kind == FUNC)
+        {
+            return symStack[i];
+        }
+    }
+}
+
+bool symbols::hasNearFunc()
+{
+    for (int i = symStack.size() - 1; i >= 0; i--)
+    {
+        if (symStack[i].kind == FUNC)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 // int main(int argc, char const *argv[])
 // {
 //     symbols symbols;

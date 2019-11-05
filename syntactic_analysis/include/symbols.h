@@ -63,8 +63,10 @@ public:
 
     bool has(string name);
     bool hasNowSeg(string name);
+    bool hasNearFunc();
     symAttr get(string name);
     symAttr getNowSeg(string name);
+    symAttr getNearFunc();
 
     void DEBUG_PRINT_LIST();
 };
