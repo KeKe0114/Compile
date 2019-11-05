@@ -973,8 +973,20 @@ void syntacticAnalysis::loopStatement()
         printToken(sym);
         sym = lexical.getSym();
         statement();
-        assert(sym.getKey() == WHILETK);
-        printToken(sym);
+        // assert(sym.getKey() == WHILETK);
+        if (sym.getKey() != WHILETK)
+        {
+            ERROR_PRINT(sym.getLine(), "n");
+            while (sym.getKey() != SEMICN)
+            {
+                sym = lexical.getSym();
+            }
+            return;
+        }
+        else
+        {
+            printToken(sym);
+        }
 
         sym = lexical.getSym();
         assert(sym.getKey() == LPARENT);
