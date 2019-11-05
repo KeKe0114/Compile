@@ -1051,13 +1051,21 @@ void syntacticAnalysis::valueArgumentList(string funcName)
         printLine("<值参数表>");
         return;
     }
-    expression();
+    symType symtype = expression();
+    if (argsTypes[count] != symtype)
+    {
+        ERROR_PRINT(sym.getLine(), "e");
+    }
     count++;
     while (sym.getKey() == COMMA)
     {
         printToken(sym);
         sym = lexical.getSym();
-        expression();
+        symtype = expression();
+        if (argsTypes[count] != symtype)
+        {
+            ERROR_PRINT(sym.getLine(), "e");
+        }
         count++;
     }
     if (count != argsTypes.size())
