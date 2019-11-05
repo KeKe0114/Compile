@@ -1,8 +1,8 @@
 #include "syntacticAnalysis.h"
 
-void ERROR_PRINT(int line, string err_code)
+void syntacticAnalysis::ERROR_PRINT(int line, string err_code)
 {
-    cout << line << " " << err_code << endl;
+    out << line << " " << err_code << endl;
 }
 
 inline symType transferKeyToType(token_key key)
@@ -14,18 +14,18 @@ inline symType transferKeyToType(token_key key)
     assert(false); /* 如果执行到此处说明有bug */
 }
 
-syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(filename), sym(lexical.getSym()), out(outfile)
+syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(filename), sym(lexical.getSym(out)), out(outfile)
 {
 }
 
 void syntacticAnalysis::printToken(token key)
 {
-    cout << key.getName() << " " << key.getValue() << endl;
+    // cout << key.getName() << " " << key.getValue() << endl;
 }
 
 void syntacticAnalysis::printLine(string s)
 {
-    cout << s << endl;
+    // cout << s << endl;
 }
 
 bool syntacticAnalysis::isTypeIdentifier(token key)
@@ -71,17 +71,17 @@ void syntacticAnalysis::procedureCheck()
     }
     if (isTypeIdentifier(sym))
     {
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
 
         if (sym.getKey() == LPARENT)
         {
             lexical.unGetSym();
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             funcWithReturn();
         }
         // else if (sym.getKey() == COMMA || sym.getKey() == LBRACK || sym.getKey() == SEMICN)
@@ -90,7 +90,7 @@ void syntacticAnalysis::procedureCheck()
             lexical.unGetSym();
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             variableState();
         }
         // else
@@ -99,7 +99,7 @@ void syntacticAnalysis::procedureCheck()
         // }
     }
 
-    while (!(sym.getKey() == VOIDTK && lexical.peek().getKey() == MAINTK))
+    while (!(sym.getKey() == VOIDTK && lexical.peek(out).getKey() == MAINTK))
     {
         if (sym.getKey() == VOIDTK)
         {
@@ -123,7 +123,7 @@ void syntacticAnalysis::strConCheck()
 {
     assert(sym.getKey() == STRCON);
     printToken(sym);
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     printLine("<字符串>");
 }
 
@@ -132,21 +132,21 @@ void syntacticAnalysis::constState()
     while (sym.getKey() == CONSTTK)
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         constDefine();
         // assert(sym.getKey() == SEMICN);
         if (sym.getKey() != SEMICN)
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "k");
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
         }
         else
         {
             printToken(sym);
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
         }
     }
     printLine("<常量说明>");
@@ -160,13 +160,13 @@ void syntacticAnalysis::constDefine()
         {
             printToken(sym);
 
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             assert(sym.getKey() == IDENFR);
             printToken(sym);
 
             if (symbolist.hasNowSeg(sym.getValue()))
             {
-                symbolist.DEBUG_PRINT_LIST();
+                // symbolist.DEBUG_PRINT_LIST();
                 ERROR_PRINT(sym.getLine(), "b");
             }
             else
@@ -175,17 +175,17 @@ void syntacticAnalysis::constDefine()
                 symbolist.insert(attr);
             }
 
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             assert(sym.getKey() == ASSIGN);
             printToken(sym);
 
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             if (!(sym.getKey() == INTCON || isAddOp(sym)))
             {
                 ERROR_PRINT(sym.getLine(), "o");
                 while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
                 {
-                    sym = lexical.getSym();
+                    sym = lexical.getSym(out);
                 }
                 if (sym.getKey() == SEMICN)
                 {
@@ -205,7 +205,7 @@ void syntacticAnalysis::constDefine()
         {
             printToken(sym);
 
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             assert(sym.getKey() == IDENFR);
             printToken(sym);
 
@@ -219,17 +219,17 @@ void syntacticAnalysis::constDefine()
                 symbolist.insert(attr);
             }
 
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             assert(sym.getKey() == ASSIGN);
             printToken(sym);
 
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             if (!(isCharacter(sym)))
             {
                 ERROR_PRINT(sym.getLine(), "o");
                 while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
                 {
-                    sym = lexical.getSym();
+                    sym = lexical.getSym(out);
                 }
                 if (sym.getKey() == SEMICN)
                 {
@@ -255,7 +255,7 @@ void syntacticAnalysis::unsignedInteger()
     assert(sym.getKey() == INTCON);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     printLine("<无符号整数>");
 }
 
@@ -264,7 +264,7 @@ void syntacticAnalysis::integer()
     if (isAddOp(sym))
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
     }
     unsignedInteger();
     printLine("<整数>");
@@ -274,7 +274,7 @@ void syntacticAnalysis::character()
 {
     assert(isCharacter(sym));
     printToken(sym);
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
 }
 
 string syntacticAnalysis::stateHead()
@@ -284,7 +284,7 @@ string syntacticAnalysis::stateHead()
 
     symType symtype = transferKeyToType(sym.getKey());
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == IDENFR);
     string name = sym.getValue();
     printToken(sym);
@@ -295,13 +295,13 @@ string syntacticAnalysis::stateHead()
     }
     else
     {
-        cout << "symType into func list:\t " << symtype << endl;
+        // cout << "symType into func list:\t " << symtype << endl;
         symAttr attr = {name, symtype, FUNC};
         symbolist.insert(attr);
-        cout << "get symType after insert:\t " << symbolist.getNearFunc().type << endl;
+        // cout << "get symType after insert:\t " << symbolist.getNearFunc().type << endl;
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     printLine("<声明头部>");
     return name;
 }
@@ -316,7 +316,7 @@ void syntacticAnalysis::variableState()
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "k");
         }
         else
@@ -324,22 +324,22 @@ void syntacticAnalysis::variableState()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         if (!isTypeIdentifier(sym))
         {
             printLine("<变量说明>");
             return;
         }
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         if (sym.getKey() != IDENFR)
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             printLine("<变量说明>");
             return;
         }
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         if (!(sym.getKey() == LBRACK || sym.getKey() == SEMICN || sym.getKey() == COMMA))
         {
             //  CHEN::走到这里的两种情况 1.这是一个有返回值的函数的定义;2.这句变量声明缺分号了.
@@ -348,20 +348,20 @@ void syntacticAnalysis::variableState()
                 lexical.unGetSym();
                 lexical.unGetSym();
                 lexical.unGetSym();
-                sym = lexical.getSym();
+                sym = lexical.getSym(out);
                 continue;
             }
             lexical.unGetSym();
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             printLine("<变量说明>");
             return;
         }
         lexical.unGetSym();
         lexical.unGetSym();
         lexical.unGetSym();
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
     } while (true);
 }
 
@@ -374,7 +374,7 @@ void syntacticAnalysis::variableDefine()
     do
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
         printToken(sym);
 
@@ -384,12 +384,12 @@ void syntacticAnalysis::variableDefine()
             ERROR_PRINT(sym.getLine(), "b");
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         if (sym.getKey() == LBRACK)
         {
             printToken(sym);
 
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             unsignedInteger();
 
             //TODO: 数组类型和相应的属性
@@ -401,14 +401,14 @@ void syntacticAnalysis::variableDefine()
             {
                 lexical.unGetSym();
                 lexical.unGetSym();
-                sym = lexical.getSym();
+                sym = lexical.getSym(out);
                 ERROR_PRINT(sym.getLine(), "m");
-                sym = lexical.getSym();
+                sym = lexical.getSym(out);
             }
             else
             {
                 printToken(sym);
-                sym = lexical.getSym();
+                sym = lexical.getSym(out);
             }
         }
         else
@@ -429,14 +429,14 @@ void syntacticAnalysis::funcWithReturn()
 
     assert(sym.getKey() == LPARENT);
     printToken(sym);
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     argumentList(name);
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
         lexical.unGetSym();
         lexical.unGetSym();
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ERROR_PRINT(sym.getLine(), "l");
     }
     else
@@ -444,16 +444,16 @@ void syntacticAnalysis::funcWithReturn()
         printToken(sym);
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LBRACE);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     compoundStatement();
     assert(sym.getKey() == RBRACE);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     printLine("<有返回值函数定义>");
 
     symbolist.redirect();
@@ -464,7 +464,7 @@ void syntacticAnalysis::funcWithoutReturn()
     assert(sym.getKey() == VOIDTK);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == IDENFR);
     funcWithoutRet.insert(sym.getValue());
     printToken(sym);
@@ -482,11 +482,11 @@ void syntacticAnalysis::funcWithoutReturn()
     }
     symbolist.direct();
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LPARENT);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     argumentList(name);
 
     // assert(sym.getKey() == RPARENT);
@@ -494,7 +494,7 @@ void syntacticAnalysis::funcWithoutReturn()
     {
         lexical.unGetSym();
         lexical.unGetSym();
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ERROR_PRINT(sym.getLine(), "l");
     }
     else
@@ -502,16 +502,16 @@ void syntacticAnalysis::funcWithoutReturn()
         printToken(sym);
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LBRACE);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     compoundStatement();
     assert(sym.getKey() == RBRACE);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     printLine("<无返回值函数定义>");
 
     symbolist.redirect();
@@ -546,9 +546,9 @@ void syntacticAnalysis::argumentList(string funcName)
     symbolist.addArgsForNearFunc(transferKeyToType(sym.getKey()));
     symAttr funcAttr = symbolist.get(funcName);
     // funcAttr.addArgs(transferKeyToType(sym.getKey()));
-    cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
+    // cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == IDENFR);
     printToken(sym);
     if (symbolist.hasNowSeg(sym.getValue()))
@@ -561,23 +561,23 @@ void syntacticAnalysis::argumentList(string funcName)
         symbolist.insert(attr);
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     while (sym.getKey() == COMMA)
     {
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(isTypeIdentifier(sym));
         printToken(sym);
         arg1Type = transferKeyToType(sym.getKey());
 
         symAttr funcAttr = symbolist.get(funcName);
-        cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
+        // cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
         symbolist.addArgsForNearFunc(transferKeyToType(sym.getKey()));
         // funcAttr.addArgs(transferKeyToType(sym.getKey()));
-        cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
+        // cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
         printToken(sym);
         if (symbolist.hasNowSeg(sym.getValue()))
@@ -590,7 +590,7 @@ void syntacticAnalysis::argumentList(string funcName)
             symbolist.insert(attr);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
     }
     printLine("<参数表>");
 }
@@ -600,7 +600,7 @@ void syntacticAnalysis::mainFunc()
     assert(sym.getKey() == VOIDTK);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == MAINTK);
     printToken(sym);
 
@@ -615,17 +615,17 @@ void syntacticAnalysis::mainFunc()
     }
     symbolist.direct();
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LPARENT);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
         lexical.unGetSym();
         lexical.unGetSym();
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ERROR_PRINT(sym.getLine(), "l");
     }
     else
@@ -633,11 +633,11 @@ void syntacticAnalysis::mainFunc()
         printToken(sym);
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LBRACE);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     compoundStatement();
     assert(sym.getKey() == RBRACE);
     printToken(sym);
@@ -652,7 +652,7 @@ symType syntacticAnalysis::expression()
     if (isAddOp(sym))
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ret = INT;
     }
     symType symType1 = term();
@@ -667,7 +667,7 @@ symType syntacticAnalysis::expression()
     while (isAddOp(sym))
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         term();
     }
     printLine("<表达式>");
@@ -684,7 +684,7 @@ symType syntacticAnalysis::term()
     while (isMulOp(sym))
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         factor();
     }
     printLine("<项>");
@@ -696,7 +696,7 @@ symType syntacticAnalysis::factor()
     symType ret = TYPERROR;
     if (sym.getKey() == IDENFR)
     {
-        if (lexical.peek().getKey() == LPARENT)
+        if (lexical.peek(out).getKey() == LPARENT)
         {
             if (symbolist.has(sym.getValue()))
             {
@@ -704,7 +704,7 @@ symType syntacticAnalysis::factor()
             }
             invokeFuncWithReturn();
         }
-        else if (lexical.peek().getKey() == LBRACK)
+        else if (lexical.peek(out).getKey() == LBRACK)
         {
             if (!symbolist.has(sym.getValue()))
             {
@@ -715,9 +715,9 @@ symType syntacticAnalysis::factor()
                 ret = symbolist.get(sym.getValue()).type;
             }
             printToken(sym);
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             printToken(sym);
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             symType idxType = expression();
             if (idxType != INT)
             {
@@ -728,14 +728,14 @@ symType syntacticAnalysis::factor()
             {
                 lexical.unGetSym();
                 lexical.unGetSym();
-                sym = lexical.getSym();
+                sym = lexical.getSym(out);
                 ERROR_PRINT(sym.getLine(), "m");
-                sym = lexical.getSym();
+                sym = lexical.getSym(out);
             }
             else
             {
                 printToken(sym);
-                sym = lexical.getSym();
+                sym = lexical.getSym(out);
             }
         }
         else
@@ -749,21 +749,21 @@ symType syntacticAnalysis::factor()
                 ret = symbolist.get(sym.getValue()).type;
             }
             printToken(sym);
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
         }
     }
     else if (sym.getKey() == LPARENT)
     {
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         expression();
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "l");
         }
         else
@@ -771,7 +771,7 @@ symType syntacticAnalysis::factor()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ret = INT;
     }
     else if (isCharacter(sym))
@@ -802,7 +802,7 @@ void syntacticAnalysis::statement()
     if (sym.getKey() == SEMICN)
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
     }
     else if (sym.getKey() == IFTK)
     {
@@ -815,12 +815,12 @@ void syntacticAnalysis::statement()
     else if (sym.getKey() == LBRACE)
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         statementList();
         assert(sym.getKey() == RBRACE);
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
     }
     else
     {
@@ -834,7 +834,7 @@ void syntacticAnalysis::statement()
             {
                 invokeFuncWithoutReturn();
             }
-            else if (lexical.peek().getKey() == ASSIGN || lexical.peek().getKey() == LBRACK)
+            else if (lexical.peek(out).getKey() == ASSIGN || lexical.peek(out).getKey() == LBRACK)
             {
                 assignmentStatement();
             }
@@ -864,14 +864,14 @@ void syntacticAnalysis::statement()
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "k");
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
         }
         else
         {
             printToken(sym);
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
         }
     }
     printLine("<语句>");
@@ -882,18 +882,18 @@ void syntacticAnalysis::conditionalStatement()
     assert(sym.getKey() == IFTK);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LPARENT);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     condition();
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
         lexical.unGetSym();
         lexical.unGetSym();
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ERROR_PRINT(sym.getLine(), "l");
     }
     else
@@ -901,12 +901,12 @@ void syntacticAnalysis::conditionalStatement()
         printToken(sym);
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     statement();
     if (sym.getKey() == ELSETK)
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         statement();
     }
     printLine("<条件语句>");
@@ -929,13 +929,13 @@ void syntacticAnalysis::assignmentStatement()
         }
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     if (sym.getKey() == LBRACK)
     {
         int lbkLine = sym.getLine();
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         symType idxType = expression();
         if (idxType != INT)
         {
@@ -946,20 +946,20 @@ void syntacticAnalysis::assignmentStatement()
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "m");
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
         }
         else
         {
             printToken(sym);
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
         }
     }
     assert(sym.getKey() == ASSIGN);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     expression();
     printLine("<赋值语句>");
 }
@@ -974,7 +974,7 @@ void syntacticAnalysis::condition()
     if (isRelOp(sym))
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         symtype = expression();
         if (symtype != INT)
         {
@@ -989,18 +989,18 @@ void syntacticAnalysis::loopStatement()
     if (sym.getKey() == WHILETK)
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == LPARENT);
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         condition();
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "l");
         }
         else
@@ -1008,13 +1008,13 @@ void syntacticAnalysis::loopStatement()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         statement();
     }
     else if (sym.getKey() == DOTK)
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         statement();
         // assert(sym.getKey() == WHILETK);
         if (sym.getKey() != WHILETK)
@@ -1022,7 +1022,7 @@ void syntacticAnalysis::loopStatement()
             ERROR_PRINT(sym.getLine(), "n");
             while (sym.getKey() != SEMICN)
             {
-                sym = lexical.getSym();
+                sym = lexical.getSym(out);
             }
             return;
         }
@@ -1031,18 +1031,18 @@ void syntacticAnalysis::loopStatement()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == LPARENT);
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         condition();
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "l");
         }
         else
@@ -1050,17 +1050,17 @@ void syntacticAnalysis::loopStatement()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
     }
     else if (sym.getKey() == FORTK)
     {
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == LPARENT);
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
         printToken(sym);
         if (!symbolist.has(sym.getValue()))
@@ -1076,18 +1076,18 @@ void syntacticAnalysis::loopStatement()
             }
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == ASSIGN);
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         expression();
         // assert(sym.getKey() == SEMICN);
         if (sym.getKey() != SEMICN)
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "k");
         }
         else
@@ -1095,14 +1095,14 @@ void syntacticAnalysis::loopStatement()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         condition();
         // assert(sym.getKey() == SEMICN);
         if (sym.getKey() != SEMICN)
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "k");
         }
         else
@@ -1110,7 +1110,7 @@ void syntacticAnalysis::loopStatement()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
         printToken(sym);
         if (!symbolist.has(sym.getValue()))
@@ -1126,11 +1126,11 @@ void syntacticAnalysis::loopStatement()
             }
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == ASSIGN);
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
         printToken(sym);
         if (!symbolist.has(sym.getValue()))
@@ -1138,11 +1138,11 @@ void syntacticAnalysis::loopStatement()
             ERROR_PRINT(sym.getLine(), "c");
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(isAddOp(sym));
         printToken(sym);
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         stepLength();
 
         // assert(sym.getKey() == RPARENT);
@@ -1150,7 +1150,7 @@ void syntacticAnalysis::loopStatement()
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "l");
         }
         else
@@ -1158,7 +1158,7 @@ void syntacticAnalysis::loopStatement()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         statement();
     }
     else
@@ -1184,24 +1184,24 @@ void syntacticAnalysis::invokeFuncWithReturn()
         ERROR_PRINT(sym.getLine(), "c");
         while (sym.getKey() != RPARENT)
         {
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
         }
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         return;
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LPARENT);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     valueArgumentList(funcName);
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
         lexical.unGetSym();
         lexical.unGetSym();
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ERROR_PRINT(sym.getLine(), "l");
     }
     else
@@ -1209,7 +1209,7 @@ void syntacticAnalysis::invokeFuncWithReturn()
         printToken(sym);
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     printLine("<有返回值函数调用语句>");
 }
 
@@ -1223,24 +1223,24 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
         ERROR_PRINT(sym.getLine(), "c");
         while (sym.getKey() != RPARENT)
         {
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
         }
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         return;
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LPARENT);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     valueArgumentList(funcName);
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
         lexical.unGetSym();
         lexical.unGetSym();
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ERROR_PRINT(sym.getLine(), "l");
     }
     else
@@ -1248,7 +1248,7 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
         printToken(sym);
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     printLine("<无返回值函数调用语句>");
 }
 
@@ -1256,7 +1256,7 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 void syntacticAnalysis::valueArgumentList(string funcName)
 {
     symAttr funcAttr = symbolist.get(funcName);
-    cout << "funcAttr.name:\t" << funcAttr.name << " args size:\t" << funcAttr.getArgs().size() << endl;
+    // cout << "funcAttr.name:\t" << funcAttr.name << " args size:\t" << funcAttr.getArgs().size() << endl;
     vector<symType> argsTypes = funcAttr.getArgs();
     int count = 0;
     if (argsTypes.size() == 0 && sym.getKey() != RPARENT)
@@ -1281,7 +1281,7 @@ void syntacticAnalysis::valueArgumentList(string funcName)
     while (sym.getKey() == COMMA)
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         symtype = expression();
         if (argsTypes[count] != symtype)
         {
@@ -1310,13 +1310,13 @@ void syntacticAnalysis::readStatement()
     assert(sym.getKey() == SCANFTK);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LPARENT);
 
     do
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
         printToken(sym);
         if (!symbolist.has(sym.getValue()))
@@ -1324,14 +1324,14 @@ void syntacticAnalysis::readStatement()
             ERROR_PRINT(sym.getLine(), "c");
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
     } while (sym.getKey() == COMMA);
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
         lexical.unGetSym();
         lexical.unGetSym();
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ERROR_PRINT(sym.getLine(), "l");
     }
     else
@@ -1339,7 +1339,7 @@ void syntacticAnalysis::readStatement()
         printToken(sym);
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     printLine("<读语句>");
 }
 
@@ -1348,18 +1348,18 @@ void syntacticAnalysis::writeStatement()
     assert(sym.getKey() == PRINTFTK);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     assert(sym.getKey() == LPARENT);
     printToken(sym);
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     if (sym.getKey() == STRCON)
     {
         strConCheck();
         if (sym.getKey() == COMMA)
         {
             printToken(sym);
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             expression();
         }
     }
@@ -1372,7 +1372,7 @@ void syntacticAnalysis::writeStatement()
     {
         lexical.unGetSym();
         lexical.unGetSym();
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         ERROR_PRINT(sym.getLine(), "l");
     }
     else
@@ -1380,7 +1380,7 @@ void syntacticAnalysis::writeStatement()
         printToken(sym);
     }
 
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     printLine("<写语句>");
 }
 
@@ -1396,21 +1396,21 @@ void syntacticAnalysis::returnStatement()
     }
     else
     {
-        cout << "near function name:\t" << symbolist.getNearFunc().name << endl;
+        // cout << "near function name:\t" << symbolist.getNearFunc().name << endl;
         chkType = symbolist.getNearFunc().type;
     }
-    sym = lexical.getSym();
+    sym = lexical.getSym(out);
     if (sym.getKey() == LPARENT)
     {
         printToken(sym);
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
         getType = expression();
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
         {
             lexical.unGetSym();
             lexical.unGetSym();
-            sym = lexical.getSym();
+            sym = lexical.getSym(out);
             ERROR_PRINT(sym.getLine(), "l");
         }
         else
@@ -1418,7 +1418,7 @@ void syntacticAnalysis::returnStatement()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
+        sym = lexical.getSym(out);
     }
     if (chkType != getType)
     {

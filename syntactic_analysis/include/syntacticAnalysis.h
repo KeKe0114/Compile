@@ -27,6 +27,7 @@ private:
     set<string> funcWithoutRet;
     ofstream out;
 
+    void ERROR_PRINT(int line, string err_code);
     void printToken(token key);
     void printLine(string s);
 

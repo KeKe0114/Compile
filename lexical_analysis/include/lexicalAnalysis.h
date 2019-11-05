@@ -17,14 +17,14 @@ private:
     trieTree reverseWord;
     list<token> symbolics;
     list<token>::iterator pivot; /*指向下一次get时应该return出去的元素.若指向end()表示需要解析了.*/
-    token genSym();
+    token genSym(ofstream &out);
     token_key checkReservedWord(string s);
 
 public:
     lexicalAnalysis(string filename);
     bool hasSym();
-    token getSym();
-    token peek();
+    token getSym(ofstream &out);
+    token peek(ofstream &out);
     void unGetSym();
 };
 #endif

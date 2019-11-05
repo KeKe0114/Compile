@@ -40,7 +40,7 @@ bool lexicalAnalysis::hasSym()
     return !(in.peek() == EOF || in.eof());
 }
 
-token lexicalAnalysis::genSym()
+token lexicalAnalysis::genSym(ofstream &out)
 {
     stringstream ss;
     string value;
@@ -86,7 +86,7 @@ token lexicalAnalysis::genSym()
         value = ss.str();
         if (value.size() > 1 && value[0] == '0')
         {
-            cout << line << " a" << endl;
+            out << line << " a" << endl;
         }
         return token(INTCON, value, line);
     }
@@ -103,11 +103,11 @@ token lexicalAnalysis::genSym()
         value = ss.str();
         if (!(isalnum(value[0]) || value[0] == '_' || value[0] == '+' || value[0] == '-'))
         {
-            cout << line << " a" << endl;
+            out << line << " a" << endl;
         }
         if (value.size() > 1)
         {
-            cout << line << " a" << endl;
+            out << line << " a" << endl;
         }
         return token(CHARCON, value, line);
     }
@@ -126,7 +126,7 @@ token lexicalAnalysis::genSym()
         {
             if (!((35 <= value[i] && value[i] <= 126) || value[i] == 32 || value[i] == 33))
             {
-                cout << line << " a" << endl;
+                out << line << " a" << endl;
             }
         }
 
@@ -163,18 +163,18 @@ token lexicalAnalysis::genSym()
     return token(ERROR, "ERROR", line);
 }
 
-token lexicalAnalysis::getSym()
+token lexicalAnalysis::getSym(ofstream &out)
 {
     assert(hasSym());
     if (pivot != symbolics.end())
     {
         return *pivot++;
     }
-    token tk = genSym();
+    token tk = genSym(out);
     while (tk.getKey() == ERROR)
     {
-        cout << tk.getLine() << " a" << endl;
-        tk = genSym();
+        out << tk.getLine() << " a" << endl;
+        tk = genSym(out);
     }
     symbolics.push_back(tk);
     //pivot++;
@@ -190,18 +190,18 @@ void lexicalAnalysis::unGetSym()
     }
 }
 
-token lexicalAnalysis::peek()
+token lexicalAnalysis::peek(ofstream &out)
 {
     assert(hasSym());
     if (pivot != symbolics.end())
     {
         return *pivot;
     }
-    token tk = genSym();
+    token tk = genSym(out);
     while (tk.getKey() == ERROR)
     {
-        cout << tk.getLine() << " a" << endl;
-        tk = genSym();
+        out << tk.getLine() << " a" << endl;
+        tk = genSym(out);
     }
     symbolics.push_back(tk);
     pivot--;
