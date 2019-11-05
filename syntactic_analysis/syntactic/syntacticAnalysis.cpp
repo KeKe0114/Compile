@@ -362,10 +362,20 @@ void syntacticAnalysis::variableDefine()
             symAttr attr = {symname, symtype, symKind::VAR, 1};
             symbolist.insert(attr);
 
-            assert(sym.getKey() == RBRACK);
-            printToken(sym);
-
-            sym = lexical.getSym();
+            // assert(sym.getKey() == RBRACK);
+            if (sym.getKey() != RBRACK)
+            {
+                lexical.unGetSym();
+                lexical.unGetSym();
+                sym = lexical.getSym();
+                ERROR_PRINT(sym.getLine(), "m");
+                sym = lexical.getSym();
+            }
+            else
+            {
+                printToken(sym);
+                sym = lexical.getSym();
+            }
         }
         else
         {
@@ -639,9 +649,20 @@ symType syntacticAnalysis::factor()
             {
                 ERROR_PRINT(sym.getLine(), "i");
             }
-            assert(sym.getKey() == RBRACK);
-            printToken(sym);
-            sym = lexical.getSym();
+            // assert(sym.getKey() == RBRACK);
+            if (sym.getKey() != RBRACK)
+            {
+                lexical.unGetSym();
+                lexical.unGetSym();
+                sym = lexical.getSym();
+                ERROR_PRINT(sym.getLine(), "m");
+                sym = lexical.getSym();
+            }
+            else
+            {
+                printToken(sym);
+                sym = lexical.getSym();
+            }
         }
         else
         {
@@ -817,6 +838,7 @@ void syntacticAnalysis::assignmentStatement()
     sym = lexical.getSym();
     if (sym.getKey() == LBRACK)
     {
+        int lbkLine = sym.getLine();
         printToken(sym);
 
         sym = lexical.getSym();
@@ -825,10 +847,20 @@ void syntacticAnalysis::assignmentStatement()
         {
             ERROR_PRINT(sym.getLine(), "i");
         }
-        assert(sym.getKey() == RBRACK);
-        printToken(sym);
-
-        sym = lexical.getSym();
+        // assert(sym.getKey() == RBRACK);
+        if (sym.getKey() != RBRACK)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "m");
+            sym = lexical.getSym();
+        }
+        else
+        {
+            printToken(sym);
+            sym = lexical.getSym();
+        }
     }
     assert(sym.getKey() == ASSIGN);
     printToken(sym);
