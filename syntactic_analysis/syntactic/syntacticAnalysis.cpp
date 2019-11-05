@@ -386,7 +386,7 @@ void syntacticAnalysis::funcWithReturn()
     assert(sym.getKey() == LPARENT);
     printToken(sym);
     sym = lexical.getSym();
-    argumentList();
+    argumentList(name);
     assert(sym.getKey() == RPARENT);
     printToken(sym);
 
@@ -415,6 +415,8 @@ void syntacticAnalysis::funcWithoutReturn()
     funcWithoutRet.insert(sym.getValue());
     printToken(sym);
 
+    string name = sym.getName();
+
     if (symbolist.hasNowSeg(sym.getValue()))
     {
         ERROR_PRINT(sym.getLine(), "b");
@@ -431,7 +433,7 @@ void syntacticAnalysis::funcWithoutReturn()
     printToken(sym);
 
     sym = lexical.getSym();
-    argumentList();
+    argumentList(name);
 
     assert(sym.getKey() == RPARENT);
     printToken(sym);
@@ -464,7 +466,7 @@ void syntacticAnalysis::compoundStatement()
     printLine("<复合语句>");
 }
 
-void syntacticAnalysis::argumentList()
+void syntacticAnalysis::argumentList(string funcName)
 {
     if (!isTypeIdentifier(sym))
     {
@@ -486,6 +488,8 @@ void syntacticAnalysis::argumentList()
     {
         symAttr attr = {sym.getValue(), VOID, FUNC};
         symbolist.insert(attr);
+        symAttr funcAttr = symbolist.get(funcName);
+        funcAttr.addArgs(transferKeyToType(sym.getKey()));
     }
 
     sym = lexical.getSym();
@@ -508,6 +512,8 @@ void syntacticAnalysis::argumentList()
         {
             symAttr attr = {sym.getValue(), VOID, FUNC};
             symbolist.insert(attr);
+            symAttr funcAttr = symbolist.get(funcName);
+            funcAttr.addArgs(transferKeyToType(sym.getKey()));
         }
 
         sym = lexical.getSym();
@@ -955,6 +961,7 @@ void syntacticAnalysis::invokeFuncWithReturn()
 {
     assert(sym.getKey() == IDENFR);
     printToken(sym);
+    string funcName = sym.getValue();
     if (!symbolist.has(sym.getValue()))
     {
         ERROR_PRINT(sym.getLine(), "c");
@@ -965,7 +972,7 @@ void syntacticAnalysis::invokeFuncWithReturn()
     printToken(sym);
 
     sym = lexical.getSym();
-    valueArgumentList();
+    valueArgumentList(funcName);
     assert(sym.getKey() == RPARENT);
     printToken(sym);
 
@@ -977,6 +984,7 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 {
     assert(sym.getKey() == IDENFR);
     printToken(sym);
+    string funcName = sym.getValue();
     if (!symbolist.has(sym.getValue()))
     {
         ERROR_PRINT(sym.getLine(), "c");
@@ -987,7 +995,7 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
     printToken(sym);
 
     sym = lexical.getSym();
-    valueArgumentList();
+    valueArgumentList(funcName);
     assert(sym.getKey() == RPARENT);
     printToken(sym);
 
@@ -996,19 +1004,32 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 }
 
 // 注:此处使用了外部信息,即参数表后必须有")"
-void syntacticAnalysis::valueArgumentList()
+void syntacticAnalysis::valueArgumentList(string funcName)
 {
+    symAttr funcAttr = symbolist.get(funcName);
+    vector<symType> argsTypes = funcAttr.getArgs();
+    int count = 0;
     if (sym.getKey() == RPARENT)
     {
+        if (count != argsTypes.size())
+        {
+            ERROR_PRINT(sym.getLine(), "d");
+        }
         printLine("<值参数表>");
         return;
     }
     expression();
+    count++;
     while (sym.getKey() == COMMA)
     {
         printToken(sym);
         sym = lexical.getSym();
         expression();
+        count++;
+    }
+    if (count != argsTypes.size())
+    {
+        ERROR_PRINT(sym.getLine(), "d");
     }
     printLine("<值参数表>");
 }

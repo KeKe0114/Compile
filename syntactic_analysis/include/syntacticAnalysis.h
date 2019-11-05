@@ -52,7 +52,7 @@ private:
     void funcWithReturn();
     void funcWithoutReturn();
     void compoundStatement();
-    void argumentList();
+    void argumentList(string funcName);
     void mainFunc();
     void expression();
     void term();
@@ -65,7 +65,7 @@ private:
     void stepLength();
     void invokeFuncWithReturn();
     void invokeFuncWithoutReturn();
-    void valueArgumentList();
+    void valueArgumentList(string funcName);
     void statementList();
     void readStatement();
     void writeStatement();

@@ -27,11 +27,22 @@ public:
     symType type;
     symKind kind;
     int dim;
+    vector<symType> args;
 
     void SHOW_ATTR()
     {
         // cout << name << "\t" << type << "\t" << kind << endl;
         printf("%10s\t%d\t%d\t%d\n", name.c_str(), type, kind, dim);
+    }
+
+    void addArgs(symType arg)
+    {
+        args.push_back(arg);
+    }
+
+    vector<symType> getArgs()
+    {
+        return args;
     }
 };
 
