@@ -397,8 +397,18 @@ void syntacticAnalysis::funcWithReturn()
     printToken(sym);
     sym = lexical.getSym();
     argumentList(name);
-    assert(sym.getKey() == RPARENT);
-    printToken(sym);
+    // assert(sym.getKey() == RPARENT);
+    if (sym.getKey() != RPARENT)
+    {
+        lexical.unGetSym();
+        lexical.unGetSym();
+        sym = lexical.getSym();
+        ERROR_PRINT(sym.getLine(), "l");
+    }
+    else
+    {
+        printToken(sym);
+    }
 
     sym = lexical.getSym();
     assert(sym.getKey() == LBRACE);
@@ -445,8 +455,19 @@ void syntacticAnalysis::funcWithoutReturn()
     sym = lexical.getSym();
     argumentList(name);
 
-    assert(sym.getKey() == RPARENT);
-    printToken(sym);
+    // assert(sym.getKey() == RPARENT);
+    if (sym.getKey() != RPARENT)
+    {
+        lexical.unGetSym();
+        lexical.unGetSym();
+        sym = lexical.getSym();
+        ERROR_PRINT(sym.getLine(), "l");
+    }
+    else
+    {
+        printToken(sym);
+    }
+
     sym = lexical.getSym();
     assert(sym.getKey() == LBRACE);
     printToken(sym);
@@ -556,8 +577,18 @@ void syntacticAnalysis::mainFunc()
     printToken(sym);
 
     sym = lexical.getSym();
-    assert(sym.getKey() == RPARENT);
-    printToken(sym);
+    // assert(sym.getKey() == RPARENT);
+    if (sym.getKey() != RPARENT)
+    {
+        lexical.unGetSym();
+        lexical.unGetSym();
+        sym = lexical.getSym();
+        ERROR_PRINT(sym.getLine(), "l");
+    }
+    else
+    {
+        printToken(sym);
+    }
 
     sym = lexical.getSym();
     assert(sym.getKey() == LBRACE);
@@ -684,8 +715,18 @@ symType syntacticAnalysis::factor()
 
         sym = lexical.getSym();
         expression();
-        assert(sym.getKey() == RPARENT);
-        printToken(sym);
+        // assert(sym.getKey() == RPARENT);
+        if (sym.getKey() != RPARENT)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "l");
+        }
+        else
+        {
+            printToken(sym);
+        }
 
         sym = lexical.getSym();
         ret = INT;
@@ -804,8 +845,18 @@ void syntacticAnalysis::conditionalStatement()
 
     sym = lexical.getSym();
     condition();
-    assert(sym.getKey() == RPARENT);
-    printToken(sym);
+    // assert(sym.getKey() == RPARENT);
+    if (sym.getKey() != RPARENT)
+    {
+        lexical.unGetSym();
+        lexical.unGetSym();
+        sym = lexical.getSym();
+        ERROR_PRINT(sym.getLine(), "l");
+    }
+    else
+    {
+        printToken(sym);
+    }
 
     sym = lexical.getSym();
     statement();
@@ -901,8 +952,18 @@ void syntacticAnalysis::loopStatement()
 
         sym = lexical.getSym();
         condition();
-        assert(sym.getKey() == RPARENT);
-        printToken(sym);
+        // assert(sym.getKey() == RPARENT);
+        if (sym.getKey() != RPARENT)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "l");
+        }
+        else
+        {
+            printToken(sym);
+        }
 
         sym = lexical.getSym();
         statement();
@@ -921,8 +982,18 @@ void syntacticAnalysis::loopStatement()
 
         sym = lexical.getSym();
         condition();
-        assert(sym.getKey() == RPARENT);
-        printToken(sym);
+        // assert(sym.getKey() == RPARENT);
+        if (sym.getKey() != RPARENT)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "l");
+        }
+        else
+        {
+            printToken(sym);
+        }
 
         sym = lexical.getSym();
     }
@@ -1019,8 +1090,18 @@ void syntacticAnalysis::loopStatement()
         sym = lexical.getSym();
         stepLength();
 
-        assert(sym.getKey() == RPARENT);
-        printToken(sym);
+        // assert(sym.getKey() == RPARENT);
+        if (sym.getKey() != RPARENT)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "l");
+        }
+        else
+        {
+            printToken(sym);
+        }
 
         sym = lexical.getSym();
         statement();
@@ -1054,8 +1135,18 @@ void syntacticAnalysis::invokeFuncWithReturn()
 
     sym = lexical.getSym();
     valueArgumentList(funcName);
-    assert(sym.getKey() == RPARENT);
-    printToken(sym);
+    // assert(sym.getKey() == RPARENT);
+    if (sym.getKey() != RPARENT)
+    {
+        lexical.unGetSym();
+        lexical.unGetSym();
+        sym = lexical.getSym();
+        ERROR_PRINT(sym.getLine(), "l");
+    }
+    else
+    {
+        printToken(sym);
+    }
 
     sym = lexical.getSym();
     printLine("<有返回值函数调用语句>");
@@ -1077,8 +1168,18 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 
     sym = lexical.getSym();
     valueArgumentList(funcName);
-    assert(sym.getKey() == RPARENT);
-    printToken(sym);
+    // assert(sym.getKey() == RPARENT);
+    if (sym.getKey() != RPARENT)
+    {
+        lexical.unGetSym();
+        lexical.unGetSym();
+        sym = lexical.getSym();
+        ERROR_PRINT(sym.getLine(), "l");
+    }
+    else
+    {
+        printToken(sym);
+    }
 
     sym = lexical.getSym();
     printLine("<无返回值函数调用语句>");
@@ -1090,6 +1191,10 @@ void syntacticAnalysis::valueArgumentList(string funcName)
     symAttr funcAttr = symbolist.get(funcName);
     vector<symType> argsTypes = funcAttr.getArgs();
     int count = 0;
+    if (argsTypes.size == 0 && sym.getKey() != RPARENT)
+    {
+        ERROR_PRINT(sym.getLine(), "l");
+    }
     if (sym.getKey() == RPARENT)
     {
         if (count != argsTypes.size())
@@ -1153,8 +1258,19 @@ void syntacticAnalysis::readStatement()
 
         sym = lexical.getSym();
     } while (sym.getKey() == COMMA);
-    assert(sym.getKey() == RPARENT);
-    printToken(sym);
+    // assert(sym.getKey() == RPARENT);
+    if (sym.getKey() != RPARENT)
+    {
+        lexical.unGetSym();
+        lexical.unGetSym();
+        sym = lexical.getSym();
+        ERROR_PRINT(sym.getLine(), "l");
+    }
+    else
+    {
+        printToken(sym);
+    }
+
     sym = lexical.getSym();
     printLine("<读语句>");
 }
@@ -1183,8 +1299,18 @@ void syntacticAnalysis::writeStatement()
     {
         expression();
     }
-    assert(sym.getKey() == RPARENT);
-    printToken(sym);
+    // assert(sym.getKey() == RPARENT);
+    if (sym.getKey() != RPARENT)
+    {
+        lexical.unGetSym();
+        lexical.unGetSym();
+        sym = lexical.getSym();
+        ERROR_PRINT(sym.getLine(), "l");
+    }
+    else
+    {
+        printToken(sym);
+    }
 
     sym = lexical.getSym();
     printLine("<写语句>");
@@ -1210,8 +1336,19 @@ void syntacticAnalysis::returnStatement()
         printToken(sym);
         sym = lexical.getSym();
         getType = expression();
-        assert(sym.getKey() == RPARENT);
-        printToken(sym);
+        // assert(sym.getKey() == RPARENT);
+        if (sym.getKey() != RPARENT)
+        {
+            lexical.unGetSym();
+            lexical.unGetSym();
+            sym = lexical.getSym();
+            ERROR_PRINT(sym.getLine(), "l");
+        }
+        else
+        {
+            printToken(sym);
+        }
+
         sym = lexical.getSym();
     }
     if (chkType != getType)
