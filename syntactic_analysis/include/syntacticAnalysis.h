@@ -54,9 +54,9 @@ private:
     void compoundStatement();
     void argumentList(string funcName);
     void mainFunc();
-    void expression();
-    void term();
-    void factor();
+    symType expression();
+    symType term();
+    symType factor();
     void statement();
     void conditionalStatement();
     void assignmentStatement();

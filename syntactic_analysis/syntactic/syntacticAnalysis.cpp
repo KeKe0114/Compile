@@ -562,14 +562,24 @@ void syntacticAnalysis::mainFunc()
     symbolist.redirect();
 }
 
-void syntacticAnalysis::expression()
+symType syntacticAnalysis::expression()
 {
+    symType ret = ERROR;
     if (isAddOp(sym))
     {
         printToken(sym);
         sym = lexical.getSym();
+        ret = INT;
     }
-    term();
+    symType symType1 = term();
+    if (ret != INT)
+    {
+        ret = symType1;
+    }
+    if (isAddOp(sym))
+    {
+        ret = INT;
+    }
     while (isAddOp(sym))
     {
         printToken(sym);
@@ -577,11 +587,16 @@ void syntacticAnalysis::expression()
         term();
     }
     printLine("<表达式>");
+    return ret;
 }
 
-void syntacticAnalysis::term()
+symType syntacticAnalysis::term()
 {
-    factor();
+    symType ret = factor();
+    if (isMulOp(sym))
+    {
+        ret = INT;
+    }
     while (isMulOp(sym))
     {
         printToken(sym);
@@ -589,14 +604,20 @@ void syntacticAnalysis::term()
         factor();
     }
     printLine("<项>");
+    return ret;
 }
 
-void syntacticAnalysis::factor()
+symType syntacticAnalysis::factor()
 {
+    symType ret = ERROR;
     if (sym.getKey() == IDENFR)
     {
         if (lexical.peek().getKey() == LPARENT)
         {
+            if (symbolist.has(sym.getValue()))
+            {
+                ret = symbolist.get(sym.getValue()).type;
+            }
             invokeFuncWithReturn();
         }
         else if (lexical.peek().getKey() == LBRACK)
@@ -604,6 +625,10 @@ void syntacticAnalysis::factor()
             if (!symbolist.has(sym.getValue()))
             {
                 ERROR_PRINT(sym.getLine(), "c");
+            }
+            else
+            {
+                ret = symbolist.get(sym.getValue()).type;
             }
             printToken(sym);
             sym = lexical.getSym();
@@ -620,6 +645,10 @@ void syntacticAnalysis::factor()
             {
                 ERROR_PRINT(sym.getLine(), "c");
             }
+            else
+            {
+                ret = symbolist.get(sym.getValue()).type;
+            }
             printToken(sym);
             sym = lexical.getSym();
         }
@@ -634,20 +663,24 @@ void syntacticAnalysis::factor()
         printToken(sym);
 
         sym = lexical.getSym();
+        ret = INT;
     }
     else if (isCharacter(sym))
     {
         character();
+        ret = CHAR;
     }
     else if (isAddOp(sym) || sym.getKey() == INTCON)
     {
         integer();
+        ret = INT;
     }
     else
     {
         assert(false);
     }
     printLine("<因子>");
+    return ret;
 }
 
 bool syntacticAnalysis::isStatementPrefix(token key)

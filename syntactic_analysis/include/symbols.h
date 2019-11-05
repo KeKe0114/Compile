@@ -14,6 +14,7 @@ enum symKind
 
 enum symType
 {
+    ERROR = -1,
     VOID,
     INT,
     CHAR,
