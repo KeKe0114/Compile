@@ -634,7 +634,11 @@ symType syntacticAnalysis::factor()
             sym = lexical.getSym();
             printToken(sym);
             sym = lexical.getSym();
-            expression();
+            symType idxType = expression();
+            if (idxType != INT)
+            {
+                ERROR_PRINT(sym.getLine(), "i");
+            }
             assert(sym.getKey() == RBRACK);
             printToken(sym);
             sym = lexical.getSym();
@@ -816,7 +820,11 @@ void syntacticAnalysis::assignmentStatement()
         printToken(sym);
 
         sym = lexical.getSym();
-        expression();
+        symType idxType = expression();
+        if (idxType != INT)
+        {
+            ERROR_PRINT(sym.getLine(), "i");
+        }
         assert(sym.getKey() == RBRACK);
         printToken(sym);
 
