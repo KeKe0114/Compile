@@ -832,12 +832,20 @@ void syntacticAnalysis::assignmentStatement()
 
 void syntacticAnalysis::condition()
 {
-    expression();
+    symType symtype = expression();
+    if (symtype != INT)
+    {
+        ERROR_PRINT(sym.getLine(), "f");
+    }
     if (isRelOp(sym))
     {
         printToken(sym);
         sym = lexical.getSym();
-        expression();
+        symtype = expression();
+        if (symtype != INT)
+        {
+            ERROR_PRINT(sym.getLine(), "f");
+        }
     }
     printLine("<条件>");
 }

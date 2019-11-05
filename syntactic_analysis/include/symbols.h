@@ -19,6 +19,7 @@ enum symType
     INT,
     CHAR,
     STRING,
+    BOOL,
 };
 
 class symAttr
