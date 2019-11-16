@@ -71,7 +71,7 @@ private:
     void condition();
     void loopStatement();
     void stepLength();
-    void invokeFuncWithReturn();
+    string invokeFuncWithReturn();
     void invokeFuncWithoutReturn();
     void valueArgumentList(string funcName);
     void statementList();

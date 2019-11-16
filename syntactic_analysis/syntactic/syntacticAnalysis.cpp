@@ -6,7 +6,8 @@ void genRetState(string name); /*标识符或常量*/
 
 void genMidArgsPush(string paraName); /*标识符或常量*/
 void genMidFuncCall(string func);
-void genMidFuncRetUse(string name);
+void genMidFuncRet(string name);
+string genMidFuncRetUse();
 
 void genMidVarState(string name);
 void genMidConstState(string name);
@@ -20,6 +21,7 @@ string genMidArrayValueGet(string array, string idx);
 void genMidArrayValuePut(string array, string idx, string value);
 
 void genMidCondition(string operand1, string op, string operand2);
+void genMidCondition4Num(string operand1);
 void genMidGoto(string Label);
 void genMidBNZ(string Label);
 void genMidBZ(string Label);
@@ -558,6 +560,7 @@ void syntacticAnalysis::funcWithReturn()
     sym = lexical.getSym(out);
     printLine("<有返回值函数定义>");
 
+    genMidFuncRet("");
     symbolist.redirect();
 }
 
@@ -617,6 +620,7 @@ void syntacticAnalysis::funcWithoutReturn()
     sym = lexical.getSym(out);
     printLine("<无返回值函数定义>");
 
+    genMidFuncRet("");
     symbolist.redirect();
 }
 
@@ -1047,8 +1051,10 @@ void syntacticAnalysis::conditionalStatement()
 
 void syntacticAnalysis::assignmentStatement()
 {
+    genMid_ResetTmp();
     assert(sym.getKey() == IDENFR);
     printToken(sym);
+    string leftvalue = sym.getValue();
     if (!symbolist.has(sym.getValue()))
     {
         ERROR_PRINT(sym.getLine(), "c");
@@ -1068,7 +1074,8 @@ void syntacticAnalysis::assignmentStatement()
         printToken(sym);
 
         sym = lexical.getSym(out);
-        symType idxType = expression();
+        expRet expret = expression();
+        symType idxType = expret.type;
         if (idxType != INT)
         {
             ERROR_PRINT(sym.getLine(), "i");
@@ -1087,31 +1094,53 @@ void syntacticAnalysis::assignmentStatement()
             printToken(sym);
             sym = lexical.getSym(out);
         }
-    }
-    assert(sym.getKey() == ASSIGN);
-    printToken(sym);
 
-    sym = lexical.getSym(out);
-    expression();
+        assert(sym.getKey() == ASSIGN);
+        printToken(sym);
+
+        sym = lexical.getSym(out);
+        expRet expret2 = expression();
+        genMidArrayValuePut(leftvalue, expret.tmp4val, expret2.tmp4val);
+    }
+    else
+    {
+        assert(sym.getKey() == ASSIGN);
+        printToken(sym);
+
+        sym = lexical.getSym(out);
+
+        expRet expret2 = expression();
+        genMidValuePut(leftvalue, expret2.tmp4val);
+    }
+
     printLine("<赋值语句>");
 }
 
 void syntacticAnalysis::condition()
 {
-    symType symtype = expression();
+    genMid_ResetTmp();
+    expRet expret = expression();
+    symType symtype = expret.type;
     if (symtype != INT)
     {
         ERROR_PRINT(sym.getLine(), "f");
     }
     if (isRelOp(sym))
     {
+        string op = sym.getValue();
         printToken(sym);
         sym = lexical.getSym(out);
-        symtype = expression();
+        expRet expret2 = expression();
+        symtype = expret2.type;
         if (symtype != INT)
         {
             ERROR_PRINT(sym.getLine(), "f");
         }
+        genMidCondition(expret.tmp4val, op, expret2.tmp4val);
+    }
+    else
+    {
+        genMidCondition4Num(expret.tmp4val);
     }
     printLine("<条件>");
 }
@@ -1306,7 +1335,7 @@ void syntacticAnalysis::stepLength()
     printLine("<步长>");
 }
 
-void syntacticAnalysis::invokeFuncWithReturn()
+string syntacticAnalysis::invokeFuncWithReturn()
 {
     assert(sym.getKey() == IDENFR);
     printToken(sym);
@@ -1343,6 +1372,8 @@ void syntacticAnalysis::invokeFuncWithReturn()
 
     sym = lexical.getSym(out);
     printLine("<有返回值函数调用语句>");
+    genMidFuncCall(funcName);
+    return genMidFuncRetUse();
 }
 
 void syntacticAnalysis::invokeFuncWithoutReturn()
@@ -1382,6 +1413,7 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 
     sym = lexical.getSym(out);
     printLine("<无返回值函数调用语句>");
+    genMidFuncCall(funcName);
 }
 
 // 注:此处使用了外部信息,即参数表后必须有")"
@@ -1404,7 +1436,10 @@ void syntacticAnalysis::valueArgumentList(string funcName)
         printLine("<值参数表>");
         return;
     }
-    symType symtype = expression();
+    genMid_ResetTmp();
+    expRet expret = expression();
+    genMidArgsPush(expret.tmp4val);
+    symType symtype = expret.type;
     if (count < argsTypes.size() && argsTypes[count] != symtype)
     {
         ERROR_PRINT(sym.getLine(), "e");
@@ -1414,7 +1449,11 @@ void syntacticAnalysis::valueArgumentList(string funcName)
     {
         printToken(sym);
         sym = lexical.getSym(out);
-        symtype = expression();
+        genMid_ResetTmp();
+        expRet expret = expression();
+        genMidArgsPush(expret.tmp4val);
+        symtype = expret.type;
+
         if (count < argsTypes.size() && argsTypes[count] != symtype)
         {
             ERROR_PRINT(sym.getLine(), "e");
@@ -1536,7 +1575,9 @@ void syntacticAnalysis::returnStatement()
     {
         printToken(sym);
         sym = lexical.getSym(out);
-        getType = expression();
+        expRet expret = expression();
+        genMidFuncRet(expret.tmp4val);
+        getType = expret.type;
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
         {
@@ -1552,6 +1593,11 @@ void syntacticAnalysis::returnStatement()
 
         sym = lexical.getSym(out);
     }
+    else
+    {
+        genMidFuncRet("");
+    }
+
     if (chkType != getType)
     {
         if (chkType == VOID)
