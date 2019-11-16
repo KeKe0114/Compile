@@ -17,6 +17,12 @@ const set<token_key> relOp = {LSS, LEQ, GRE, GEQ, EQL, NEQ};
 const set<token_key> chars = {CHARCON};
 const set<token_key> statementPrefix = {SEMICN, IFTK, WHILETK, FORTK, DOTK, LBRACE, IDENFR, SCANFTK, RETURNTK, PRINTFTK};
 
+struct expRet
+{
+    symType type;
+    string tmp4val;
+};
+
 class syntacticAnalysis
 {
 private:
@@ -46,7 +52,7 @@ private:
     void constDefine();
     int unsignedInteger();
     int integer();
-    int character();
+    char character();
     string stateHead();
     void variableState();
     void variableDefine();
@@ -56,9 +62,9 @@ private:
     void compoundStatement();
     void argumentList(string funcName);
     void mainFunc();
-    symType expression();
-    symType term();
-    symType factor();
+    expRet expression();
+    expRet term();
+    expRet factor();
     void statement();
     void conditionalStatement();
     void assignmentStatement();

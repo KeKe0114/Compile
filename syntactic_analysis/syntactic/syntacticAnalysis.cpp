@@ -11,8 +11,13 @@ void genMidFuncRetUse(string name);
 void genMidVarState(string name);
 void genMidConstState(string name);
 
-void genMidAssign(string left, string right);
-void genMidExpress(string left, string operand1, string op, string operand2);
+void genMid_ResetTmp();
+string genMid_AllocTmp();
+string genMidExpress(string operand1, string op, string operand2);
+string genMidValueGet(string name);
+void genMidValuePut(string name, string value);
+string genMidArrayValueGet(string array, string idx);
+void genMidArrayValuePut(string array, string idx, string value);
 
 void genMidCondition(string operand1, string op, string operand2);
 void genMidGoto(string Label);
@@ -356,7 +361,7 @@ int syntacticAnalysis::integer()
     return OpFlag * value;
 }
 
-int syntacticAnalysis::character()
+char syntacticAnalysis::character()
 {
     assert(isCharacter(sym));
     printToken(sym);
@@ -747,19 +752,26 @@ void syntacticAnalysis::mainFunc()
     symbolist.redirect();
 }
 
-symType syntacticAnalysis::expression()
+expRet syntacticAnalysis::expression()
 {
+    string expTmp;
     symType ret = TYPERROR;
+    expRet termRet;
+    symType symType1;
     if (isAddOp(sym))
     {
+        string op = sym.getValue();
         printToken(sym);
         sym = lexical.getSym(out);
         ret = INT;
+        termRet = term();
+        expTmp = genMidExpress(0, op, termRet.tmp4val);
     }
-    symType symType1 = term();
-    if (ret != INT)
+    else
     {
-        ret = symType1;
+        termRet = term();
+        ret = termRet.type;
+        expTmp = termRet.tmp4val;
     }
     if (isAddOp(sym))
     {
@@ -767,43 +779,53 @@ symType syntacticAnalysis::expression()
     }
     while (isAddOp(sym))
     {
+        string op = sym.getValue();
         printToken(sym);
         sym = lexical.getSym(out);
-        term();
+        termRet = term();
+        expTmp = genMidExpress(expTmp, op, termRet.tmp4val);
     }
     printLine("<表达式>");
-    return ret;
+    expRet expTmpRet = {ret, expTmp};
+    return expTmpRet;
 }
 
-symType syntacticAnalysis::term()
+expRet syntacticAnalysis::term()
 {
-    symType ret = factor();
+    expRet expRet1 = factor();
+    string termTmpRet = expRet1.tmp4val;
+    symType ret = expRet1.type;
     if (isMulOp(sym))
     {
         ret = INT;
     }
     while (isMulOp(sym))
     {
+        string op = sym.getValue();
         printToken(sym);
         sym = lexical.getSym(out);
-        factor();
+        expRet temp = factor();
+        termTmpRet = genMidExpress(termTmpRet, op, temp.tmp4val);
     }
     printLine("<项>");
-    return ret;
+    expRet termRet = {ret, termTmpRet};
+    return termRet;
 }
 
-symType syntacticAnalysis::factor()
+expRet syntacticAnalysis::factor()
 {
+    string factorTmpRet = "";
     symType ret = TYPERROR;
     if (sym.getKey() == IDENFR)
     {
+        string identifyName = sym.getValue();
         if (lexical.peek(out).getKey() == LPARENT)
         {
             if (symbolist.has(sym.getValue()))
             {
                 ret = symbolist.get(sym.getValue()).type;
             }
-            invokeFuncWithReturn();
+            factorTmpRet = invokeFuncWithReturn();
         }
         else if (lexical.peek(out).getKey() == LBRACK)
         {
@@ -819,7 +841,8 @@ symType syntacticAnalysis::factor()
             sym = lexical.getSym(out);
             printToken(sym);
             sym = lexical.getSym(out);
-            symType idxType = expression();
+            expRet idxTmp = expression();
+            symType idxType = idxTmp.type;
             if (idxType != INT)
             {
                 ERROR_PRINT(sym.getLine(), "i");
@@ -837,6 +860,7 @@ symType syntacticAnalysis::factor()
             {
                 printToken(sym);
                 sym = lexical.getSym(out);
+                factorTmpRet = genMidArrayValueGet(identifyName, idxTmp.tmp4val);
             }
         }
         else
@@ -848,6 +872,7 @@ symType syntacticAnalysis::factor()
             else
             {
                 ret = symbolist.get(sym.getValue()).type;
+                factorTmpRet = genMidValueGet(identifyName);
             }
             printToken(sym);
             sym = lexical.getSym(out);
@@ -858,7 +883,7 @@ symType syntacticAnalysis::factor()
         printToken(sym);
 
         sym = lexical.getSym(out);
-        expression();
+        factorTmpRet = expression().tmp4val;
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
         {
@@ -877,12 +902,18 @@ symType syntacticAnalysis::factor()
     }
     else if (isCharacter(sym))
     {
-        character();
+        char charValue = character();
+        stringstream ss;
+        ss << charValue;
+        factorTmpRet = ss.str();
         ret = CHAR;
     }
     else if (isAddOp(sym) || sym.getKey() == INTCON)
     {
-        integer();
+        int intValue = integer();
+        stringstream ss;
+        ss << intValue;
+        factorTmpRet = ss.str();
         ret = INT;
     }
     else
@@ -890,7 +921,8 @@ symType syntacticAnalysis::factor()
         assert(false);
     }
     printLine("<因子>");
-    return ret;
+    expRet expret = {ret, factorTmpRet};
+    return expret;
 }
 
 bool syntacticAnalysis::isStatementPrefix(token key)
