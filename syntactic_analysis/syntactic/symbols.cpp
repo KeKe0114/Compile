@@ -2,6 +2,7 @@
 
 symbols::symbols()
 {
+    idGen = 0;
     direct();
 }
 
@@ -67,6 +68,8 @@ symAttr symbols::getNowSeg(string name)
 
 void symbols::insert(symAttr item)
 {
+    item.SymId = idGen++;
+    id2sym[item.SymId] = item;
     symStack.push_back(item);
 }
 

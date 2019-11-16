@@ -22,6 +22,12 @@ enum symType
     BOOL,
 };
 
+enum offsetRefer
+{
+    GLOBAL,
+    FP,
+};
+
 class symAttr
 {
 public:
@@ -29,6 +35,9 @@ public:
     symType type;
     symKind kind;
     int dim;
+    int SymId;
+    int offsetRel;
+    offsetRefer refer;
     vector<symType> args;
 
     void SHOW_ATTR()
@@ -51,8 +60,10 @@ public:
 class symbols
 {
 private:
+    int idGen;
     vector<int> indexes;
     vector<symAttr> symStack;
+    vector<symAttr> id2sym;
 
 public:
     symbols();
