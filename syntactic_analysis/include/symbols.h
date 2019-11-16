@@ -40,6 +40,7 @@ public:
     int SymId;
     int offsetRel;
     offsetRefer refer;
+    int value;
     vector<symType> args;
 
     void SHOW_ATTR()
@@ -71,7 +72,7 @@ public:
     void direct();
     void redirect();
 
-    void insert(symAttr item);
+    void insert(symAttr* item);
 
     bool has(string name);
     bool hasNowSeg(string name);

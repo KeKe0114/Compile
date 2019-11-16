@@ -90,12 +90,12 @@ symAttr symbols::getNowSeg(string name)
     }
 }
 
-void symbols::insert(symAttr item)
+void symbols::insert(symAttr *item)
 {
-    item.SymId = idGen++;
-    item.size = item.len == 0 ? 4 : item.len * 4;
-    id2sym.push_back(&item);
-    symStack.push_back(&item);
+    item->SymId = idGen++;
+    item->size = item->len == 0 ? 4 : item->len * 4;
+    id2sym.push_back(item);
+    symStack.push_back(item);
 }
 
 void symbols::DEBUG_PRINT_LIST()

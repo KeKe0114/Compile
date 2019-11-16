@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -43,9 +44,9 @@ private:
     void strConCheck();
     void constState();
     void constDefine();
-    void unsignedInteger();
-    void integer();
-    void character();
+    int unsignedInteger();
+    int integer();
+    int character();
     string stateHead();
     void variableState();
     void variableDefine();

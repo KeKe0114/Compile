@@ -1,7 +1,7 @@
 #include "syntacticAnalysis.h"
 
-void genMidFuncDef(token_key key, string funcName);
-void genMidFuncPara(token_key key, string paraName);
+void genMidFuncDef(string funcName);
+void genMidFuncPara(string paraName);
 void genRetState(string name); /*标识符或常量*/
 
 void genMidArgsPush(string paraName); /*标识符或常量*/
@@ -192,35 +192,60 @@ void syntacticAnalysis::constDefine()
             {
                 // symbolist.DEBUG_PRINT_LIST();
                 ERROR_PRINT(sym.getLine(), "b");
+
+                sym = lexical.getSym(out);
+                assert(sym.getKey() == ASSIGN);
+                printToken(sym);
+
+                sym = lexical.getSym(out);
+                if (!(sym.getKey() == INTCON || isAddOp(sym)))
+                {
+                    ERROR_PRINT(sym.getLine(), "o");
+                    while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
+                    {
+                        sym = lexical.getSym(out);
+                    }
+                    if (sym.getKey() == SEMICN)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                integer();
             }
             else
             {
                 symAttr attr = {sym.getValue(), symType::INT, symKind::CONST};
-                symbolist.insert(attr);
+                symbolist.insert(&attr);
+
+                sym = lexical.getSym(out);
+                assert(sym.getKey() == ASSIGN);
+                printToken(sym);
+
+                sym = lexical.getSym(out);
+                if (!(sym.getKey() == INTCON || isAddOp(sym)))
+                {
+                    ERROR_PRINT(sym.getLine(), "o");
+                    while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
+                    {
+                        sym = lexical.getSym(out);
+                    }
+                    if (sym.getKey() == SEMICN)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                attr.value = integer();
+                genMidConstState(attr.name);
             }
 
-            sym = lexical.getSym(out);
-            assert(sym.getKey() == ASSIGN);
-            printToken(sym);
-
-            sym = lexical.getSym(out);
-            if (!(sym.getKey() == INTCON || isAddOp(sym)))
-            {
-                ERROR_PRINT(sym.getLine(), "o");
-                while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
-                {
-                    sym = lexical.getSym(out);
-                }
-                if (sym.getKey() == SEMICN)
-                {
-                    return;
-                }
-                else
-                {
-                    continue;
-                }
-            }
-            integer();
         } while (sym.getKey() == COMMA);
     }
     else if (sym.getKey() == CHARTK)
@@ -236,35 +261,59 @@ void syntacticAnalysis::constDefine()
             if (symbolist.hasNowSeg(sym.getValue()))
             {
                 ERROR_PRINT(sym.getLine(), "b");
+                sym = lexical.getSym(out);
+                assert(sym.getKey() == ASSIGN);
+                printToken(sym);
+
+                sym = lexical.getSym(out);
+                if (!(isCharacter(sym)))
+                {
+                    ERROR_PRINT(sym.getLine(), "o");
+                    while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
+                    {
+                        sym = lexical.getSym(out);
+                    }
+                    if (sym.getKey() == SEMICN)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                character();
             }
             else
             {
                 symAttr attr = {sym.getValue(), symType::CHAR, symKind::CONST};
-                symbolist.insert(attr);
+                symbolist.insert(&attr);
+
+                sym = lexical.getSym(out);
+                assert(sym.getKey() == ASSIGN);
+                printToken(sym);
+
+                sym = lexical.getSym(out);
+                if (!(isCharacter(sym)))
+                {
+                    ERROR_PRINT(sym.getLine(), "o");
+                    while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
+                    {
+                        sym = lexical.getSym(out);
+                    }
+                    if (sym.getKey() == SEMICN)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                attr.value = character();
+                genMidConstState(attr.name);
             }
 
-            sym = lexical.getSym(out);
-            assert(sym.getKey() == ASSIGN);
-            printToken(sym);
-
-            sym = lexical.getSym(out);
-            if (!(isCharacter(sym)))
-            {
-                ERROR_PRINT(sym.getLine(), "o");
-                while (!(sym.getKey() == SEMICN || sym.getKey() == COMMA))
-                {
-                    sym = lexical.getSym(out);
-                }
-                if (sym.getKey() == SEMICN)
-                {
-                    return;
-                }
-                else
-                {
-                    continue;
-                }
-            }
-            character();
         } while (sym.getKey() == COMMA);
     }
     else
@@ -274,31 +323,52 @@ void syntacticAnalysis::constDefine()
     printLine("<常量定义>");
 }
 
-void syntacticAnalysis::unsignedInteger()
+int syntacticAnalysis::unsignedInteger()
 {
     assert(sym.getKey() == INTCON);
     printToken(sym);
 
+    stringstream ss;
+    ss << sym.getValue();
+    int ret;
+    ss >> ret;
+
     sym = lexical.getSym(out);
     printLine("<无符号整数>");
+
+    return ret;
 }
 
-void syntacticAnalysis::integer()
+int syntacticAnalysis::integer()
 {
+    int OpFlag = 1;
     if (isAddOp(sym))
     {
+        if (sym.getKey() == MINU)
+        {
+            OpFlag = -1;
+        }
         printToken(sym);
         sym = lexical.getSym(out);
     }
-    unsignedInteger();
+    int value = unsignedInteger();
     printLine("<整数>");
+    return OpFlag * value;
 }
 
-void syntacticAnalysis::character()
+int syntacticAnalysis::character()
 {
     assert(isCharacter(sym));
     printToken(sym);
+
+    stringstream ss;
+    ss << sym.getValue();
+    int ret;
+    ss >> ret;
+
     sym = lexical.getSym(out);
+
+    return ret;
 }
 
 string syntacticAnalysis::stateHead()
@@ -321,7 +391,7 @@ string syntacticAnalysis::stateHead()
     {
         // cout << "symType into func list:\t " << symtype << endl;
         symAttr attr = {name, symtype, FUNC};
-        symbolist.insert(attr);
+        symbolist.insert(&attr);
         // cout << "get symType after insert:\t " << symbolist.getNearFunc().type << endl;
     }
 
@@ -414,11 +484,12 @@ void syntacticAnalysis::variableDefine()
             printToken(sym);
 
             sym = lexical.getSym(out);
-            unsignedInteger();
+            int len = unsignedInteger();
 
             //TODO: 数组类型和相应的属性
-            symAttr attr = {symname, symtype, symKind::VAR, 1};
-            symbolist.insert(attr);
+            symAttr attr = {symname, symtype, symKind::VAR, len};
+            symbolist.insert(&attr);
+            genMidVarState(attr.name);
 
             // assert(sym.getKey() == RBRACK);
             if (sym.getKey() != RBRACK)
@@ -438,7 +509,8 @@ void syntacticAnalysis::variableDefine()
         else
         {
             symAttr attr = {symname, symtype, symKind::VAR};
-            symbolist.insert(attr);
+            symbolist.insert(&attr);
+            genMidVarState(attr.name);
         }
     } while (sym.getKey() == COMMA);
     printLine("<变量定义>");
@@ -448,6 +520,7 @@ void syntacticAnalysis::funcWithReturn()
 {
     string name = stateHead();
     funcWithRet.insert(name);
+    genMidFuncDef(name);
 
     symbolist.direct();
 
@@ -502,7 +575,8 @@ void syntacticAnalysis::funcWithoutReturn()
     else
     {
         symAttr attr = {sym.getValue(), VOID, FUNC};
-        symbolist.insert(attr);
+        symbolist.insert(&attr);
+        genMidFuncDef(attr.name);
     }
     symbolist.direct();
 
@@ -582,7 +656,8 @@ void syntacticAnalysis::argumentList(string funcName)
     else
     {
         symAttr attr = {sym.getValue(), arg1Type, VAR};
-        symbolist.insert(attr);
+        symbolist.insert(&attr);
+        genMidFuncPara(attr.name);
     }
 
     sym = lexical.getSym(out);
@@ -611,7 +686,8 @@ void syntacticAnalysis::argumentList(string funcName)
         else
         {
             symAttr attr = {sym.getValue(), arg1Type, VAR};
-            symbolist.insert(attr);
+            symbolist.insert(&attr);
+            genMidFuncPara(attr.name);
         }
 
         sym = lexical.getSym(out);
@@ -635,7 +711,8 @@ void syntacticAnalysis::mainFunc()
     else
     {
         symAttr attr = {sym.getValue(), VOID, FUNC};
-        symbolist.insert(attr);
+        symbolist.insert(&attr);
+        genMidFuncDef(attr.name);
     }
     symbolist.direct();
 
