@@ -25,7 +25,7 @@ enum symType
 enum offsetRefer
 {
     GLOBAL,
-    FP,
+    SP,
 };
 
 class symAttr
@@ -34,7 +34,9 @@ public:
     string name;
     symType type;
     symKind kind;
-    int dim;
+    int len; /*为0表示不是数组, 大于0表示是数组*/
+
+    int size; /*表示该单元在内存中所占空间大小*/
     int SymId;
     int offsetRel;
     offsetRefer refer;
@@ -42,8 +44,7 @@ public:
 
     void SHOW_ATTR()
     {
-        // cout << name << "\t" << type << "\t" << kind << endl;
-        printf("%10s\t%d\t%d\t%d\n", name.c_str(), type, kind, dim);
+        printf("%10s\t%d\t%d\t%d\n", name.c_str(), type, kind, len);
     }
 
     void addArgs(symType arg)
@@ -62,8 +63,8 @@ class symbols
 private:
     int idGen;
     vector<int> indexes;
-    vector<symAttr> symStack;
-    vector<symAttr> id2sym;
+    vector<symAttr *> symStack;
+    vector<symAttr *> id2sym;
 
 public:
     symbols();
@@ -82,9 +83,9 @@ public:
     {
         for (int i = symStack.size() - 1; i >= 0; i--)
         {
-            if (symStack[i].kind == FUNC)
+            if (symStack[i]->kind == FUNC)
             {
-                symStack[i].addArgs(arg);
+                symStack[i]->addArgs(arg);
                 return;
             }
         }

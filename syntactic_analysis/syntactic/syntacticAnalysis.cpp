@@ -1,5 +1,28 @@
 #include "syntacticAnalysis.h"
 
+void genMidFuncDef(token_key key, string funcName);
+void genMidFuncPara(token_key key, string paraName);
+void genRetState(string name); /*标识符或常量*/
+
+void genMidArgsPush(string paraName); /*标识符或常量*/
+void genMidFuncCall(string func);
+void genMidFuncRetUse(string name);
+
+void genMidVarState(string name);
+void genMidConstState(string name);
+
+void genMidAssign(string left, string right);
+void genMidExpress(string left, string operand1, string op, string operand2);
+
+void genMidCondition(string operand1, string op, string operand2);
+void genMidGoto(string Label);
+void genMidBNZ(string Label);
+void genMidBZ(string Label);
+
+void genMidScanf(string name);
+void genMidPrintfStr(string str);
+void genMidPrintfExp(string name);
+
 void syntacticAnalysis::ERROR_PRINT(int line, string err_code)
 {
     out << line << " " << err_code << endl;
