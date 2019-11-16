@@ -28,7 +28,7 @@ void genMidBZ(string Label);
 
 void genMidScanf(string name);
 void genMidPrintfStr(string str);
-void genMidPrintfExp(string name);
+void genMidPrintfExp(symType type, string name);
 
 void syntacticAnalysis::ERROR_PRINT(int line, string err_code)
 {
@@ -1494,7 +1494,10 @@ void syntacticAnalysis::readStatement()
         {
             ERROR_PRINT(sym.getLine(), "c");
         }
-
+        else
+        {
+            genMidScanf(sym.getValue());
+        }
         sym = lexical.getSym(out);
     } while (sym.getKey() == COMMA);
     // assert(sym.getKey() == RPARENT);
@@ -1516,6 +1519,7 @@ void syntacticAnalysis::readStatement()
 
 void syntacticAnalysis::writeStatement()
 {
+    genMid_ResetTmp();
     assert(sym.getKey() == PRINTFTK);
     printToken(sym);
 
@@ -1527,16 +1531,19 @@ void syntacticAnalysis::writeStatement()
     if (sym.getKey() == STRCON)
     {
         strConCheck();
+        genMidPrintfStr(sym.getValue());
         if (sym.getKey() == COMMA)
         {
             printToken(sym);
             sym = lexical.getSym(out);
-            expression();
+            expRet expret = expression();
+            genMidPrintfExp(expret.type, expret.tmp4val);
         }
     }
     else
     {
-        expression();
+        expRet expret = expression();
+        genMidPrintfExp(expret.type, expret.tmp4val);
     }
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
