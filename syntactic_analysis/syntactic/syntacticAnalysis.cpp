@@ -1246,6 +1246,7 @@ void syntacticAnalysis::loopStatement()
         sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
         printToken(sym);
+        string identify1_name = sym.getValue();
         if (!symbolist.has(sym.getValue()))
         {
             ERROR_PRINT(sym.getLine(), "c");
@@ -1264,7 +1265,9 @@ void syntacticAnalysis::loopStatement()
         printToken(sym);
 
         sym = lexical.getSym(out);
-        expression();
+        expRet expret_for_begin = expression();
+        genMidValuePut(identify1_name, expret_for_begin.tmp4val);
+
         // assert(sym.getKey() == SEMICN);
         if (sym.getKey() != SEMICN)
         {
@@ -1279,7 +1282,11 @@ void syntacticAnalysis::loopStatement()
         }
 
         sym = lexical.getSym(out);
+        string label_in = genMid_AllocLabel();
+        string label_out = genMid_AllocLabel();
+        genMidLabelLine(label_in);
         condition();
+        genMidBNZ(label_out);
         // assert(sym.getKey() == SEMICN);
         if (sym.getKey() != SEMICN)
         {
@@ -1296,6 +1303,7 @@ void syntacticAnalysis::loopStatement()
         sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
         printToken(sym);
+        string identify2_name = sym.getValue();
         if (!symbolist.has(sym.getValue()))
         {
             ERROR_PRINT(sym.getLine(), "c");
@@ -1316,6 +1324,8 @@ void syntacticAnalysis::loopStatement()
         sym = lexical.getSym(out);
         assert(sym.getKey() == IDENFR);
         printToken(sym);
+        string identify3_name = sym.getValue();
+
         if (!symbolist.has(sym.getValue()))
         {
             ERROR_PRINT(sym.getLine(), "c");
@@ -1324,9 +1334,13 @@ void syntacticAnalysis::loopStatement()
         sym = lexical.getSym(out);
         assert(isAddOp(sym));
         printToken(sym);
+        string op4 = sym.getValue();
 
         sym = lexical.getSym(out);
-        stepLength();
+        int value = stepLength();
+        stringstream ss;
+        ss << value;
+        string value5 = ss.str();
 
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
@@ -1343,6 +1357,10 @@ void syntacticAnalysis::loopStatement()
 
         sym = lexical.getSym(out);
         statement();
+        string erpress_end = genMidExpress(identify3_name, op4, value5);
+        genMidValuePut(identify2_name, erpress_end);
+        genMidGoto(label_in);
+        genMidLabelLine(label_out);
     }
     else
     {
@@ -1351,10 +1369,11 @@ void syntacticAnalysis::loopStatement()
     printLine("<循环语句>");
 }
 
-void syntacticAnalysis::stepLength()
+int syntacticAnalysis::stepLength()
 {
-    unsignedInteger();
+    int ret = unsignedInteger();
     printLine("<步长>");
+    return ret;
 }
 
 string syntacticAnalysis::invokeFuncWithReturn()

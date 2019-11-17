@@ -70,7 +70,7 @@ private:
     void assignmentStatement();
     void condition();
     void loopStatement();
-    void stepLength();
+    int stepLength();
     string invokeFuncWithReturn();
     void invokeFuncWithoutReturn();
     void valueArgumentList(string funcName);
