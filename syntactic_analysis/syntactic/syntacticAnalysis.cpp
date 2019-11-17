@@ -1,5 +1,10 @@
 #include "syntacticAnalysis.h"
 
+void syntacticAnalysis::genMidFuncLabel(string funcName)
+{
+    midFile << "funcLabel_" << funcName << ":" << endl;
+}
+
 void syntacticAnalysis::genMidFuncDef(string funcName)
 {
     symAttr funcAttr = symbolist.get(funcName);
@@ -51,7 +56,7 @@ void syntacticAnalysis::genMidArgsPush(string paraName) /*标识符或常量*/
 }
 void syntacticAnalysis::genMidFuncCall(string func)
 {
-    midFile << "call " << func << endl; /*TODO:func Label*/
+    midFile << "call funcLabel_" << func << endl;
 }
 void syntacticAnalysis::genMidFuncRet(string name)
 {
@@ -688,7 +693,6 @@ void syntacticAnalysis::variableDefine()
             sym = lexical.getSym(out);
             int len = unsignedInteger();
 
-            //TODO: 数组类型和相应的属性
             symAttr attr = {symname, symtype, symKind::VAR, len};
             symbolist.insert(&attr);
             genMidVarState(attr.name);
