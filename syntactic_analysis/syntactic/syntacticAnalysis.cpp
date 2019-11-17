@@ -1162,11 +1162,14 @@ void syntacticAnalysis::loopStatement()
 {
     if (sym.getKey() == WHILETK)
     {
+        string label_in = genMid_AllocLabel();
+        string label_out = genMid_AllocLabel();
         printToken(sym);
         sym = lexical.getSym(out);
         assert(sym.getKey() == LPARENT);
         printToken(sym);
 
+        genMidLabelLine(label_in);
         sym = lexical.getSym(out);
         condition();
         // assert(sym.getKey() == RPARENT);
@@ -1181,9 +1184,12 @@ void syntacticAnalysis::loopStatement()
         {
             printToken(sym);
         }
+        genMidBNZ(label_out);
 
         sym = lexical.getSym(out);
         statement();
+        genMidGoto(label_in);
+        genMidLabelLine(label_out);
     }
     else if (sym.getKey() == DOTK)
     {
