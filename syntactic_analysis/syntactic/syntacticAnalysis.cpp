@@ -12,6 +12,8 @@ string genMidFuncRetUse();
 void genMidVarState(string name);
 void genMidConstState(string name);
 
+string genMid_AllocLabel();
+void genMidLabelLine(string Label);
 void genMid_ResetTmp();
 string genMid_AllocTmp();
 string genMidExpress(string operand1, string op, string operand2);
@@ -1037,15 +1039,26 @@ void syntacticAnalysis::conditionalStatement()
     {
         printToken(sym);
     }
-
+    string label_not = genMid_AllocLabel();
+    genMidBZ(label_not);
     sym = lexical.getSym(out);
     statement();
     if (sym.getKey() == ELSETK)
     {
+        /*if后面有else语句*/
+        string label_out = genMid_AllocLabel();
+        genMidGoto(label_out);
         printToken(sym);
         sym = lexical.getSym(out);
         statement();
+        genMidLabelLine(label_out);
     }
+    else
+    {
+        /*if后面没有else语句*/
+        genMidLabelLine(label_not);
+    }
+
     printLine("<条件语句>");
 }
 
