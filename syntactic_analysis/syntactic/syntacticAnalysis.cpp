@@ -1,36 +1,229 @@
 #include "syntacticAnalysis.h"
 
-void genMidFuncDef(string funcName);
-void genMidFuncPara(string paraName);
-void genRetState(string name); /*标识符或常量*/
+void syntacticAnalysis::genMidFuncDef(string funcName)
+{
+    symAttr funcAttr = symbolist.get(funcName);
+    string type_str;
+    if (funcAttr.type == VOID)
+    {
+        type_str = "void";
+    }
+    else if (funcAttr.type == INT)
+    {
+        type_str = "int";
+    }
+    else if (funcAttr.type == CHAR)
+    {
+        type_str = "char";
+    }
+    else
+    {
+        type_str = "UNKNOWN_ERROR";
+    }
+    midFile << type_str << " " << funcAttr.name << "()" << endl;
+}
+void syntacticAnalysis::genMidFuncPara(string paraName)
+{
+    symAttr paraAttr = symbolist.get(paraName);
+    string type_str;
+    if (paraAttr.type == VOID)
+    {
+        type_str = "void";
+    }
+    else if (paraAttr.type == INT)
+    {
+        type_str = "int";
+    }
+    else if (paraAttr.type == CHAR)
+    {
+        type_str = "char";
+    }
+    else
+    {
+        type_str = "UNKNOWN_ERROR";
+    }
+    midFile << "para " << type_str << " " << paraAttr.name << endl;
+}
 
-void genMidArgsPush(string paraName); /*标识符或常量*/
-void genMidFuncCall(string func);
-void genMidFuncRet(string name);
-string genMidFuncRetUse();
+void syntacticAnalysis::genMidArgsPush(string paraName) /*标识符或常量*/
+{
+    midFile << "push " << paraName << endl;
+}
+void syntacticAnalysis::genMidFuncCall(string func)
+{
+    midFile << "call " << func << endl; /*TODO:func Label*/
+}
+void syntacticAnalysis::genMidFuncRet(string name)
+{
+    midFile << "ret " << name << endl;
+}
+string syntacticAnalysis::genMidFuncRetUse()
+{
+    string temp_val = genMid_AllocTmp();
+    midFile << temp_val << "=RET" << endl;
+    return temp_val;
+}
 
-void genMidVarState(string name);
-void genMidConstState(string name);
+void syntacticAnalysis::genMidVarState(string name)
+{
+    symAttr varAttr = symbolist.get(name);
+    string type_str;
+    if (varAttr.type == VOID)
+    {
+        type_str = "void";
+    }
+    else if (varAttr.type == INT)
+    {
+        type_str = "int";
+    }
+    else if (varAttr.type == CHAR)
+    {
+        type_str = "char";
+    }
+    else
+    {
+        type_str = "UNKNOWN_ERROR";
+    }
+    if (varAttr.len = 0)
+    {
+        midFile << "var" << type_str << name << "%" << varAttr.SymId << endl;
+    }
+    else
+    {
+        midFile << "var" << type_str << name << "[" << varAttr.len << "]"
+                << "%" << varAttr.SymId << endl;
+    }
+}
+void syntacticAnalysis::genMidConstState(string name)
+{
+    symAttr varAttr = symbolist.get(name);
+    string type_str;
+    if (varAttr.type == VOID)
+    {
+        type_str = "void";
+    }
+    else if (varAttr.type == INT)
+    {
+        type_str = "int";
+    }
+    else if (varAttr.type == CHAR)
+    {
+        type_str = "char";
+    }
+    else
+    {
+        type_str = "UNKNOWN_ERROR";
+    }
+    midFile << "const" << type_str << name << "%" << varAttr.SymId << endl;
+}
 
-string genMid_AllocLabel();
-void genMidLabelLine(string Label);
-void genMid_ResetTmp();
-string genMid_AllocTmp();
-string genMidExpress(string operand1, string op, string operand2);
-string genMidValueGet(string name);
-void genMidValuePut(string name, string value);
-string genMidArrayValueGet(string array, string idx);
-void genMidArrayValuePut(string array, string idx, string value);
+string syntacticAnalysis::genMid_AllocLabel()
+{
+    string ret = "Label" + to_string(label_idx);
+    label_idx++;
+    return ret;
+}
+void syntacticAnalysis::genMidLabelLine(string Label)
+{
+    midFile << Label << ":" << endl;
+}
+void syntacticAnalysis::genMid_ResetTmp()
+{
+    temp_idx = 0;
+}
+string syntacticAnalysis::genMid_AllocTmp()
+{
+    string ret = "_tmp" + to_string(temp_idx);
+    temp_idx++;
+    return ret;
+}
+string syntacticAnalysis::genMidExpress(string operand1, string op, string operand2)
+{
+    string ret = genMid_AllocTmp();
+    string p1;
+    string p2;
+    if (symbolist.has(operand1))
+    {
+        symAttr pAttr = symbolist.get(operand1);
+        p1 = operand1 + "%" + to_string(pAttr.SymId);
+    }
+    else
+    {
+        p1 = operand1;
+    }
+    if (symbolist.has(operand2))
+    {
+        symAttr pAttr = symbolist.get(operand2);
+        p2 = operand2 + "%" + to_string(pAttr.SymId);
+    }
+    else
+    {
+        p2 = operand2;
+    }
+    midFile << ret << "=" << p1 << op << p2 << endl;
+    return ret;
+}
+string syntacticAnalysis::genMidValueGet(string name)
+{
+    string ret = genMid_AllocTmp();
+    symAttr nameAttr = symbolist.get(name);
+    midFile << ret << "=" << name << "%" << nameAttr.SymId << endl;
+    return ret;
+}
+void syntacticAnalysis::genMidValuePut(string name, string value)
+{
+    symAttr nameAttr = symbolist.get(name);
+    midFile << name << "%" << nameAttr.SymId << "=" << value << endl;
+}
+string syntacticAnalysis::genMidArrayValueGet(string array, string idx)
+{
+    string ret = genMid_AllocTmp();
+    symAttr arrayAttr = symbolist.get(array);
+    midFile << ret << "=" << array << "%" << arrayAttr.SymId << "[" << idx
+            << "]" << endl;
+    return ret;
+}
+void syntacticAnalysis::genMidArrayValuePut(string array, string idx, string value)
+{
+    symAttr arrayAttr = symbolist.get(array);
+    midFile << array << "%" << arrayAttr.SymId << "[" << idx << "]"
+            << "=" << value << endl;
+}
 
-void genMidCondition(string operand1, string op, string operand2);
-void genMidCondition4Num(string operand1);
-void genMidGoto(string Label);
-void genMidBNZ(string Label);
-void genMidBZ(string Label);
+void syntacticAnalysis::genMidCondition(string operand1, string op, string operand2)
+{
+    midFile << operand1 << op << operand2 << endl;
+}
+void syntacticAnalysis::genMidCondition4Num(string operand1)
+{
+    midFile << operand1 << "!=0" << endl;
+}
+void syntacticAnalysis::genMidGoto(string Label)
+{
+    midFile << "goto " << Label << endl;
+}
+void syntacticAnalysis::genMidBNZ(string Label)
+{
+    midFile << "BNZ " << Label << endl;
+}
+void syntacticAnalysis::genMidBZ(string Label)
+{
+    midFile << "BZ" << Label << endl;
+}
 
-void genMidScanf(string name);
-void genMidPrintfStr(string str);
-void genMidPrintfExp(symType type, string name);
+void syntacticAnalysis::genMidScanf(string name)
+{
+    symAttr scanfAttr = symbolist.get(name);
+    midFile << "sacnf " << scanfAttr.name << "%" << scanfAttr.SymId;
+}
+void syntacticAnalysis::genMidPrintfStr(string str)
+{
+    midFile << "printStr:" << str << endl;
+}
+void syntacticAnalysis::genMidPrintfExp(symType type, string name)
+{
+    midFile << "printExp:" << name << "@" << type << endl;
+}
 
 void syntacticAnalysis::ERROR_PRINT(int line, string err_code)
 {
@@ -47,7 +240,7 @@ inline symType transferKeyToType(token_key key)
     return TYPERROR;
 }
 
-syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(filename), sym(lexical.getSym(out)), out(outfile)
+syntacticAnalysis::syntacticAnalysis(string filename, string outfile, string midfile) : lexical(filename), sym(lexical.getSym(out)), out(outfile), midFile(midfile)
 {
 }
 
@@ -1662,7 +1855,7 @@ void syntacticAnalysis::returnStatement()
 
 int main(int argc, char const *argv[])
 {
-    syntacticAnalysis syntactic("testfile.txt", "error.txt");
+    syntacticAnalysis syntactic("testfile.txt", "error.txt", "midfile.txt");
     syntactic.procedureCheck();
     return 0;
 }

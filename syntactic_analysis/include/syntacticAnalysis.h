@@ -33,6 +33,9 @@ private:
     set<string> funcWithRet;
     set<string> funcWithoutRet;
     ofstream out;
+    ofstream midFile;
+    int label_idx;
+    int temp_idx;
 
     void ERROR_PRINT(int line, string err_code);
     void printToken(token key);
@@ -79,8 +82,40 @@ private:
     void writeStatement();
     void returnStatement();
 
+    /*中间代码生成*/
+    void genMidFuncDef(string funcName);
+    void genMidFuncPara(string paraName);
+
+    void genMidArgsPush(string paraName); /*标识符或常量*/
+    void genMidFuncCall(string func);
+    void genMidFuncRet(string name);
+    string genMidFuncRetUse();
+
+    void genMidVarState(string name);
+    void genMidConstState(string name);
+
+    string genMid_AllocLabel();
+    void genMidLabelLine(string Label);
+    void genMid_ResetTmp();
+    string genMid_AllocTmp();
+    string genMidExpress(string operand1, string op, string operand2);
+    string genMidValueGet(string name);
+    void genMidValuePut(string name, string value);
+    string genMidArrayValueGet(string array, string idx);
+    void genMidArrayValuePut(string array, string idx, string value);
+
+    void genMidCondition(string operand1, string op, string operand2);
+    void genMidCondition4Num(string operand1);
+    void genMidGoto(string Label);
+    void genMidBNZ(string Label);
+    void genMidBZ(string Label);
+
+    void genMidScanf(string name);
+    void genMidPrintfStr(string str);
+    void genMidPrintfExp(symType type, string name);
+
 public:
-    syntacticAnalysis(string filename, string outfile);
+    syntacticAnalysis(string filename, string outfile, string midfile);
     void procedureCheck();
 };
 #endif
