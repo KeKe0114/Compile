@@ -46,6 +46,7 @@ public:
     void SHOW_ATTR()
     {
         printf("%10s\t%d\t%d\t%d\n", name.c_str(), type, kind, len);
+        printf("%d\t%d\t%d\n", size, SymId, offsetRel);
     }
 
     void addArgs(symType arg)
@@ -64,15 +65,15 @@ class symbols
 private:
     int idGen;
     vector<int> indexes;
-    vector<symAttr *> symStack;
-    vector<symAttr *> id2sym;
+    vector<int> idStack;
+    vector<symAttr> id2sym;
 
 public:
     symbols();
     void direct();
     void redirect();
 
-    void insert(symAttr* item);
+    void insert(symAttr item);
 
     bool has(string name);
     bool hasNowSeg(string name);
@@ -82,11 +83,11 @@ public:
     symAttr getNearFunc();
     void addArgsForNearFunc(symType arg)
     {
-        for (int i = symStack.size() - 1; i >= 0; i--)
+        for (int i = idStack.size() - 1; i >= 0; i--)
         {
-            if (symStack[i]->kind == FUNC)
+            if (id2sym[idStack[i]].kind == FUNC)
             {
-                symStack[i]->addArgs(arg);
+                id2sym[idStack[i]].addArgs(arg);
                 return;
             }
         }

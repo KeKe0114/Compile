@@ -435,7 +435,7 @@ void syntacticAnalysis::constDefine()
             else
             {
                 symAttr attr = {sym.getValue(), symType::INT, symKind::CONST};
-                symbolist.insert(&attr);
+                symbolist.insert(attr);
 
                 sym = lexical.getSym(out);
                 assert(sym.getKey() == ASSIGN);
@@ -503,7 +503,7 @@ void syntacticAnalysis::constDefine()
             else
             {
                 symAttr attr = {sym.getValue(), symType::CHAR, symKind::CONST};
-                symbolist.insert(&attr);
+                symbolist.insert(attr);
 
                 sym = lexical.getSym(out);
                 assert(sym.getKey() == ASSIGN);
@@ -607,7 +607,7 @@ string syntacticAnalysis::stateHead()
     {
         // cout << "symType into func list:\t " << symtype << endl;
         symAttr attr = {name, symtype, FUNC};
-        symbolist.insert(&attr);
+        symbolist.insert(attr);
         // cout << "get symType after insert:\t " << symbolist.getNearFunc().type << endl;
     }
 
@@ -703,7 +703,7 @@ void syntacticAnalysis::variableDefine()
             int len = unsignedInteger();
 
             symAttr attr = {symname, symtype, symKind::VAR, len};
-            symbolist.insert(&attr);
+            symbolist.insert(attr);
             genMidVarState(attr.name);
 
             // assert(sym.getKey() == RBRACK);
@@ -724,8 +724,9 @@ void syntacticAnalysis::variableDefine()
         else
         {
             symAttr attr = {symname, symtype, symKind::VAR};
-            symbolist.insert(&attr);
+            symbolist.insert(attr);
             genMidVarState(attr.name);
+            symbolist.DEBUG_PRINT_LIST();
         }
     } while (sym.getKey() == COMMA);
     printLine("<变量定义>");
@@ -791,7 +792,7 @@ void syntacticAnalysis::funcWithoutReturn()
     else
     {
         symAttr attr = {sym.getValue(), VOID, FUNC};
-        symbolist.insert(&attr);
+        symbolist.insert(attr);
         genMidFuncDef(attr.name);
     }
     symbolist.direct();
@@ -873,7 +874,7 @@ void syntacticAnalysis::argumentList(string funcName)
     else
     {
         symAttr attr = {sym.getValue(), arg1Type, VAR};
-        symbolist.insert(&attr);
+        symbolist.insert(attr);
         genMidFuncPara(attr.name);
     }
 
@@ -903,7 +904,7 @@ void syntacticAnalysis::argumentList(string funcName)
         else
         {
             symAttr attr = {sym.getValue(), arg1Type, VAR};
-            symbolist.insert(&attr);
+            symbolist.insert(attr);
             genMidFuncPara(attr.name);
         }
 
@@ -928,7 +929,7 @@ void syntacticAnalysis::mainFunc()
     else
     {
         symAttr attr = {sym.getValue(), VOID, FUNC};
-        symbolist.insert(&attr);
+        symbolist.insert(attr);
         genMidFuncDef(attr.name);
     }
     symbolist.direct();
@@ -1739,6 +1740,7 @@ void syntacticAnalysis::readStatement()
         printToken(sym);
         if (!symbolist.has(sym.getValue()))
         {
+            symbolist.DEBUG_PRINT_LIST();
             ERROR_PRINT(sym.getLine(), "c");
         }
         else
