@@ -45,8 +45,8 @@ public:
 
     void SHOW_ATTR()
     {
-        printf("%10s\t%d\t%d\t%d\n", name.c_str(), type, kind, len);
-        printf("%d\t%d\t%d\n", size, SymId, offsetRel);
+        printf("%10s@%d\t%d\t%d\t%d\t", name.c_str(), SymId, type, kind, len);
+        printf("%d\t%d\n", size, offsetRel);
     }
 
     void addArgs(symType arg)
@@ -94,6 +94,13 @@ public:
     }
 
     void DEBUG_PRINT_LIST();
+    void DEBUG_PRINT_ALL_SYM()
+    {
+        for (int i = 0; i < id2sym.size(); i++)
+        {
+            id2sym[i].SHOW_ATTR();
+        }
+    }
 };
 
 #endif

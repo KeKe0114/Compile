@@ -93,7 +93,6 @@ symAttr symbols::getNowSeg(string name)
 void symbols::insert(symAttr item)
 {
     item.SymId = idGen++;
-    item.SHOW_ATTR();
     item.size = item.len == 0 ? 4 : item.len * 4;
     id2sym.push_back(item);
     idStack.push_back(item.SymId);

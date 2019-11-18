@@ -114,8 +114,6 @@ private:
     void genMidPrintfStr(string str);
     void genMidPrintfExp(symType type, string name);
 
-    void genMidFuncLabel(string funcName);
-
 public:
     syntacticAnalysis(string filename, string outfile, string midfile);
     void procedureCheck();

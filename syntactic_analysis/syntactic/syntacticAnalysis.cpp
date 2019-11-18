@@ -1,10 +1,5 @@
 #include "syntacticAnalysis.h"
 
-void syntacticAnalysis::genMidFuncLabel(string funcName)
-{
-    midFile << "funcLabel_" << funcName << ":" << endl;
-}
-
 void syntacticAnalysis::genMidFuncDef(string funcName)
 {
     symAttr funcAttr = symbolist.get(funcName);
@@ -56,7 +51,7 @@ void syntacticAnalysis::genMidArgsPush(string paraName) /*标识符或常量*/
 }
 void syntacticAnalysis::genMidFuncCall(string func)
 {
-    midFile << "call funcLabel_" << func << endl;
+    midFile << "call " << func << endl;
 }
 void syntacticAnalysis::genMidFuncRet(string name)
 {
@@ -91,12 +86,12 @@ void syntacticAnalysis::genMidVarState(string name)
     }
     if (varAttr.len == 0)
     {
-        midFile << "var " << type_str << " " << name << "%" << varAttr.SymId << endl;
+        midFile << "var " << type_str << " " << name << "@" << varAttr.SymId << endl;
     }
     else
     {
         midFile << "var " << type_str << " " << name << "[" << varAttr.len << "]"
-                << "%" << varAttr.SymId << endl;
+                << "@" << varAttr.SymId << endl;
     }
 }
 void syntacticAnalysis::genMidConstState(string name)
@@ -119,7 +114,7 @@ void syntacticAnalysis::genMidConstState(string name)
     {
         type_str = "UNKNOWN_ERROR";
     }
-    midFile << "const" << type_str << name << "%" << varAttr.SymId << endl;
+    midFile << "const " << type_str << " " << name << "@" << varAttr.SymId << endl;
 }
 
 string syntacticAnalysis::genMid_AllocLabel()
@@ -150,7 +145,7 @@ string syntacticAnalysis::genMidExpress(string operand1, string op, string opera
     if (symbolist.has(operand1))
     {
         symAttr pAttr = symbolist.get(operand1);
-        p1 = operand1 + "%" + to_string(pAttr.SymId);
+        p1 = operand1 + "@" + to_string(pAttr.SymId);
     }
     else
     {
@@ -159,7 +154,7 @@ string syntacticAnalysis::genMidExpress(string operand1, string op, string opera
     if (symbolist.has(operand2))
     {
         symAttr pAttr = symbolist.get(operand2);
-        p2 = operand2 + "%" + to_string(pAttr.SymId);
+        p2 = operand2 + "@" + to_string(pAttr.SymId);
     }
     else
     {
@@ -172,26 +167,26 @@ string syntacticAnalysis::genMidValueGet(string name)
 {
     string ret = genMid_AllocTmp();
     symAttr nameAttr = symbolist.get(name);
-    midFile << ret << "=" << name << "%" << nameAttr.SymId << endl;
+    midFile << ret << "=" << name << "@" << nameAttr.SymId << endl;
     return ret;
 }
 void syntacticAnalysis::genMidValuePut(string name, string value)
 {
     symAttr nameAttr = symbolist.get(name);
-    midFile << name << "%" << nameAttr.SymId << "=" << value << endl;
+    midFile << name << "@" << nameAttr.SymId << "=" << value << endl;
 }
 string syntacticAnalysis::genMidArrayValueGet(string array, string idx)
 {
     string ret = genMid_AllocTmp();
     symAttr arrayAttr = symbolist.get(array);
-    midFile << ret << "=" << array << "%" << arrayAttr.SymId << "[" << idx
+    midFile << ret << "=" << array << "@" << arrayAttr.SymId << "[" << idx
             << "]" << endl;
     return ret;
 }
 void syntacticAnalysis::genMidArrayValuePut(string array, string idx, string value)
 {
     symAttr arrayAttr = symbolist.get(array);
-    midFile << array << "%" << arrayAttr.SymId << "[" << idx << "]"
+    midFile << array << "@" << arrayAttr.SymId << "[" << idx << "]"
             << "=" << value << endl;
 }
 
@@ -219,7 +214,7 @@ void syntacticAnalysis::genMidBZ(string Label)
 void syntacticAnalysis::genMidScanf(string name)
 {
     symAttr scanfAttr = symbolist.get(name);
-    midFile << "sacnf " << scanfAttr.name << "%" << scanfAttr.SymId;
+    midFile << "scanf " << scanfAttr.name << "@" << scanfAttr.SymId << endl;
 }
 void syntacticAnalysis::genMidPrintfStr(string str)
 {
@@ -236,7 +231,11 @@ void syntacticAnalysis::genMidPrintfExp(symType type, string name)
     {
         type_str = "CHAR";
     }
-    midFile << "printExp:" << name << "@" << type << endl;
+    else
+    {
+        type_str = "UNKNOWN ERROR";
+    }
+    midFile << "printExp:" << name << "%" << type_str << endl;
 }
 
 void syntacticAnalysis::ERROR_PRINT(int line, string err_code)
@@ -357,6 +356,7 @@ void syntacticAnalysis::procedureCheck()
     mainFunc();
     printLine("<程序>");
     //assert(!lexical.hasSym()); /*main 函数后不应该有其他token*/
+    symbolist.DEBUG_PRINT_ALL_SYM();
 }
 
 void syntacticAnalysis::strConCheck()
@@ -726,7 +726,6 @@ void syntacticAnalysis::variableDefine()
             symAttr attr = {symname, symtype, symKind::VAR};
             symbolist.insert(attr);
             genMidVarState(attr.name);
-            symbolist.DEBUG_PRINT_LIST();
         }
     } while (sym.getKey() == COMMA);
     printLine("<变量定义>");
@@ -769,7 +768,7 @@ void syntacticAnalysis::funcWithReturn()
     sym = lexical.getSym(out);
     printLine("<有返回值函数定义>");
 
-    genMidFuncRet("");
+    genMidFuncRet("0");
     symbolist.redirect();
 }
 
@@ -1740,7 +1739,6 @@ void syntacticAnalysis::readStatement()
         printToken(sym);
         if (!symbolist.has(sym.getValue()))
         {
-            symbolist.DEBUG_PRINT_LIST();
             ERROR_PRINT(sym.getLine(), "c");
         }
         else
