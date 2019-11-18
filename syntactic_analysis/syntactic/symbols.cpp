@@ -2,8 +2,8 @@
 
 symbols::symbols()
 {
-    idGen = 0;
-    direct();
+    symAttr global_data = {"GLOBAL_DATAES", VOID, CONST};
+    insert(global_data);
 }
 
 void symbols::direct()
@@ -15,33 +15,30 @@ void symbols::redirect()
 {
     int totSizeNow = 0;
     offsetRefer referNow;
-    if (indexes[indexes.size() - 1] == 0)
+    if (indexes.size() == 1)
     {
         referNow = GLOBAL;
-        for (int i = idStack.size() - 1; i >= indexes[indexes.size() - 1]; i--)
+    }
+    else
+    {
+        referNow = FP;
+        totSizeNow += 4 * 4; /*$31, ret_value, $fp, $sp*/
+    }
+    for (int i = indexes[indexes.size() - 1]; i <= idStack.size() - 1; i++)
+    {
+        if (id2sym[idStack[i]].kind == VAR || id2sym[idStack[i]].kind == CONST)
         {
             id2sym[idStack[i]].refer = referNow;
             id2sym[idStack[i]].offsetRel = totSizeNow;
             totSizeNow += id2sym[idStack[i]].size;
-            idStack.pop_back();
         }
-        indexes.pop_back();
     }
-    else
+    for (int i = idStack.size() - 1; i >= indexes[indexes.size() - 1]; i--)
     {
-        referNow = SP;
-        for (int i = idStack.size() - 1; i >= indexes[indexes.size() - 1]; i--)
-        {
-            totSizeNow -= id2sym[idStack[i]].size;
-            id2sym[idStack[i]].refer = referNow;
-            id2sym[idStack[i]].offsetRel = totSizeNow;
-            idStack.pop_back();
-        }
-        id2sym[idStack[idStack.size() - 1]].size = -(totSizeNow - 8); /*ret_val  sp*/
-        id2sym[idStack[idStack.size() - 1]].offsetRel = totSizeNow - 8;
-        id2sym[idStack[idStack.size() - 1]].refer = referNow;
-        indexes.pop_back();
+        idStack.pop_back();
     }
+    id2sym[idStack[idStack.size() - 1]].size = totSizeNow;
+    indexes.pop_back();
 }
 
 bool symbols::has(string name)
@@ -65,6 +62,22 @@ symAttr symbols::get(string name)
             return id2sym[idStack[i]];
         }
     }
+}
+
+symAttr *symbols::get_pointer(string name)
+{
+    for (int i = idStack.size() - 1; i >= 0; i--)
+    {
+        if (id2sym[idStack[i]].name == name)
+        {
+            return &id2sym[idStack[i]];
+        }
+    }
+}
+
+symAttr *symbols::get_pointer_by_id(int id)
+{
+    return &id2sym[id];
 }
 
 bool symbols::hasNowSeg(string name)
@@ -92,7 +105,7 @@ symAttr symbols::getNowSeg(string name)
 
 void symbols::insert(symAttr item)
 {
-    item.SymId = idGen++;
+    item.SymId = id2sym.size();
     item.size = item.len == 0 ? 4 : item.len * 4;
     id2sym.push_back(item);
     idStack.push_back(item.SymId);
@@ -121,21 +134,25 @@ bool symbols::hasNearFunc()
     return false;
 }
 
-void symbols::addArgsForNearFunc(symType arg)
+void symbols::addArgsForNearFunc(string name, symType arg)
 {
+    symAttr attr = {name, arg, VAR};
+    insert(attr);
+    int id = get(name).SymId;
     for (int i = idStack.size() - 1; i >= 0; i--)
     {
         if (id2sym[idStack[i]].kind == FUNC)
         {
-            id2sym[idStack[i]].addArgs(arg);
+            id2sym[idStack[i]].addArgs(id, arg);
             return;
         }
     }
 }
 
-void symAttr::addArgs(symType arg)
+void symAttr::addArgs(int id, symType arg)
 {
     args.push_back(arg);
+    argsId.push_back(id);
 }
 
 vector<symType> symAttr::getArgs()

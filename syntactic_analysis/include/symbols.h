@@ -25,7 +25,7 @@ enum symType
 enum offsetRefer
 {
     GLOBAL,
-    SP,
+    FP,
 };
 
 class symAttr
@@ -40,10 +40,11 @@ public:
     int SymId;
     int offsetRel;
     offsetRefer refer;
-    int value;
+    string value;
     vector<symType> args;
+    vector<int> argsId;
 
-    void addArgs(symType arg);
+    void addArgs(int id, symType arg);
     vector<symType> getArgs();
 
     void SHOW_ATTR();
@@ -64,7 +65,6 @@ public:
     }
 
 private:
-    int idGen;
     vector<int> indexes;
     vector<int> idStack;
     vector<symAttr> id2sym;
@@ -83,7 +83,10 @@ public:
     symAttr getNowSeg(string name);
     symAttr getNearFunc();
 
-    void addArgsForNearFunc(symType arg);
+    symAttr *get_pointer(string name);
+    symAttr *get_pointer_by_id(int id);
+
+    void addArgsForNearFunc(string name, symType arg);
 
     void DEBUG_PRINT_LIST();
     void DEBUG_PRINT_ALL_SYM();

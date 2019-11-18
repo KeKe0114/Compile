@@ -1,243 +1,5 @@
 #include "syntacticAnalysis.h"
 
-void syntacticAnalysis::genMidFuncDef(string funcName)
-{
-    symAttr funcAttr = symbolist.get(funcName);
-    string type_str;
-    if (funcAttr.type == VOID)
-    {
-        type_str = "void";
-    }
-    else if (funcAttr.type == INT)
-    {
-        type_str = "int";
-    }
-    else if (funcAttr.type == CHAR)
-    {
-        type_str = "char";
-    }
-    else
-    {
-        type_str = "UNKNOWN_ERROR";
-    }
-    midFile << type_str << " " << funcAttr.name << "()" << endl;
-}
-void syntacticAnalysis::genMidFuncPara(string paraName)
-{
-    symAttr paraAttr = symbolist.get(paraName);
-    string type_str;
-    if (paraAttr.type == VOID)
-    {
-        type_str = "void";
-    }
-    else if (paraAttr.type == INT)
-    {
-        type_str = "int";
-    }
-    else if (paraAttr.type == CHAR)
-    {
-        type_str = "char";
-    }
-    else
-    {
-        type_str = "UNKNOWN_ERROR";
-    }
-    midFile << "para " << type_str << " " << paraAttr.name << endl;
-}
-
-void syntacticAnalysis::genMidArgsPush(string paraName) /*标识符或常量*/
-{
-    midFile << "push " << paraName << endl;
-}
-void syntacticAnalysis::genMidFuncCall(string func)
-{
-    midFile << "call " << func << endl;
-}
-void syntacticAnalysis::genMidFuncRet(string name)
-{
-    midFile << "ret " << name << endl;
-}
-string syntacticAnalysis::genMidFuncRetUse()
-{
-    string temp_val = genMid_AllocTmp();
-    midFile << temp_val << "=RET" << endl;
-    return temp_val;
-}
-
-void syntacticAnalysis::genMidVarState(string name)
-{
-    symAttr varAttr = symbolist.get(name);
-    string type_str;
-    if (varAttr.type == VOID)
-    {
-        type_str = "void";
-    }
-    else if (varAttr.type == INT)
-    {
-        type_str = "int";
-    }
-    else if (varAttr.type == CHAR)
-    {
-        type_str = "char";
-    }
-    else
-    {
-        type_str = "UNKNOWN_ERROR";
-    }
-    if (varAttr.len == 0)
-    {
-        midFile << "var " << type_str << " " << name << "@" << varAttr.SymId << endl;
-    }
-    else
-    {
-        midFile << "var " << type_str << " " << name << "[" << varAttr.len << "]"
-                << "@" << varAttr.SymId << endl;
-    }
-}
-void syntacticAnalysis::genMidConstState(string name)
-{
-    symAttr varAttr = symbolist.get(name);
-    string type_str;
-    if (varAttr.type == VOID)
-    {
-        type_str = "void";
-    }
-    else if (varAttr.type == INT)
-    {
-        type_str = "int";
-    }
-    else if (varAttr.type == CHAR)
-    {
-        type_str = "char";
-    }
-    else
-    {
-        type_str = "UNKNOWN_ERROR";
-    }
-    midFile << "const " << type_str << " " << name << "@" << varAttr.SymId << endl;
-}
-
-string syntacticAnalysis::genMid_AllocLabel()
-{
-    string ret = "Label" + to_string(label_idx);
-    label_idx++;
-    return ret;
-}
-void syntacticAnalysis::genMidLabelLine(string Label)
-{
-    midFile << Label << ":" << endl;
-}
-void syntacticAnalysis::genMid_ResetTmp()
-{
-    temp_idx = 0;
-}
-string syntacticAnalysis::genMid_AllocTmp()
-{
-    string ret = "_tmp" + to_string(temp_idx);
-    temp_idx++;
-    return ret;
-}
-string syntacticAnalysis::genMidExpress(string operand1, string op, string operand2)
-{
-    string ret = genMid_AllocTmp();
-    string p1;
-    string p2;
-    if (symbolist.has(operand1))
-    {
-        symAttr pAttr = symbolist.get(operand1);
-        p1 = operand1 + "@" + to_string(pAttr.SymId);
-    }
-    else
-    {
-        p1 = operand1;
-    }
-    if (symbolist.has(operand2))
-    {
-        symAttr pAttr = symbolist.get(operand2);
-        p2 = operand2 + "@" + to_string(pAttr.SymId);
-    }
-    else
-    {
-        p2 = operand2;
-    }
-    midFile << ret << "=" << p1 << op << p2 << endl;
-    return ret;
-}
-string syntacticAnalysis::genMidValueGet(string name)
-{
-    string ret = genMid_AllocTmp();
-    symAttr nameAttr = symbolist.get(name);
-    midFile << ret << "=" << name << "@" << nameAttr.SymId << endl;
-    return ret;
-}
-void syntacticAnalysis::genMidValuePut(string name, string value)
-{
-    symAttr nameAttr = symbolist.get(name);
-    midFile << name << "@" << nameAttr.SymId << "=" << value << endl;
-}
-string syntacticAnalysis::genMidArrayValueGet(string array, string idx)
-{
-    string ret = genMid_AllocTmp();
-    symAttr arrayAttr = symbolist.get(array);
-    midFile << ret << "=" << array << "@" << arrayAttr.SymId << "[" << idx
-            << "]" << endl;
-    return ret;
-}
-void syntacticAnalysis::genMidArrayValuePut(string array, string idx, string value)
-{
-    symAttr arrayAttr = symbolist.get(array);
-    midFile << array << "@" << arrayAttr.SymId << "[" << idx << "]"
-            << "=" << value << endl;
-}
-
-void syntacticAnalysis::genMidCondition(string operand1, string op, string operand2)
-{
-    midFile << operand1 << op << operand2 << endl;
-}
-void syntacticAnalysis::genMidCondition4Num(string operand1)
-{
-    midFile << operand1 << "!=0" << endl;
-}
-void syntacticAnalysis::genMidGoto(string Label)
-{
-    midFile << "goto " << Label << endl;
-}
-void syntacticAnalysis::genMidBNZ(string Label)
-{
-    midFile << "BNZ " << Label << endl;
-}
-void syntacticAnalysis::genMidBZ(string Label)
-{
-    midFile << "BZ" << Label << endl;
-}
-
-void syntacticAnalysis::genMidScanf(string name)
-{
-    symAttr scanfAttr = symbolist.get(name);
-    midFile << "scanf " << scanfAttr.name << "@" << scanfAttr.SymId << endl;
-}
-void syntacticAnalysis::genMidPrintfStr(string str)
-{
-    midFile << "printStr:" << str << endl;
-}
-void syntacticAnalysis::genMidPrintfExp(symType type, string name)
-{
-    string type_str;
-    if (type == INT)
-    {
-        type_str = "INT";
-    }
-    else if (type == CHAR)
-    {
-        type_str = "CHAR";
-    }
-    else
-    {
-        type_str = "UNKNOWN ERROR";
-    }
-    midFile << "printExp:" << name << "%" << type_str << endl;
-}
-
 inline symType transferKeyToType(token_key key)
 {
     if (key == INTTK)
@@ -248,7 +10,7 @@ inline symType transferKeyToType(token_key key)
     return TYPERROR;
 }
 
-syntacticAnalysis::syntacticAnalysis(string filename, string outfile, string midfile) : lexical(filename), sym(lexical.getSym()), out(outfile), midFile(midfile), symbolist(symbols::get_instance()), errmag(errorMags::get_instance()) {}
+syntacticAnalysis::syntacticAnalysis(string filename, string outfile, string midfile) : lexical(filename), sym(lexical.getSym()), out(outfile), midFile(midfile), symbolist(symbols::get_instance()), errmag(errorMags::get_instance()), midcode(midCodeGen::get_instance()) {}
 
 void syntacticAnalysis::printToken(token key)
 {
@@ -297,6 +59,7 @@ bool syntacticAnalysis::isCharacter(token key)
 
 void syntacticAnalysis::procedureCheck()
 {
+    symbolist.direct();
     if (sym.getKey() == CONSTTK)
     {
         constState();
@@ -347,8 +110,9 @@ void syntacticAnalysis::procedureCheck()
         }
     }
     mainFunc();
-    printLine("<程序>");
     //assert(!lexical.hasSym()); /*main 函数后不应该有其他token*/
+    printLine("<程序>");
+    symbolist.redirect();
     symbolist.DEBUG_PRINT_ALL_SYM();
 }
 
@@ -427,8 +191,7 @@ void syntacticAnalysis::constDefine()
             }
             else
             {
-                symAttr attr = {sym.getValue(), symType::INT, symKind::CONST};
-                symbolist.insert(attr);
+                string intConstName = sym.getValue();
 
                 sym = lexical.getSym();
                 assert(sym.getKey() == ASSIGN);
@@ -451,8 +214,10 @@ void syntacticAnalysis::constDefine()
                         continue;
                     }
                 }
-                attr.value = integer();
-                genMidConstState(attr.name);
+                symAttr attr = {intConstName, symType::INT, symKind::CONST};
+                attr.value = to_string(integer());
+                symbolist.insert(attr);
+                midcode.genMidConstState(attr.name);
             }
 
         } while (sym.getKey() == COMMA);
@@ -495,8 +260,7 @@ void syntacticAnalysis::constDefine()
             }
             else
             {
-                symAttr attr = {sym.getValue(), symType::CHAR, symKind::CONST};
-                symbolist.insert(attr);
+                string charConstName = sym.getValue();
 
                 sym = lexical.getSym();
                 assert(sym.getKey() == ASSIGN);
@@ -519,8 +283,12 @@ void syntacticAnalysis::constDefine()
                         continue;
                     }
                 }
-                attr.value = character();
-                genMidConstState(attr.name);
+                symAttr attr = {charConstName, symType::CHAR, symKind::CONST};
+                string ch = "a";
+                ch[0] = character();
+                attr.value = ch;
+                symbolist.insert(attr);
+                midcode.genMidConstState(attr.name);
             }
 
         } while (sym.getKey() == COMMA);
@@ -697,7 +465,7 @@ void syntacticAnalysis::variableDefine()
 
             symAttr attr = {symname, symtype, symKind::VAR, len};
             symbolist.insert(attr);
-            genMidVarState(attr.name);
+            midcode.genMidVarState(attr.name);
 
             // assert(sym.getKey() == RBRACK);
             if (sym.getKey() != RBRACK)
@@ -718,7 +486,7 @@ void syntacticAnalysis::variableDefine()
         {
             symAttr attr = {symname, symtype, symKind::VAR};
             symbolist.insert(attr);
-            genMidVarState(attr.name);
+            midcode.genMidVarState(attr.name);
         }
     } while (sym.getKey() == COMMA);
     printLine("<变量定义>");
@@ -728,7 +496,6 @@ void syntacticAnalysis::funcWithReturn()
 {
     string name = stateHead();
     funcWithRet.insert(name);
-    genMidFuncDef(name);
 
     symbolist.direct();
 
@@ -736,6 +503,7 @@ void syntacticAnalysis::funcWithReturn()
     printToken(sym);
     sym = lexical.getSym();
     argumentList(name);
+    midcode.genMidFuncDef(name);
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
@@ -761,7 +529,7 @@ void syntacticAnalysis::funcWithReturn()
     sym = lexical.getSym();
     printLine("<有返回值函数定义>");
 
-    genMidFuncRet("0");
+    midcode.genMidFuncRet("0");
     symbolist.redirect();
 }
 
@@ -785,7 +553,6 @@ void syntacticAnalysis::funcWithoutReturn()
     {
         symAttr attr = {sym.getValue(), VOID, FUNC};
         symbolist.insert(attr);
-        genMidFuncDef(attr.name);
     }
     symbolist.direct();
 
@@ -795,6 +562,7 @@ void syntacticAnalysis::funcWithoutReturn()
 
     sym = lexical.getSym();
     argumentList(name);
+    midcode.genMidFuncDef(name);
 
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
@@ -821,7 +589,7 @@ void syntacticAnalysis::funcWithoutReturn()
     sym = lexical.getSym();
     printLine("<无返回值函数定义>");
 
-    genMidFuncRet("");
+    midcode.genMidFuncRet("");
     symbolist.redirect();
 }
 
@@ -851,11 +619,6 @@ void syntacticAnalysis::argumentList(string funcName)
     printToken(sym);
     symType arg1Type = transferKeyToType(sym.getKey());
 
-    symbolist.addArgsForNearFunc(transferKeyToType(sym.getKey()));
-    symAttr funcAttr = symbolist.get(funcName);
-    // funcAttr.addArgs(transferKeyToType(sym.getKey()));
-    // cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
-
     sym = lexical.getSym();
     assert(sym.getKey() == IDENFR);
     printToken(sym);
@@ -865,9 +628,7 @@ void syntacticAnalysis::argumentList(string funcName)
     }
     else
     {
-        symAttr attr = {sym.getValue(), arg1Type, VAR};
-        symbolist.insert(attr);
-        genMidFuncPara(attr.name);
+        symbolist.addArgsForNearFunc(sym.getValue(), arg1Type);
     }
 
     sym = lexical.getSym();
@@ -880,12 +641,6 @@ void syntacticAnalysis::argumentList(string funcName)
         printToken(sym);
         arg1Type = transferKeyToType(sym.getKey());
 
-        symAttr funcAttr = symbolist.get(funcName);
-        // cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
-        symbolist.addArgsForNearFunc(transferKeyToType(sym.getKey()));
-        // funcAttr.addArgs(transferKeyToType(sym.getKey()));
-        // cout << "funcName:\t" << funcName << " args size:\t" << funcAttr.getArgs().size() << endl;
-
         sym = lexical.getSym();
         assert(sym.getKey() == IDENFR);
         printToken(sym);
@@ -895,9 +650,7 @@ void syntacticAnalysis::argumentList(string funcName)
         }
         else
         {
-            symAttr attr = {sym.getValue(), arg1Type, VAR};
-            symbolist.insert(attr);
-            genMidFuncPara(attr.name);
+            symbolist.addArgsForNearFunc(sym.getValue(), arg1Type);
         }
 
         sym = lexical.getSym();
@@ -922,7 +675,7 @@ void syntacticAnalysis::mainFunc()
     {
         symAttr attr = {sym.getValue(), VOID, FUNC};
         symbolist.insert(attr);
-        genMidFuncDef(attr.name);
+        midcode.genMidFuncDef(attr.name);
     }
     symbolist.direct();
 
@@ -965,12 +718,13 @@ expRet syntacticAnalysis::expression()
     symType symType1;
     if (isAddOp(sym))
     {
-        string op = sym.getValue();
+        token_key op = sym.getKey();
         printToken(sym);
         sym = lexical.getSym();
         ret = INT;
         termRet = term();
-        expTmp = genMidExpress(0, op, termRet.tmp4val);
+        expTmp = midcode.genMidExpress(0, op, termRet.tmp4val);
+        //CHEN: 临时变量
     }
     else
     {
@@ -984,11 +738,12 @@ expRet syntacticAnalysis::expression()
     }
     while (isAddOp(sym))
     {
-        string op = sym.getValue();
+        token_key op = sym.getKey();
         printToken(sym);
         sym = lexical.getSym();
         termRet = term();
-        expTmp = genMidExpress(expTmp, op, termRet.tmp4val);
+        expTmp = midcode.genMidExpress(expTmp, op, termRet.tmp4val);
+        //CHEN: 临时变量
     }
     printLine("<表达式>");
     expRet expTmpRet = {ret, expTmp};
@@ -1006,11 +761,12 @@ expRet syntacticAnalysis::term()
     }
     while (isMulOp(sym))
     {
-        string op = sym.getValue();
+        token_key op = sym.getKey();
         printToken(sym);
         sym = lexical.getSym();
         expRet temp = factor();
-        termTmpRet = genMidExpress(termTmpRet, op, temp.tmp4val);
+        termTmpRet = midcode.genMidExpress(termTmpRet, op, temp.tmp4val);
+        //CHEN: 临时变量
     }
     printLine("<项>");
     expRet termRet = {ret, termTmpRet};
@@ -1065,7 +821,8 @@ expRet syntacticAnalysis::factor()
             {
                 printToken(sym);
                 sym = lexical.getSym();
-                factorTmpRet = genMidArrayValueGet(identifyName, idxTmp.tmp4val);
+                factorTmpRet = midcode.genMidArrayValueGet(identifyName, idxTmp.tmp4val);
+                //临时变量
             }
         }
         else
@@ -1077,7 +834,8 @@ expRet syntacticAnalysis::factor()
             else
             {
                 ret = symbolist.get(sym.getValue()).type;
-                factorTmpRet = genMidValueGet(identifyName);
+                factorTmpRet = midcode.genMidValueGet(identifyName);
+                //CHEN: 临时变量
             }
             printToken(sym);
             sym = lexical.getSym();
@@ -1110,7 +868,8 @@ expRet syntacticAnalysis::factor()
         char charValue = character();
         stringstream ss;
         ss << charValue;
-        factorTmpRet = ss.str();
+        factorTmpRet = midcode.genMidConstTmp(CHAR, ss.str());
+        //CHEN: 临时变量
         ret = CHAR;
     }
     else if (isAddOp(sym) || sym.getKey() == INTCON)
@@ -1118,7 +877,8 @@ expRet syntacticAnalysis::factor()
         int intValue = integer();
         stringstream ss;
         ss << intValue;
-        factorTmpRet = ss.str();
+        factorTmpRet = midcode.genMidConstTmp(INT, ss.str());
+        //CHEN: 临时变量
         ret = INT;
     }
     else
@@ -1238,24 +998,24 @@ void syntacticAnalysis::conditionalStatement()
     {
         printToken(sym);
     }
-    string label_not = genMid_AllocLabel();
-    genMidBZ(label_not);
+    string label_not = midcode.genMid_AllocLabel();
+    midcode.genMidBZ(label_not);
     sym = lexical.getSym();
     statement();
     if (sym.getKey() == ELSETK)
     {
         /*if后面有else语句*/
-        string label_out = genMid_AllocLabel();
-        genMidGoto(label_out);
+        string label_out = midcode.genMid_AllocLabel();
+        midcode.genMidGoto(label_out);
         printToken(sym);
         sym = lexical.getSym();
         statement();
-        genMidLabelLine(label_out);
+        midcode.genMidLabelLine(label_out);
     }
     else
     {
         /*if后面没有else语句*/
-        genMidLabelLine(label_not);
+        midcode.genMidLabelLine(label_not);
     }
 
     printLine("<条件语句>");
@@ -1263,7 +1023,6 @@ void syntacticAnalysis::conditionalStatement()
 
 void syntacticAnalysis::assignmentStatement()
 {
-    genMid_ResetTmp();
     assert(sym.getKey() == IDENFR);
     printToken(sym);
     string leftvalue = sym.getValue();
@@ -1312,7 +1071,7 @@ void syntacticAnalysis::assignmentStatement()
 
         sym = lexical.getSym();
         expRet expret2 = expression();
-        genMidArrayValuePut(leftvalue, expret.tmp4val, expret2.tmp4val);
+        midcode.genMidArrayValuePut(leftvalue, expret.tmp4val, expret2.tmp4val);
     }
     else
     {
@@ -1322,7 +1081,7 @@ void syntacticAnalysis::assignmentStatement()
         sym = lexical.getSym();
 
         expRet expret2 = expression();
-        genMidValuePut(leftvalue, expret2.tmp4val);
+        midcode.genMidValuePut(leftvalue, expret2.tmp4val);
     }
 
     printLine("<赋值语句>");
@@ -1330,7 +1089,6 @@ void syntacticAnalysis::assignmentStatement()
 
 void syntacticAnalysis::condition()
 {
-    genMid_ResetTmp();
     expRet expret = expression();
     symType symtype = expret.type;
     if (symtype != INT)
@@ -1339,7 +1097,7 @@ void syntacticAnalysis::condition()
     }
     if (isRelOp(sym))
     {
-        string op = sym.getValue();
+        token_key op = sym.getKey();
         printToken(sym);
         sym = lexical.getSym();
         expRet expret2 = expression();
@@ -1348,11 +1106,11 @@ void syntacticAnalysis::condition()
         {
             errmag.errPut(sym.getLine(), errmag.F);
         }
-        genMidCondition(expret.tmp4val, op, expret2.tmp4val);
+        midcode.genMidCondition(expret.tmp4val, op, expret2.tmp4val);
     }
     else
     {
-        genMidCondition4Num(expret.tmp4val);
+        midcode.genMidCondition4Num(expret.tmp4val);
     }
     printLine("<条件>");
 }
@@ -1361,14 +1119,14 @@ void syntacticAnalysis::loopStatement()
 {
     if (sym.getKey() == WHILETK)
     {
-        string label_in = genMid_AllocLabel();
-        string label_out = genMid_AllocLabel();
+        string label_in = midcode.genMid_AllocLabel();
+        string label_out = midcode.genMid_AllocLabel();
         printToken(sym);
         sym = lexical.getSym();
         assert(sym.getKey() == LPARENT);
         printToken(sym);
 
-        genMidLabelLine(label_in);
+        midcode.genMidLabelLine(label_in);
         sym = lexical.getSym();
         condition();
         // assert(sym.getKey() == RPARENT);
@@ -1383,19 +1141,19 @@ void syntacticAnalysis::loopStatement()
         {
             printToken(sym);
         }
-        genMidBNZ(label_out);
+        midcode.genMidBNZ(label_out);
 
         sym = lexical.getSym();
         statement();
-        genMidGoto(label_in);
-        genMidLabelLine(label_out);
+        midcode.genMidGoto(label_in);
+        midcode.genMidLabelLine(label_out);
     }
     else if (sym.getKey() == DOTK)
     {
         printToken(sym);
         sym = lexical.getSym();
-        string label_loopBegin = genMid_AllocLabel();
-        genMidLabelLine(label_loopBegin);
+        string label_loopBegin = midcode.genMid_AllocLabel();
+        midcode.genMidLabelLine(label_loopBegin);
         statement();
         // assert(sym.getKey() == WHILETK);
         if (sym.getKey() != WHILETK)
@@ -1418,7 +1176,7 @@ void syntacticAnalysis::loopStatement()
 
         sym = lexical.getSym();
         condition();
-        genMidBNZ(label_loopBegin);
+        midcode.genMidBNZ(label_loopBegin);
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
         {
@@ -1465,7 +1223,7 @@ void syntacticAnalysis::loopStatement()
 
         sym = lexical.getSym();
         expRet expret_for_begin = expression();
-        genMidValuePut(identify1_name, expret_for_begin.tmp4val);
+        midcode.genMidValuePut(identify1_name, expret_for_begin.tmp4val);
 
         // assert(sym.getKey() == SEMICN);
         if (sym.getKey() != SEMICN)
@@ -1481,11 +1239,11 @@ void syntacticAnalysis::loopStatement()
         }
 
         sym = lexical.getSym();
-        string label_in = genMid_AllocLabel();
-        string label_out = genMid_AllocLabel();
-        genMidLabelLine(label_in);
+        string label_in = midcode.genMid_AllocLabel();
+        string label_out = midcode.genMid_AllocLabel();
+        midcode.genMidLabelLine(label_in);
         condition();
-        genMidBNZ(label_out);
+        midcode.genMidBNZ(label_out);
         // assert(sym.getKey() == SEMICN);
         if (sym.getKey() != SEMICN)
         {
@@ -1533,7 +1291,7 @@ void syntacticAnalysis::loopStatement()
         sym = lexical.getSym();
         assert(isAddOp(sym));
         printToken(sym);
-        string op4 = sym.getValue();
+        token_key op4 = sym.getKey();
 
         sym = lexical.getSym();
         int value = stepLength();
@@ -1556,10 +1314,12 @@ void syntacticAnalysis::loopStatement()
 
         sym = lexical.getSym();
         statement();
-        string erpress_end = genMidExpress(identify3_name, op4, value5);
-        genMidValuePut(identify2_name, erpress_end);
-        genMidGoto(label_in);
-        genMidLabelLine(label_out);
+        string erpress_end = midcode.genMidExpress(identify3_name, op4, value5);
+        //CHEN: 临时变量
+
+        midcode.genMidValuePut(identify2_name, erpress_end);
+        midcode.genMidGoto(label_in);
+        midcode.genMidLabelLine(label_out);
     }
     else
     {
@@ -1612,8 +1372,10 @@ string syntacticAnalysis::invokeFuncWithReturn()
 
     sym = lexical.getSym();
     printLine("<有返回值函数调用语句>");
-    genMidFuncCall(funcName);
-    return genMidFuncRetUse();
+    midcode.genMidFuncCall(funcName);
+    string ret = midcode.genMidFuncRetUse(funcName);
+    //CHEN: 临时变量
+    return ret;
 }
 
 void syntacticAnalysis::invokeFuncWithoutReturn()
@@ -1653,7 +1415,7 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 
     sym = lexical.getSym();
     printLine("<无返回值函数调用语句>");
-    genMidFuncCall(funcName);
+    midcode.genMidFuncCall(funcName);
 }
 
 // 注:此处使用了外部信息,即参数表后必须有")"
@@ -1676,9 +1438,8 @@ void syntacticAnalysis::valueArgumentList(string funcName)
         printLine("<值参数表>");
         return;
     }
-    genMid_ResetTmp();
     expRet expret = expression();
-    genMidArgsPush(expret.tmp4val);
+    midcode.genMidArgsPush(expret.tmp4val);
     symType symtype = expret.type;
     if (count < argsTypes.size() && argsTypes[count] != symtype)
     {
@@ -1689,9 +1450,8 @@ void syntacticAnalysis::valueArgumentList(string funcName)
     {
         printToken(sym);
         sym = lexical.getSym();
-        genMid_ResetTmp();
         expRet expret = expression();
-        genMidArgsPush(expret.tmp4val);
+        midcode.genMidArgsPush(expret.tmp4val);
         symtype = expret.type;
 
         if (count < argsTypes.size() && argsTypes[count] != symtype)
@@ -1736,7 +1496,7 @@ void syntacticAnalysis::readStatement()
         }
         else
         {
-            genMidScanf(sym.getValue());
+            midcode.genMidScanf(sym.getValue());
         }
         sym = lexical.getSym();
     } while (sym.getKey() == COMMA);
@@ -1759,7 +1519,6 @@ void syntacticAnalysis::readStatement()
 
 void syntacticAnalysis::writeStatement()
 {
-    genMid_ResetTmp();
     assert(sym.getKey() == PRINTFTK);
     printToken(sym);
 
@@ -1770,20 +1529,20 @@ void syntacticAnalysis::writeStatement()
     sym = lexical.getSym();
     if (sym.getKey() == STRCON)
     {
-        genMidPrintfStr(sym.getValue());
+        midcode.genMidPrintfStr(sym.getValue());
         strConCheck();
         if (sym.getKey() == COMMA)
         {
             printToken(sym);
             sym = lexical.getSym();
             expRet expret = expression();
-            genMidPrintfExp(expret.type, expret.tmp4val);
+            midcode.genMidPrintfExp(expret.tmp4val);
         }
     }
     else
     {
         expRet expret = expression();
-        genMidPrintfExp(expret.type, expret.tmp4val);
+        midcode.genMidPrintfExp(expret.tmp4val);
     }
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
@@ -1823,7 +1582,7 @@ void syntacticAnalysis::returnStatement()
         printToken(sym);
         sym = lexical.getSym();
         expRet expret = expression();
-        genMidFuncRet(expret.tmp4val);
+        midcode.genMidFuncRet(expret.tmp4val);
         getType = expret.type;
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
@@ -1842,7 +1601,7 @@ void syntacticAnalysis::returnStatement()
     }
     else
     {
-        genMidFuncRet("");
+        midcode.genMidFuncRet("");
     }
 
     if (chkType != getType)
