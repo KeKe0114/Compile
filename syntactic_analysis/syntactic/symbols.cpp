@@ -98,26 +98,6 @@ void symbols::insert(symAttr item)
     idStack.push_back(item.SymId);
 }
 
-void symbols::DEBUG_PRINT_LIST()
-{
-
-    printf("*********************************\n");
-    printf("*******DEBUG INFO : SYMBOLS******\n");
-    printf("*********************************\n");
-    printf("indexes:\n\n");
-    for (int i = indexes.size() - 1; i >= 0; i--)
-    {
-        printf("%5d\n", indexes[i]);
-    }
-    printf("symbol list:\n");
-    for (int i = idStack.size() - 1; i >= 0; i--)
-    {
-        std::cout << i << " : ";
-        id2sym[idStack[i]].SHOW_ATTR();
-    }
-    printf("*********************************\n");
-}
-
 symAttr symbols::getNearFunc()
 {
     for (int i = idStack.size() - 1; i >= 0; i--)
@@ -141,17 +121,58 @@ bool symbols::hasNearFunc()
     return false;
 }
 
-// int main(int argc, char const *argv[])
-// {
-//     symbols symbols;
-//     symAttr attr = {"cheney", STRING, CONST};
-//     symbols.insert(attr);
-//     symbols.direct();
-//     symAttr attr2 = {"num", INT, VAR};
-//     symbols.insert(attr2);
+void symbols::addArgsForNearFunc(symType arg)
+{
+    for (int i = idStack.size() - 1; i >= 0; i--)
+    {
+        if (id2sym[idStack[i]].kind == FUNC)
+        {
+            id2sym[idStack[i]].addArgs(arg);
+            return;
+        }
+    }
+}
 
-//     symAttr ans = symbols.get("cheney");
+void symAttr::addArgs(symType arg)
+{
+    args.push_back(arg);
+}
 
-//     symbols.DEBUG_PRINT_LIST();
-//     return 0;
-// }
+vector<symType> symAttr::getArgs()
+{
+    return args;
+}
+
+void symAttr::SHOW_ATTR()
+{
+    printf("%10s@%d\t%d\t%d\t%d\t", name.c_str(), SymId, type, kind, len);
+    printf("%d\t%d\n", size, offsetRel);
+}
+
+void symbols::DEBUG_PRINT_LIST()
+{
+
+    printf("*********************************\n");
+    printf("*******DEBUG INFO : SYMBOLS******\n");
+    printf("*********************************\n");
+    printf("indexes:\n\n");
+    for (int i = indexes.size() - 1; i >= 0; i--)
+    {
+        printf("%5d\n", indexes[i]);
+    }
+    printf("symbol list:\n");
+    for (int i = idStack.size() - 1; i >= 0; i--)
+    {
+        std::cout << i << " : ";
+        id2sym[idStack[i]].SHOW_ATTR();
+    }
+    printf("*********************************\n");
+}
+
+void symbols::DEBUG_PRINT_ALL_SYM()
+{
+    for (int i = 0; i < id2sym.size(); i++)
+    {
+        id2sym[i].SHOW_ATTR();
+    }
+}

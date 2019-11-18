@@ -36,32 +36,33 @@ public:
     symKind kind;
     int len; /*为0表示不是数组, 大于0表示是数组*/
 
-    int size; /*表示该单元在内存中所占空间大小*/
+    int size; /*表示该单元在内存中所占空间大小,对函数而言就是sp需要移动的长度*/
     int SymId;
     int offsetRel;
     offsetRefer refer;
     int value;
     vector<symType> args;
 
-    void SHOW_ATTR()
-    {
-        printf("%10s@%d\t%d\t%d\t%d\t", name.c_str(), SymId, type, kind, len);
-        printf("%d\t%d\n", size, offsetRel);
-    }
+    void addArgs(symType arg);
+    vector<symType> getArgs();
 
-    void addArgs(symType arg)
-    {
-        args.push_back(arg);
-    }
-
-    vector<symType> getArgs()
-    {
-        return args;
-    }
+    void SHOW_ATTR();
 };
 
 class symbols
 {
+private:
+    symbols();
+    symbols(const symbols &) = delete;
+    symbols &operator&(const symbols &) = delete;
+
+public:
+    static symbols &get_instance()
+    {
+        static symbols instance;
+        return instance;
+    }
+
 private:
     int idGen;
     vector<int> indexes;
@@ -69,7 +70,6 @@ private:
     vector<symAttr> id2sym;
 
 public:
-    symbols();
     void direct();
     void redirect();
 
@@ -78,29 +78,15 @@ public:
     bool has(string name);
     bool hasNowSeg(string name);
     bool hasNearFunc();
+
     symAttr get(string name);
     symAttr getNowSeg(string name);
     symAttr getNearFunc();
-    void addArgsForNearFunc(symType arg)
-    {
-        for (int i = idStack.size() - 1; i >= 0; i--)
-        {
-            if (id2sym[idStack[i]].kind == FUNC)
-            {
-                id2sym[idStack[i]].addArgs(arg);
-                return;
-            }
-        }
-    }
+
+    void addArgsForNearFunc(symType arg);
 
     void DEBUG_PRINT_LIST();
-    void DEBUG_PRINT_ALL_SYM()
-    {
-        for (int i = 0; i < id2sym.size(); i++)
-        {
-            id2sym[i].SHOW_ATTR();
-        }
-    }
+    void DEBUG_PRINT_ALL_SYM();
 };
 
 #endif
