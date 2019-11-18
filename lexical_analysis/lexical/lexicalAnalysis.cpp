@@ -10,7 +10,7 @@ token_key lexicalAnalysis::checkReservedWord(string s)
     return token_key(ret);
 }
 
-lexicalAnalysis::lexicalAnalysis(string filename)
+lexicalAnalysis::lexicalAnalysis(string filename) : errmag(errorMags::get_instance())
 {
     line = 1;
     in.open(filename);
@@ -40,7 +40,7 @@ bool lexicalAnalysis::hasSym()
     return !(in.peek() == EOF || in.eof());
 }
 
-token lexicalAnalysis::genSym(ofstream &out)
+token lexicalAnalysis::genSym()
 {
     stringstream ss;
     string value;
@@ -86,7 +86,7 @@ token lexicalAnalysis::genSym(ofstream &out)
         value = ss.str();
         if (value.size() > 1 && value[0] == '0')
         {
-            out << line << " a" << endl;
+            errmag.errPut(line, errmag.A);
         }
         return token(INTCON, value, line);
     }
@@ -103,11 +103,11 @@ token lexicalAnalysis::genSym(ofstream &out)
         value = ss.str();
         if (!(isalnum(value[0]) || value[0] == '_' || value[0] == '+' || value[0] == '-'))
         {
-            out << line << " a" << endl;
+            errmag.errPut(line, errmag.A);
         }
         if (value.size() > 1)
         {
-            out << line << " a" << endl;
+            errmag.errPut(line, errmag.A);
         }
         return token(CHARCON, value, line);
     }
@@ -126,7 +126,7 @@ token lexicalAnalysis::genSym(ofstream &out)
         {
             if (!((35 <= value[i] && value[i] <= 126) || value[i] == 32 || value[i] == 33))
             {
-                out << line << " a" << endl;
+                errmag.errPut(line, errmag.A);
             }
         }
 
@@ -159,22 +159,22 @@ token lexicalAnalysis::genSym(ofstream &out)
         return token(key, line);
     }
 
-    // 下面的部分不可能被执行,除非有bug
+    // 下面的部分不可能被执行,除非有bug或者输入文件有error
     return token(ERROR, "ERROR", line);
 }
 
-token lexicalAnalysis::getSym(ofstream &out)
+token lexicalAnalysis::getSym()
 {
     assert(hasSym());
     if (pivot != symbolics.end())
     {
         return *pivot++;
     }
-    token tk = genSym(out);
+    token tk = genSym();
     while (tk.getKey() == ERROR)
     {
-        out << tk.getLine() << " a" << endl;
-        tk = genSym(out);
+        errmag.errPut(tk.getLine(), errmag.A);
+        tk = genSym();
     }
     symbolics.push_back(tk);
     //pivot++;
@@ -183,25 +183,25 @@ token lexicalAnalysis::getSym(ofstream &out)
 
 void lexicalAnalysis::unGetSym()
 {
-    assert(pivot != symbolics.begin()); /*BUG outside:: reach the begin of the Syms but call the lexicalAnalysis::unGetSym()*/
+    assert(pivot != symbolics.begin()); /*if arrive here, BUG outside:: reach the begin of the Syms but call the lexicalAnalysis::unGetSym()*/
     if (pivot != symbolics.begin())
     {
         pivot--;
     }
 }
 
-token lexicalAnalysis::peek(ofstream &out)
+token lexicalAnalysis::peek()
 {
     assert(hasSym());
     if (pivot != symbolics.end())
     {
         return *pivot;
     }
-    token tk = genSym(out);
+    token tk = genSym();
     while (tk.getKey() == ERROR)
     {
-        out << tk.getLine() << " a" << endl;
-        tk = genSym(out);
+        errmag.errPut(tk.getLine(), errmag.A);
+        tk = genSym();
     }
     symbolics.push_back(tk);
     pivot--;

@@ -3,6 +3,7 @@
 #include "debug.h"
 #include "lexicalAnalysis.h"
 #include "symbols.h"
+#include "errorMags.h"
 #include <set>
 #include <string>
 #include <fstream>
@@ -26,7 +27,8 @@ struct expRet
 class syntacticAnalysis
 {
 private:
-    symbols symbolist;
+    errorMags &errmag;
+    symbols &symbolist;
     lexicalAnalysis lexical;
     token sym;
 
@@ -37,7 +39,6 @@ private:
     int label_idx;
     int temp_idx;
 
-    void ERROR_PRINT(int line, string err_code);
     void printToken(token key);
     void printLine(string s);
 
