@@ -89,13 +89,13 @@ void syntacticAnalysis::genMidVarState(string name)
     {
         type_str = "UNKNOWN_ERROR";
     }
-    if (varAttr.len = 0)
+    if (varAttr.len == 0)
     {
-        midFile << "var" << type_str << name << "%" << varAttr.SymId << endl;
+        midFile << "var " << type_str << " " << name << "%" << varAttr.SymId << endl;
     }
     else
     {
-        midFile << "var" << type_str << name << "[" << varAttr.len << "]"
+        midFile << "var " << type_str << " " << name << "[" << varAttr.len << "]"
                 << "%" << varAttr.SymId << endl;
     }
 }
@@ -227,6 +227,15 @@ void syntacticAnalysis::genMidPrintfStr(string str)
 }
 void syntacticAnalysis::genMidPrintfExp(symType type, string name)
 {
+    string type_str;
+    if (type == INT)
+    {
+        type_str = "INT";
+    }
+    else if (type == CHAR)
+    {
+        type_str = "CHAR";
+    }
     midFile << "printExp:" << name << "@" << type << endl;
 }
 
@@ -1586,7 +1595,7 @@ string syntacticAnalysis::invokeFuncWithReturn()
             sym = lexical.getSym(out);
         }
         sym = lexical.getSym(out);
-        return;
+        return "";
     }
 
     sym = lexical.getSym(out);
@@ -1768,8 +1777,8 @@ void syntacticAnalysis::writeStatement()
     sym = lexical.getSym(out);
     if (sym.getKey() == STRCON)
     {
-        strConCheck();
         genMidPrintfStr(sym.getValue());
+        strConCheck();
         if (sym.getKey() == COMMA)
         {
             printToken(sym);
