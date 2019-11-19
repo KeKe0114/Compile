@@ -43,6 +43,7 @@ public:
     string value;
     vector<symType> args;
     vector<int> argsId;
+    int align = 4; /*TODO: 完善更多情况*/
 
     void addArgs(int id, symType arg);
     vector<symType> getArgs();

@@ -16,7 +16,6 @@ public:
         ConstVarState, //operand1
         //函数定义
         FunctState,           //operand1
-        Para,                 //operand1
         FunctRetWithValue,    //operand1
         FunctRetWithoutValue, //null
         //函数调用
@@ -71,6 +70,15 @@ private:
     codeSt();
 
 public:
+    string getValue() { return value_const_str; }
+    symAttr *getOperand1() { return operand1; }
+    symAttr *getOperand2() { return operand2; }
+    symAttr *getResult() { return result; }
+    symAttr *getIdx() { return idx; }
+    op_em getOp() { return op; }
+    codeType getType() { return codetype; }
+
+public:
     static op_em token_key2op_em(token_key key)
     {
         if (key <= 26 && key >= 17)
@@ -98,7 +106,7 @@ public:
 class midCodeGen
 {
 private:
-    midCodeGen() : symbolist(symbols::get_instance()), label_prefix("Label"), tmp_prefix("%tmp") {}
+    midCodeGen() : symbolist(symbols::get_instance()), label_prefix("Label"), tmp_prefix("$tmp") {}
     midCodeGen(const midCodeGen &) = delete;
     midCodeGen &operator&(const midCodeGen &) = delete;
 
