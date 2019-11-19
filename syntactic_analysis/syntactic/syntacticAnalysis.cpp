@@ -340,7 +340,7 @@ char syntacticAnalysis::character()
 
     stringstream ss;
     ss << sym.getValue();
-    int ret;
+    char ret;
     ss >> ret;
 
     sym = lexical.getSym();
@@ -529,7 +529,7 @@ void syntacticAnalysis::funcWithReturn()
     sym = lexical.getSym();
     printLine("<有返回值函数定义>");
 
-    midcode.genMidFuncRet("0");
+    midcode.genMidFuncRet("");
     symbolist.redirect();
 }
 

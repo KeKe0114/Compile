@@ -1,4 +1,5 @@
 #include "symbols.h"
+#include "debug.h"
 
 symbols::symbols()
 {
@@ -62,6 +63,9 @@ symAttr symbols::get(string name)
             return id2sym[idStack[i]];
         }
     }
+    assert(false);
+    symAttr attr = {"ERROR_get", STRING, CONST};
+    return attr;
 }
 
 symAttr *symbols::get_pointer(string name)
@@ -73,6 +77,12 @@ symAttr *symbols::get_pointer(string name)
             return &id2sym[idStack[i]];
         }
     }
+    assert(false);
+    symAttr *attr = new symAttr();
+    attr->name = "ERROR_get_pointer";
+    attr->type = STRING;
+    attr->kind = CONST;
+    return attr;
 }
 
 symAttr *symbols::get_pointer_by_id(int id)
@@ -101,6 +111,9 @@ symAttr symbols::getNowSeg(string name)
             return id2sym[idStack[i]];
         }
     }
+    assert(false);
+    symAttr attr = {"ERROR_get_now_seg", STRING, CONST};
+    return attr;
 }
 
 void symbols::insert(symAttr item)
@@ -120,6 +133,9 @@ symAttr symbols::getNearFunc()
             return id2sym[idStack[i]];
         }
     }
+    assert(false);
+    symAttr attr = {"ERROR_get_func", STRING, CONST};
+    return attr;
 }
 
 bool symbols::hasNearFunc()
@@ -162,8 +178,36 @@ vector<symType> symAttr::getArgs()
 
 void symAttr::SHOW_ATTR()
 {
-    printf("%10s@%d\t%d\t%d\t%d\t", name.c_str(), SymId, type, kind, len);
-    printf("%d\t%d\n", size, offsetRel);
+    string type_str;
+    if (type == INT)
+        type_str = "INT";
+    else if (type == CHAR)
+        type_str = "CHAR";
+    else if (type == VOID)
+        type_str = "VOID";
+    else if (type == STRING)
+        type_str = "STRING";
+    else if (type == BOOL)
+        type_str = "BOOL";
+    else
+        type_str = "TYPERROR";
+    string kind_str;
+    if (kind == CONST)
+        kind_str = "CONST";
+    else if (kind == VAR)
+        kind_str = "VAR";
+    else if (kind == FUNC)
+        kind_str = "FUNC";
+    else
+        kind_str = "KINDERROR";
+    string is_array = "NOT_ARRAY";
+    if (len > 0)
+    {
+        is_array = to_string(len);
+    }
+    string refer_str = refer == GLOBAL ? "GLOBAL" : "FP";
+    printf("%15s@%d\t%5s\t%5s\t%5s\t", name.c_str(), SymId, type_str.c_str(), kind_str.c_str(), is_array.c_str());
+    printf("%d\t%d\t%6s\t%s\n", size, offsetRel, refer_str.c_str(), value.c_str());
 }
 
 void symbols::DEBUG_PRINT_LIST()

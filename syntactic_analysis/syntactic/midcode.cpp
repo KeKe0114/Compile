@@ -1,4 +1,5 @@
 #include "midcode.h"
+#include "debug.h"
 //codeSt
 codeSt::codeSt(codeType codetype)
 {
@@ -27,7 +28,6 @@ codeSt::codeSt(codeType codetype, symAttr *operand1, string value)
 {
     this->codetype = codetype;
     this->operand1 = operand1;
-    this->idx = idx;
     this->value_const_str = value;
 }
 codeSt::codeSt(codeType codetype, symAttr *operand1, symAttr *idx, symAttr *operand2)
@@ -57,11 +57,17 @@ codeSt::codeSt(codeType codetype, symAttr *operand1, op_em op, symAttr *operand2
 //midCodeGen
 string midCodeGen::genMid_AllocTmp(symType type)
 {
-    labelGen++;
-    string name = label_prefix + to_string(labelGen);
+    tmpGen++;
+    string name = tmp_prefix + to_string(tmpGen);
     symAttr attr = {name, type, VAR};
     symbolist.insert(attr);
     return name;
+}
+
+string midCodeGen::genMid_AllocLabel()
+{
+    labelGen++;
+    return label_prefix + to_string(labelGen);
 }
 
 void midCodeGen::genMidFuncDef(string funcName)
@@ -89,6 +95,7 @@ void midCodeGen::genMidFuncRet(string name)
     }
     else
     {
+        assert(symbolist.has(name));
         codeSt retWithValue(codeSt::FunctRetWithValue, symbolist.get_pointer(name));
         codes.push_back(retWithValue);
     }
@@ -111,12 +118,6 @@ void midCodeGen::genMidConstState(string name)
 {
     codeSt varState(codeSt::ConstVarState, symbolist.get_pointer(name));
     codes.push_back(varState);
-}
-
-string midCodeGen::genMid_AllocLabel()
-{
-    labelGen++;
-    return label_prefix + to_string(labelGen);
 }
 
 void midCodeGen::genMidLabelLine(string Label)
@@ -146,6 +147,7 @@ string midCodeGen::genMidValueGet(string name)
     symAttr *attr = symbolist.get_pointer(name);
     string tmp = genMid_AllocTmp(attr->type);
     codeSt valueGet(codeSt::AssignValue, symbolist.get_pointer(tmp), attr);
+    return tmp;
 }
 
 void midCodeGen::genMidValuePut(string name, string value)
@@ -216,6 +218,8 @@ void midCodeGen::genMidPrintfExp(string name)
 //to_string()
 string codeSt::to_string()
 {
+    int ret = (int)codetype;
+    return std::to_string(ret);
 }
 
 // void midCodeGen::genMidFuncDef(string funcName)
