@@ -162,7 +162,7 @@ string midCodeGen::genMidArrayValueGet(string array, string idx)
 {
     symAttr attr = symbolist.get(array);
     string tmp = genMid_AllocTmp(attr.type);
-    codeSt arrayValueGet(codeSt::ArrayValueGet, symbolist.get_id(tmp), symbolist.get_id(idx), attr.SymId);
+    codeSt arrayValueGet(codeSt::ArrayValueGet, symbolist.get_id(tmp), attr.SymId, symbolist.get_id(idx));
     codes.push_back(arrayValueGet);
     return tmp;
 }

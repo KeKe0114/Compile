@@ -264,7 +264,7 @@ void mipsGen::genMipsArrayValueGet()
     symAttr *idx = codeWorkNow->getIdx();
     symAttr *target = codeWorkNow->getOperand1();
     genMips_LaFromSymTable(collect.$t0, array);
-    genMips_LwFromSymTable(collect.$t1, idx);
+    genMips_LaFromSymTable(collect.$t1, idx);
     collect.mul(collect.$t1, collect.$t1, array->align);
     collect.add(collect.$t0, collect.$t0, collect.$t1);
     collect.lw(collect.$t1, 0, collect.$t0);
@@ -277,7 +277,7 @@ void mipsGen::genMipsArrayValuePut()
     symAttr *idx = codeWorkNow->getIdx();
     symAttr *target = codeWorkNow->getOperand2();
     genMips_LaFromSymTable(collect.$t0, array);
-    genMips_LwFromSymTable(collect.$t1, idx);
+    genMips_LaFromSymTable(collect.$t1, idx);
     collect.mul(collect.$t1, collect.$t1, array->align);
     collect.add(collect.$t0, collect.$t0, collect.$t1);
     genMips_LaFromSymTable(collect.$t2, target);
