@@ -147,6 +147,7 @@ public:
     void genMidLabelLine(string Label);
     string genMidConstTmp(symType type, string value);
     string genMidExpress(string operand1, token_key op, string operand2);
+    string genMidToINT(string operand1);
     string genMidValueGet(string name);
     void genMidValuePut(string name, string value);
     string genMidArrayValueGet(string array, string idx);

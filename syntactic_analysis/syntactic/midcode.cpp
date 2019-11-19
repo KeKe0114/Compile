@@ -135,6 +135,14 @@ string midCodeGen::genMidConstTmp(symType type, string value)
     return tmp;
 }
 
+string midCodeGen::genMidToINT(string operand1)
+{
+    string tmp = genMid_AllocTmp(INT);
+    codeSt exp(codeSt::AssignValue, symbolist.get_id(tmp), symbolist.get_id(operand1));
+    codes.push_back(exp);
+    return tmp;
+}
+
 string midCodeGen::genMidExpress(string operand1, token_key op, string operand2)
 {
     string tmp = genMid_AllocTmp(INT);

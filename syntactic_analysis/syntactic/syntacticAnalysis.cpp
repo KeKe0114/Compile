@@ -847,6 +847,7 @@ expRet syntacticAnalysis::factor()
 
         sym = lexical.getSym();
         factorTmpRet = expression().tmp4val;
+        factorTmpRet = midcode.genMidToINT(factorTmpRet);
         // assert(sym.getKey() == RPARENT);
         if (sym.getKey() != RPARENT)
         {
