@@ -12,6 +12,7 @@ public:
         Scanf, //opeand1
         //写语句
         PrintStr, //value
+        PrintStrNoNewLine, //value
         PrintExp, //operand1
         //常变量声明
         ConstVarState, //operand1
@@ -161,5 +162,7 @@ public:
 
     void genMidScanf(string name);
     void genMidPrintfStr(string str);
+    void genMidPrintfStrNoNewLine(string str);
+
     void genMidPrintfExp(string name);
 };

@@ -98,6 +98,16 @@ void mipsGen::genMipsPrintStr()
     collect.syscall(4);
 }
 
+void mipsGen::genMipsPrintStrNoNewLine()
+{
+    string strName = genMips_AllocStrName();
+    string value = codeWorkNow->getValue();
+    collect.asciiz(strName, value);
+    collect.la(collect.$a0, strName);
+    collect.syscall(4);
+}
+
+
 void mipsGen::genMipsPrintExp()
 {
     symAttr *exp = codeWorkNow->getOperand1();
@@ -497,6 +507,8 @@ void mipsGen::gen_mips_code()
             genMipsScanf();
         else if (codeWorkNow->getType() == codeSt::PrintStr)
             genMipsPrintStr();
+        else if (codeWorkNow->getType() == codeSt::PrintStrNoNewLine)
+            genMipsPrintStrNoNewLine();
         else if (codeWorkNow->getType() == codeSt::PrintExp)
             genMipsPrintExp();
         else if (codeWorkNow->getType() == codeSt::ConstVarState)

@@ -1532,14 +1532,19 @@ void syntacticAnalysis::writeStatement()
     sym = lexical.getSym();
     if (sym.getKey() == STRCON)
     {
-        midcode.genMidPrintfStr(sym.getValue());
+        string str4print = sym.getValue();
         strConCheck();
         if (sym.getKey() == COMMA)
         {
             printToken(sym);
             sym = lexical.getSym();
             expRet expret = expression();
+            midcode.genMidPrintfStrNoNewLine(str4print);
             midcode.genMidPrintfExp(expret.tmp4val);
+        }
+        else
+        {
+            midcode.genMidPrintfStr(sym.getValue());
         }
     }
     else

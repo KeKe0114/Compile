@@ -163,6 +163,7 @@ private:
 
     void genMipsScanf();
     void genMipsPrintStr();
+    void genMipsPrintStrNoNewLine();
     void genMipsPrintExp();
 
     void genMipsConstState();

@@ -219,6 +219,12 @@ void midCodeGen::genMidPrintfStr(string str)
     codeSt printStr(codeSt::PrintStr, str);
     codes.push_back(printStr);
 }
+void midCodeGen::genMidPrintfStrNoNewLine(string str)
+{
+    codeSt printStr(codeSt::PrintStrNoNewLine, str);
+    codes.push_back(printStr);
+}
+
 void midCodeGen::genMidPrintfExp(string name)
 {
     codeSt printExp(codeSt::PrintExp, symbolist.get_id(name));
