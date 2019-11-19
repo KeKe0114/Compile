@@ -14,12 +14,12 @@ syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(
 
 void syntacticAnalysis::printToken(token key)
 {
-    // out << key.getName() << " " << key.getValue() << endl;
+    // cout << key.getName() << " " << key.getValue() << " " << key.getLine() << endl;
 }
 
 void syntacticAnalysis::printLine(string s)
 {
-    // out << s << endl;
+    // cout << s << endl;
 }
 
 bool syntacticAnalysis::isTypeIdentifier(token key)
@@ -1007,6 +1007,7 @@ void syntacticAnalysis::conditionalStatement()
         /*if后面有else语句*/
         string label_out = midcode.genMid_AllocLabel();
         midcode.genMidGoto(label_out);
+        midcode.genMidLabelLine(label_not);
         printToken(sym);
         sym = lexical.getSym();
         statement();
@@ -1314,7 +1315,8 @@ void syntacticAnalysis::loopStatement()
 
         sym = lexical.getSym();
         statement();
-        string erpress_end = midcode.genMidExpress(identify3_name, op4, value5);
+        string step_tmp = midcode.genMidConstTmp(INT, value5);
+        string erpress_end = midcode.genMidExpress(identify3_name, op4, step_tmp);
         //CHEN: 临时变量
 
         midcode.genMidValuePut(identify2_name, erpress_end);

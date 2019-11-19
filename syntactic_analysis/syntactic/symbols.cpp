@@ -77,6 +77,7 @@ int symbols::get_id(string name)
             return id2sym[idStack[i]].SymId;
         }
     }
+    cout << "DENUG:" << name << endl;
     assert(false);
     symAttr *attr = new symAttr();
     attr->name = "ERROR_get_pointer";
