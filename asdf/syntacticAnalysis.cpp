@@ -1246,7 +1246,7 @@ void syntacticAnalysis::loopStatement()
         string label_out = midcode.genMid_AllocLabel();
         midcode.genMidLabelLine(label_in);
         condition();
-        midcode.genMidBZ(label_out);
+        midcode.genMidBNZ(label_out);
         // assert(sym.getKey() == SEMICN);
         if (sym.getKey() != SEMICN)
         {
@@ -1545,7 +1545,7 @@ void syntacticAnalysis::writeStatement()
         }
         else
         {
-            midcode.genMidPrintfStr(str4print);
+            midcode.genMidPrintfStr(sym.getValue());
         }
     }
     else
