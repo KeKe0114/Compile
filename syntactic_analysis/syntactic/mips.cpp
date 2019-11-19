@@ -171,14 +171,13 @@ void mipsGen::genMipsFunctState()
 
 void mipsGen::genMipsFunctRetWithValue()
 {
-    symAttr *attr = codeWorkNow->getOperand2();
+    symAttr *attr = codeWorkNow->getOperand1();
     genMips_LwFromSymTable(collect.$v0, attr);
     genMipsFunctRetWithoutValue();
 }
 
 void mipsGen::genMipsFunctRetWithoutValue()
 {
-    symAttr *attr = codeWorkNow->getOperand1();
     collect.lw(collect.$sp, 12, collect.$fp);
     collect.lw(collect.$fp, 8, collect.$sp);
     collect.lw(collect.$ra, 4, collect.$sp);

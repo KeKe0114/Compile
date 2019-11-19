@@ -132,7 +132,7 @@ public:
 
     void genMidArgsPush(string paraName);
     void genMidFuncCall(string func);
-    void genMidFuncRet(string funcName, string name);
+    void genMidFuncRet(string name);
     string genMidFuncRetUse(string funcName);
 
     void genMidVarState(string name);
