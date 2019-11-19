@@ -86,17 +86,17 @@ void midCodeGen::genMidFuncCall(string func)
     codeSt call(codeSt::FunctCall, symbolist.get_pointer(func));
     codes.push_back(call);
 }
-void midCodeGen::genMidFuncRet(string name)
+void midCodeGen::genMidFuncRet(string funcName, string name)
 {
     if (name == "")
     {
-        codeSt retWithoutValue(codeSt::FunctRetWithoutValue);
+        codeSt retWithoutValue(codeSt::FunctRetWithoutValue, symbolist.get_pointer(funcName));
         codes.push_back(retWithoutValue);
     }
     else
     {
         assert(symbolist.has(name));
-        codeSt retWithValue(codeSt::FunctRetWithValue, symbolist.get_pointer(name));
+        codeSt retWithValue(codeSt::FunctRetWithValue, symbolist.get_pointer(funcName), symbolist.get_pointer(name));
         codes.push_back(retWithValue);
     }
 }

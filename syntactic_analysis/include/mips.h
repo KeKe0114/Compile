@@ -68,11 +68,10 @@ public:
 
 private:
     stringstream ss;
-
-public:
     void data();
     void text();
 
+public:
     void asciiz(string name, string value); /*内含data(),text()*/
     void space(string name, int bytes);
 
@@ -91,7 +90,7 @@ public:
     void bnez(Register, string);
     void jump(string);
 
-    void addi(Register, Register, string);
+    void add(Register, Register, int);
     void add(Register, Register, Register);
     void sub(Register, Register, Register);
     void mul(Register, Register, Register);
@@ -103,6 +102,8 @@ public:
     void sge(Register, Register, Register);
     void seq(Register, Register, Register);
     void sne(Register, Register, Register);
+
+    void jal(string FuncName);
     void jr(Register);
 };
 
@@ -127,6 +128,8 @@ private:
     codeSt *codeWorkNow;
     int strIdGen;
     string str_prefix;
+    int spVerticalOffset;
+    int functionCallInventArgLen = 16;
 
     string genMips_AllocStrName();
     void genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op);
@@ -146,7 +149,7 @@ private:
 
     void genMipsFunctArgsPush();
     void genMipsFunctCall();
-    void genMipsFunctRetUse();
+    void genMipsFunctRetUse(); /*CHEN: retUse 和 ret 约定寄存器用v0*/
 
     void genMipsBNZ();
     void genMipsBZ();
@@ -157,7 +160,7 @@ private:
     void genMipsAssignConst();
     void genMipsArrayValueGet();
     void genMipsArrayValuePut();
-    void genMipsCondition();
+    void genMipsCondition(); /*CHEN: condition系列 和 BNZ系列约定寄存器用t9*/
     void genMipsCondition4Num();
 
     void genMipsFourYuan();

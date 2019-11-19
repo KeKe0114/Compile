@@ -16,8 +16,8 @@ public:
         ConstVarState, //operand1
         //函数定义
         FunctState,           //operand1
-        FunctRetWithValue,    //operand1
-        FunctRetWithoutValue, //null
+        FunctRetWithValue,    //operand1 operand2
+        FunctRetWithoutValue, //operand1
         //函数调用
         FunctArgsPush, //operand1
         FunctCall,     //operand1
@@ -132,7 +132,7 @@ public:
 
     void genMidArgsPush(string paraName);
     void genMidFuncCall(string func);
-    void genMidFuncRet(string name);
+    void genMidFuncRet(string funcName, string name);
     string genMidFuncRetUse(string funcName);
 
     void genMidVarState(string name);

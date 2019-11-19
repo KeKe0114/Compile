@@ -1,9 +1,7 @@
 #include "mips.h"
 #include "debug.h"
 
-void mipsGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op)
-{
-}
+void mipsGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op) {}
 
 void mipsGen::genMips_LwFromSymTable(mipsCollect::Register reg, symAttr *attr)
 {
@@ -89,16 +87,70 @@ void mipsGen::genMipsPrintExp()
     }
 }
 
-void mipsGen::genMipsConstState() {}
-void mipsGen::genMipsVarState() {}
+void mipsGen::genMipsConstState()
+{
+    symAttr *attr = codeWorkNow->getOperand1();
+    if (attr->refer == GLOBAL)
+    {
+        collect.space(attr->name, attr->size);
+    }
+}
 
-void mipsGen::genMipsFunctState() {}
-void mipsGen::genMipsFunctRetWithValue() {}
-void mipsGen::genMipsFunctRetWithoutValue() {}
+void mipsGen::genMipsVarState()
+{
+    symAttr *attr = codeWorkNow->getOperand1();
+    if (attr->refer == GLOBAL)
+    {
+        collect.space(attr->name, attr->size);
+    }
+}
 
-void mipsGen::genMipsFunctArgsPush() {}
-void mipsGen::genMipsFunctCall() {}
-void mipsGen::genMipsFunctRetUse() {}
+void mipsGen::genMipsFunctState()
+{
+    symAttr *attr = codeWorkNow->getOperand1();
+    collect.labelLine(attr->name);
+    collect.sw(collect.$ra, 4, collect.$sp);
+    collect.sw(collect.$fp, 8, collect.$sp);
+    collect.sw(collect.$sp, 12, collect.$sp);
+    collect.add(collect.$fp, collect.$sp, collect.$ZERO);
+    collect.add(collect.$sp, collect.$sp, attr->size);
+}
+
+void mipsGen::genMipsFunctRetWithValue()
+{
+    symAttr *attr = codeWorkNow->getOperand2();
+    genMips_LwFromSymTable(collect.$v0, attr);
+    genMipsFunctRetWithoutValue();
+}
+
+void mipsGen::genMipsFunctRetWithoutValue()
+{
+    symAttr *attr = codeWorkNow->getOperand1();
+    collect.lw(collect.$sp, 12, collect.$fp);
+    collect.lw(collect.$fp, 8, collect.$sp);
+    collect.lw(collect.$ra, 4, collect.$sp);
+    collect.jr(collect.$ra);
+}
+void mipsGen::genMipsFunctArgsPush()
+{
+    symAttr *attr = codeWorkNow->getOperand1();
+    genMips_LwFromSymTable(collect.$t0, attr);
+    collect.sw(collect.$t0, functionCallInventArgLen + spVerticalOffset, collect.$sp);
+    spVerticalOffset += 4;
+}
+void mipsGen::genMipsFunctCall()
+{
+    spVerticalOffset = 0;
+    symAttr *attr = codeWorkNow->getOperand1();
+    collect.jal(attr->name);
+}
+
+void mipsGen::genMipsFunctRetUse()
+{
+    symAttr *attr = codeWorkNow->getOperand1();
+    genMips_LaFromSymTable(collect.$t0, attr);
+    collect.sw(collect.$v0, 0, collect.$t0);
+}
 
 void mipsGen::genMipsBNZ()
 {
