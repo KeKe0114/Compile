@@ -1,5 +1,6 @@
 #include "midcode.h"
 #include "debug.h"
+#include "sstream"
 //codeSt
 codeSt::codeSt(codeType codetype)
 {
@@ -147,6 +148,7 @@ string midCodeGen::genMidValueGet(string name)
     symAttr attr = symbolist.get(name);
     string tmp = genMid_AllocTmp(attr.type);
     codeSt valueGet(codeSt::AssignValue, symbolist.get_id(tmp), attr.SymId);
+    codes.push_back(valueGet);
     return tmp;
 }
 
@@ -218,8 +220,38 @@ void midCodeGen::genMidPrintfExp(string name)
 //to_string()
 string codeSt::to_string()
 {
-    int ret = (int)codetype;
-    return std::to_string(ret);
+    stringstream ssp;
+    if (codetype == codeSt::Scanf)
+    {
+        symAttr scanfAttr = symbols::get_instance().get_by_id(operand1);
+        ssp << "scanf " << scanfAttr.name << "@" << scanfAttr.SymId << endl;
+    }
+    if (codetype == PrintExp)
+    {
+        string type_str;
+        symAttr printAttr = symbols::get_instance().get_by_id(operand1);
+        if (printAttr.type == INT)
+        {
+            type_str = "INT";
+        }
+        else if (printAttr.type == CHAR)
+        {
+            type_str = "CHAR";
+        }
+        else
+        {
+            type_str = "UNKNOWN ERROR";
+        }
+        ssp << "printExp:" << printAttr.name << "%" << type_str << endl;
+    }
+    if (codetype == PrintStr)
+    {
+        ssp << "printStr:" << value_const_str << endl;
+    }
+    if (codetype == AssignValue)
+    {
+    }
+    return ssp.str();
 }
 
 // void midCodeGen::genMidFuncDef(string funcName)
@@ -417,22 +449,8 @@ string codeSt::to_string()
 // }
 // void midCodeGen::genMidPrintfStr(string str)
 // {
-//     midFile << "printStr:" << str << endl;
 // }
 // void midCodeGen::genMidPrintfExp(string name)
 // {
-//     string type_str;
-//     if (type == INT)
-//     {
-//         type_str = "INT";
-//     }
-//     else if (type == CHAR)
-//     {
-//         type_str = "CHAR";
-//     }
-//     else
-//     {
-//         type_str = "UNKNOWN ERROR";
-//     }
-//     midFile << "printExp:" << name << "%" << type_str << endl;
+//
 // }

@@ -706,7 +706,7 @@ void syntacticAnalysis::mainFunc()
     assert(sym.getKey() == RBRACE);
     printToken(sym);
     printLine("<主函数>");
-
+    midcode.genMidFuncRet("");
     symbolist.redirect();
 }
 

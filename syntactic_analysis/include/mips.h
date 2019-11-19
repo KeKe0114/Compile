@@ -31,8 +31,8 @@ public:
         for (int i = 8; i <= 9; i++)
             instance.Register2Str.push_back("$t" + to_string(i));
         instance.Register2Str.push_back("$gp");
-        instance.Register2Str.push_back("$fp");
         instance.Register2Str.push_back("$sp");
+        instance.Register2Str.push_back("$fp");
         instance.Register2Str.push_back("$ra");
         return instance;
     }
@@ -121,10 +121,15 @@ public:
 class mipsGen
 {
 private:
-    mipsGen() : midcode(midCodeGen::get_instance()), symbolist(symbols::get_instance()), collect(mipsCollect::get_instance()), str_prefix("%str")
+    mipsGen() : midcode(midCodeGen::get_instance()), symbolist(symbols::get_instance()), collect(mipsCollect::get_instance()), str_prefix("$str")
     {
         newLine = genMips_AllocStrName();
         collect.asciiz(newLine, "\\n");
+        string align_use = genMips_AllocStrName();
+        collect.space(align_use, 2);
+        collect.add(collect.$fp, collect.$ZERO, collect.$sp);
+        collect.jal("main");
+        collect.syscall(10);
     }
     mipsGen(const mipsGen &) = delete;
     mipsGen &operator&(const mipsGen &) = delete;
