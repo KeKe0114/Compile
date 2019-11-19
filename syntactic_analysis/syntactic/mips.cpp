@@ -94,6 +94,8 @@ void mipsGen::genMipsPrintStr()
     collect.asciiz(strName, value);
     collect.la(collect.$a0, strName);
     collect.syscall(4);
+    collect.la(collect.$a0, newLine);
+    collect.syscall(4);
 }
 
 void mipsGen::genMipsPrintExp()
@@ -112,6 +114,8 @@ void mipsGen::genMipsPrintExp()
     {
         assert(false);
     }
+    collect.la(collect.$a0, newLine);
+    collect.syscall(4);
 }
 
 void mipsGen::genMipsConstState()
@@ -327,7 +331,7 @@ void mipsCollect::text()
 void mipsCollect::asciiz(string name, string value) /*内含data(),text()*/
 {
     data();
-    ss << name << ": .asciiz \"" << value << "\\n\"" << endl;
+    ss << name << ": .asciiz \"" << value << "\"" << endl;
 }
 void mipsCollect::space(string name, int bytes)
 {

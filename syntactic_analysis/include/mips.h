@@ -121,7 +121,11 @@ public:
 class mipsGen
 {
 private:
-    mipsGen() : midcode(midCodeGen::get_instance()), symbolist(symbols::get_instance()), collect(mipsCollect::get_instance()), str_prefix("%str") {}
+    mipsGen() : midcode(midCodeGen::get_instance()), symbolist(symbols::get_instance()), collect(mipsCollect::get_instance()), str_prefix("%str")
+    {
+        newLine = genMips_AllocStrName();
+        collect.asciiz(newLine, "\\n");
+    }
     mipsGen(const mipsGen &) = delete;
     mipsGen &operator&(const mipsGen &) = delete;
 
@@ -144,6 +148,7 @@ private:
     int strIdGen;
     string str_prefix;
     int spVerticalOffset;
+    string newLine;
     int functionCallInventArgLen = 16;
 
     string genMips_AllocStrName();
