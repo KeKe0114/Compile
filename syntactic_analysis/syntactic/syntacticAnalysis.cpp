@@ -14,12 +14,12 @@ syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(
 
 void syntacticAnalysis::printToken(token key)
 {
-    // cout << key.getName() << " " << key.getValue() << " " << key.getLine() << endl;
+    cout << key.getName() << " " << key.getValue() << " " << key.getLine() << endl;
 }
 
 void syntacticAnalysis::printLine(string s)
 {
-    // cout << s << endl;
+    cout << s << endl;
 }
 
 bool syntacticAnalysis::isTypeIdentifier(token key)
@@ -723,7 +723,8 @@ expRet syntacticAnalysis::expression()
         sym = lexical.getSym();
         ret = INT;
         termRet = term();
-        expTmp = midcode.genMidExpress(0, op, termRet.tmp4val);
+        expTmp = midcode.genMidConstTmp(INT, "0");
+        expTmp = midcode.genMidExpress(expTmp, op, termRet.tmp4val);
         //CHEN: 临时变量
     }
     else
