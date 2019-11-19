@@ -68,13 +68,13 @@ symAttr symbols::get(string name)
     return attr;
 }
 
-symAttr *symbols::get_pointer(string name)
+int symbols::get_id(string name)
 {
     for (int i = idStack.size() - 1; i >= 0; i--)
     {
         if (id2sym[idStack[i]].name == name)
         {
-            return &id2sym[idStack[i]];
+            return id2sym[idStack[i]].SymId;
         }
     }
     assert(false);
@@ -82,12 +82,12 @@ symAttr *symbols::get_pointer(string name)
     attr->name = "ERROR_get_pointer";
     attr->type = STRING;
     attr->kind = CONST;
-    return attr;
+    return -1;
 }
 
-symAttr *symbols::get_pointer_by_id(int id)
+symAttr symbols::get_by_id(int id)
 {
-    return &id2sym[id];
+    return id2sym[id];
 }
 
 bool symbols::hasNowSeg(string name)

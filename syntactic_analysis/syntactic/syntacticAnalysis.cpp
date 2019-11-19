@@ -113,7 +113,7 @@ void syntacticAnalysis::procedureCheck()
     //assert(!lexical.hasSym()); /*main 函数后不应该有其他token*/
     printLine("<程序>");
     symbolist.redirect();
-    symbolist.DEBUG_PRINT_ALL_SYM();
+    // symbolist.DEBUG_PRINT_ALL_SYM();
 }
 
 void syntacticAnalysis::strConCheck()

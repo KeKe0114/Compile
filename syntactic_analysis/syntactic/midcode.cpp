@@ -11,33 +11,33 @@ codeSt::codeSt(codeType codetype, string value)
     this->codetype = codetype;
     this->value_const_str = value;
 }
-codeSt::codeSt(codeType codetype, symAttr *operand1)
+codeSt::codeSt(codeType codetype, int operand1)
 {
     this->codetype = codetype;
     this->operand1 = operand1;
 }
 
-codeSt::codeSt(codeType codetype, symAttr *operand1, symAttr *operand2)
+codeSt::codeSt(codeType codetype, int operand1, int operand2)
 {
     this->codetype = codetype;
     this->operand1 = operand1;
     this->operand2 = operand2;
 }
 
-codeSt::codeSt(codeType codetype, symAttr *operand1, string value)
+codeSt::codeSt(codeType codetype, int operand1, string value)
 {
     this->codetype = codetype;
     this->operand1 = operand1;
     this->value_const_str = value;
 }
-codeSt::codeSt(codeType codetype, symAttr *operand1, symAttr *idx, symAttr *operand2)
+codeSt::codeSt(codeType codetype, int operand1, int idx, int operand2)
 {
     this->codetype = codetype;
     this->operand1 = operand1;
     this->operand2 = operand2;
     this->idx = idx;
 }
-codeSt::codeSt(codeType codetype, symAttr *operand1, op_em op, symAttr *operand2)
+codeSt::codeSt(codeType codetype, int operand1, op_em op, int operand2)
 {
     this->codetype = codetype;
     this->operand1 = operand1;
@@ -45,7 +45,7 @@ codeSt::codeSt(codeType codetype, symAttr *operand1, op_em op, symAttr *operand2
     this->op = op;
 }
 
-codeSt::codeSt(codeType codetype, symAttr *operand1, op_em op, symAttr *operand2, symAttr *result)
+codeSt::codeSt(codeType codetype, int operand1, op_em op, int operand2, int result)
 {
     this->codetype = codetype;
     this->operand1 = operand1;
@@ -72,18 +72,18 @@ string midCodeGen::genMid_AllocLabel()
 
 void midCodeGen::genMidFuncDef(string funcName)
 {
-    codeSt funcDef(codeSt::FunctState, symbolist.get_pointer(funcName));
+    codeSt funcDef(codeSt::FunctState, symbolist.get_id(funcName));
     codes.push_back(funcDef);
 }
 
 void midCodeGen::genMidArgsPush(string paraName)
 {
-    codeSt para(codeSt::FunctArgsPush, symbolist.get_pointer(paraName));
+    codeSt para(codeSt::FunctArgsPush, symbolist.get_id(paraName));
     codes.push_back(para);
 }
 void midCodeGen::genMidFuncCall(string func)
 {
-    codeSt call(codeSt::FunctCall, symbolist.get_pointer(func));
+    codeSt call(codeSt::FunctCall, symbolist.get_id(func));
     codes.push_back(call);
 }
 void midCodeGen::genMidFuncRet(string name)
@@ -96,27 +96,27 @@ void midCodeGen::genMidFuncRet(string name)
     else
     {
         assert(symbolist.has(name));
-        codeSt retWithValue(codeSt::FunctRetWithValue, symbolist.get_pointer(name));
+        codeSt retWithValue(codeSt::FunctRetWithValue, symbolist.get_id(name));
         codes.push_back(retWithValue);
     }
 }
 
 string midCodeGen::genMidFuncRetUse(string funcName)
 {
-    string tmp = genMid_AllocTmp(symbolist.get_pointer(funcName)->type);
-    codeSt useRet(codeSt::FunctRetUse, symbolist.get_pointer(tmp));
+    string tmp = genMid_AllocTmp(symbolist.get(funcName).type);
+    codeSt useRet(codeSt::FunctRetUse, symbolist.get_id(tmp));
     codes.push_back(useRet);
     return tmp;
 }
 
 void midCodeGen::genMidVarState(string name)
 {
-    codeSt varState(codeSt::ConstVarState, symbolist.get_pointer(name));
+    codeSt varState(codeSt::ConstVarState, symbolist.get_id(name));
     codes.push_back(varState);
 }
 void midCodeGen::genMidConstState(string name)
 {
-    codeSt varState(codeSt::ConstVarState, symbolist.get_pointer(name));
+    codeSt varState(codeSt::ConstVarState, symbolist.get_id(name));
     codes.push_back(varState);
 }
 
@@ -129,7 +129,7 @@ void midCodeGen::genMidLabelLine(string Label)
 string midCodeGen::genMidConstTmp(symType type, string value)
 {
     string tmp = genMid_AllocTmp(type);
-    codeSt constTmp(codeSt::AssignConst, symbolist.get_pointer(tmp), value);
+    codeSt constTmp(codeSt::AssignConst, symbolist.get_id(tmp), value);
     codes.push_back(constTmp);
     return tmp;
 }
@@ -137,50 +137,50 @@ string midCodeGen::genMidConstTmp(symType type, string value)
 string midCodeGen::genMidExpress(string operand1, token_key op, string operand2)
 {
     string tmp = genMid_AllocTmp(INT);
-    codeSt exp(codeSt::FourYuan, symbolist.get_pointer(operand1), codeSt::token_key2op_em(op), symbolist.get_pointer(operand2), symbolist.get_pointer(tmp));
+    codeSt exp(codeSt::FourYuan, symbolist.get_id(operand1), codeSt::token_key2op_em(op), symbolist.get_id(operand2), symbolist.get_id(tmp));
     codes.push_back(exp);
     return tmp;
 }
 
 string midCodeGen::genMidValueGet(string name)
 {
-    symAttr *attr = symbolist.get_pointer(name);
-    string tmp = genMid_AllocTmp(attr->type);
-    codeSt valueGet(codeSt::AssignValue, symbolist.get_pointer(tmp), attr);
+    symAttr attr = symbolist.get(name);
+    string tmp = genMid_AllocTmp(attr.type);
+    codeSt valueGet(codeSt::AssignValue, symbolist.get_id(tmp), attr.SymId);
     return tmp;
 }
 
 void midCodeGen::genMidValuePut(string name, string value)
 {
-    codeSt valuePut(codeSt::AssignValue, symbolist.get_pointer(name), symbolist.get_pointer(value));
+    codeSt valuePut(codeSt::AssignValue, symbolist.get_id(name), symbolist.get_id(value));
     codes.push_back(valuePut);
 }
 
 string midCodeGen::genMidArrayValueGet(string array, string idx)
 {
-    symAttr *attr = symbolist.get_pointer(array);
-    string tmp = genMid_AllocTmp(attr->type);
-    codeSt arrayValueGet(codeSt::ArrayValueGet, symbolist.get_pointer(tmp), attr, symbolist.get_pointer(idx));
+    symAttr attr = symbolist.get(array);
+    string tmp = genMid_AllocTmp(attr.type);
+    codeSt arrayValueGet(codeSt::ArrayValueGet, symbolist.get_id(tmp), attr.SymId, symbolist.get_id(idx));
     codes.push_back(arrayValueGet);
     return tmp;
 }
 
 void midCodeGen::genMidArrayValuePut(string array, string idx, string value)
 {
-    codeSt valuePut(codeSt::ArrayValuePut, symbolist.get_pointer(array), symbolist.get_pointer(idx), symbolist.get_pointer(value));
+    codeSt valuePut(codeSt::ArrayValuePut, symbolist.get_id(array), symbolist.get_id(idx), symbolist.get_id(value));
     codes.push_back(valuePut);
 }
 
 void midCodeGen::genMidCondition(string operand1, token_key op, string operand2)
 {
     codeSt::op_em opem = codeSt::token_key2op_em(op);
-    codeSt condition(codeSt::Condition, symbolist.get_pointer(operand1), opem, symbolist.get_pointer(operand2));
+    codeSt condition(codeSt::Condition, symbolist.get_id(operand1), opem, symbolist.get_id(operand2));
     codes.push_back(condition);
 }
 
 void midCodeGen::genMidCondition4Num(string operand1)
 {
-    codeSt condition(codeSt::Condition4Num, symbolist.get_pointer(operand1));
+    codeSt condition(codeSt::Condition4Num, symbolist.get_id(operand1));
     codes.push_back(condition);
 }
 
@@ -201,7 +201,7 @@ void midCodeGen::genMidBZ(string Label)
 }
 void midCodeGen::genMidScanf(string name)
 {
-    codeSt scanf(codeSt::Scanf, symbolist.get_pointer(name));
+    codeSt scanf(codeSt::Scanf, symbolist.get_id(name));
     codes.push_back(scanf);
 }
 void midCodeGen::genMidPrintfStr(string str)
@@ -211,7 +211,7 @@ void midCodeGen::genMidPrintfStr(string str)
 }
 void midCodeGen::genMidPrintfExp(string name)
 {
-    codeSt printExp(codeSt::PrintExp, symbolist.get_pointer(name));
+    codeSt printExp(codeSt::PrintExp, symbolist.get_id(name));
     codes.push_back(printExp);
 }
 

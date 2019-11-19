@@ -63,19 +63,19 @@ private:
     codeType codetype;
 
     string value_const_str;
-    symAttr *operand1;
-    symAttr *operand2;
-    symAttr *result;
+    int operand1;
+    int operand2;
+    int result;
     op_em op;
-    symAttr *idx;
+    int idx;
     codeSt();
 
 public:
     string getValue() { return value_const_str; }
-    symAttr *getOperand1() { return operand1; }
-    symAttr *getOperand2() { return operand2; }
-    symAttr *getResult() { return result; }
-    symAttr *getIdx() { return idx; }
+    symAttr *getOperand1() { return symbols::get_instance().get_pointer_by_id(operand1); }
+    symAttr *getOperand2() { return symbols::get_instance().get_pointer_by_id(operand2); }
+    symAttr *getResult() { return symbols::get_instance().get_pointer_by_id(result); }
+    symAttr *getIdx() { return symbols::get_instance().get_pointer_by_id(idx); }
     op_em getOp() { return op; }
     codeType getType() { return codetype; }
 
@@ -91,15 +91,15 @@ public:
     codeSt(codeType codetype);
 
     codeSt(codeType codetype, string value);
-    codeSt(codeType codetype, symAttr *operand1);
+    codeSt(codeType codetype, int operand1);
 
-    codeSt(codeType codetype, symAttr *operand1, symAttr *operand2);
+    codeSt(codeType codetype, int operand1, int operand2);
 
-    codeSt(codeType codetype, symAttr *operand1, string value);
-    codeSt(codeType codetype, symAttr *operand1, symAttr *idx, symAttr *operand2);
-    codeSt(codeType codetype, symAttr *operand1, op_em op, symAttr *operand2);
+    codeSt(codeType codetype, int operand1, string value);
+    codeSt(codeType codetype, int operand1, int idx, int operand2);
+    codeSt(codeType codetype, int operand1, op_em op, int operand2);
 
-    codeSt(codeType codetype, symAttr *operand1, op_em op, symAttr *operand2, symAttr *result);
+    codeSt(codeType codetype, int operand1, op_em op, int operand2, int result);
 
     string to_string();
 };
@@ -129,12 +129,7 @@ private:
     string genMid_AllocTmp(symType type);
 
 public:
-    codeSt *get_midCode_by_idx(int idx)
-    {
-        codeSt *ret = &codes[idx];
-        ret->getOperand1()->SHOW_ATTR();
-        return ret;
-    }
+    codeSt *get_midCode_by_idx(int idx) { return &codes[idx]; }
     int midCode_size() { return codes.size(); }
 
 public:

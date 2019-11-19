@@ -84,8 +84,9 @@ public:
     symAttr getNowSeg(string name);
     symAttr getNearFunc();
 
-    symAttr *get_pointer(string name);
-    symAttr *get_pointer_by_id(int id);
+    int get_id(string name);
+    symAttr get_by_id(int id);
+    symAttr *get_pointer_by_id(int id) { return &id2sym[id]; }
 
     void addArgsForNearFunc(string name, symType arg);
 
