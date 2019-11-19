@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include "symbols.h"
 #include "token.h"
@@ -126,6 +127,15 @@ private:
     string tmp_prefix;
 
     string genMid_AllocTmp(symType type);
+
+public:
+    codeSt *get_midCode_by_idx(int idx)
+    {
+        codeSt *ret = &codes[idx];
+        ret->getOperand1()->SHOW_ATTR();
+        return ret;
+    }
+    int midCode_size() { return codes.size(); }
 
 public:
     void genMidFuncDef(string funcName);

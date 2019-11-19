@@ -38,7 +38,6 @@ private:
     set<string> funcWithRet;
     set<string> funcWithoutRet;
     ofstream out;
-    ofstream midFile;
     int label_idx;
     int temp_idx;
 
@@ -87,7 +86,7 @@ private:
     void returnStatement();
 
 public:
-    syntacticAnalysis(string filename, string outfile, string midfile);
+    syntacticAnalysis(string filename, string outfile);
     void procedureCheck();
 };
 #endif

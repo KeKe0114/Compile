@@ -2,34 +2,38 @@
 #include "symbols.h"
 #include "midcode.h"
 #include <sstream>
+#include <vector>
+#include <string>
+using namespace std;
 class mipsCollect
 {
 private:
     mipsCollect() {}
     mipsCollect(const mipsCollect &) = delete;
     mipsCollect &operator&(mipsCollect &) = delete;
-    static vector<string> Register2Str;
+    vector<string> Register2Str;
 
 public:
     static mipsCollect &get_instance()
     {
-        Register2Str.push_back("$zero");
-        Register2Str.push_back("$at");
-        for (int i = 0; i <= 1; i++)
-            Register2Str.push_back("$v" + to_string(i));
-        for (int i = 0; i <= 3; i++)
-            Register2Str.push_back("$a" + to_string(i));
-        for (int i = 0; i <= 7; i++)
-            Register2Str.push_back("$t" + to_string(i));
-        for (int i = 0; i <= 7; i++)
-            Register2Str.push_back("$s" + to_string(i));
-        for (int i = 8; i <= 9; i++)
-            Register2Str.push_back("$t" + to_string(i));
-        Register2Str.push_back("$gp");
-        Register2Str.push_back("$fp");
-        Register2Str.push_back("$sp");
-        Register2Str.push_back("$ra");
         static mipsCollect instance;
+
+        instance.Register2Str.push_back("$zero");
+        instance.Register2Str.push_back("$at");
+        for (int i = 0; i <= 1; i++)
+            instance.Register2Str.push_back("$v" + to_string(i));
+        for (int i = 0; i <= 3; i++)
+            instance.Register2Str.push_back("$a" + to_string(i));
+        for (int i = 0; i <= 7; i++)
+            instance.Register2Str.push_back("$t" + to_string(i));
+        for (int i = 0; i <= 7; i++)
+            instance.Register2Str.push_back("$s" + to_string(i));
+        for (int i = 8; i <= 9; i++)
+            instance.Register2Str.push_back("$t" + to_string(i));
+        instance.Register2Str.push_back("$gp");
+        instance.Register2Str.push_back("$fp");
+        instance.Register2Str.push_back("$sp");
+        instance.Register2Str.push_back("$ra");
         return instance;
     }
     enum Register
@@ -65,6 +69,9 @@ public:
         $fp,
         $ra,
     };
+
+public:
+    string get_mips_str() { return ss.str(); }
 
 private:
     stringstream ss;
@@ -124,6 +131,10 @@ public:
         static mipsGen instance;
         return instance;
     }
+
+public:
+    void gen_mips_code();
+    string get_mips_str() { return collect.get_mips_str(); }
 
 private:
     mipsCollect &collect;

@@ -482,3 +482,63 @@ void mipsCollect::mfhi(Register reg1)
     text();
     ss << "mfhi " << Register2Str[reg1] << endl;
 }
+
+void mipsGen::gen_mips_code()
+{
+    int size = midcode.midCode_size();
+    for (int i = 0; i < size; i++)
+    {
+        codeWorkNow = midcode.get_midCode_by_idx(i);
+        if (codeWorkNow->getType() == codeSt::Scanf)
+            genMipsScanf();
+        else if (codeWorkNow->getType() == codeSt::PrintStr)
+            genMipsPrintStr();
+        else if (codeWorkNow->getType() == codeSt::PrintExp)
+            genMipsPrintExp();
+        else if (codeWorkNow->getType() == codeSt::ConstVarState)
+        {
+            if (codeWorkNow->getOperand1()->kind == CONST)
+                genMipsConstState();
+            else if (codeWorkNow->getOperand1()->kind == VAR)
+                genMipsVarState();
+            else
+                assert(false);
+        }
+        else if (codeWorkNow->getType() == codeSt::FunctState)
+            genMipsFunctState();
+        else if (codeWorkNow->getType() == codeSt::FunctRetWithValue)
+            genMipsFunctRetWithValue();
+        else if (codeWorkNow->getType() == codeSt::FunctRetWithoutValue)
+            genMipsFunctRetWithoutValue();
+        else if (codeWorkNow->getType() == codeSt::FunctArgsPush)
+            genMipsFunctArgsPush();
+        else if (codeWorkNow->getType() == codeSt::FunctCall)
+            genMipsFunctCall();
+        else if (codeWorkNow->getType() == codeSt::FunctRetUse)
+            genMipsFunctRetUse();
+        else if (codeWorkNow->getType() == codeSt::BNZ)
+            genMipsBNZ();
+        else if (codeWorkNow->getType() == codeSt::BZ)
+            genMipsBZ();
+        else if (codeWorkNow->getType() == codeSt::Jump)
+            genMipsJUMP();
+        else if (codeWorkNow->getType() == codeSt::Label)
+            genMipsLabelLine();
+        else if (codeWorkNow->getType() == codeSt::AssignValue)
+            genMipsAssignValue();
+        else if (codeWorkNow->getType() == codeSt::AssignConst)
+            genMipsAssignConst();
+        else if (codeWorkNow->getType() == codeSt::ArrayValuePut)
+            genMipsArrayValuePut();
+        else if (codeWorkNow->getType() == codeSt::ArrayValueGet)
+            genMipsArrayValueGet();
+        else if (codeWorkNow->getType() == codeSt::Condition)
+            genMipsCondition();
+        else if (codeWorkNow->getType() == codeSt::Condition4Num)
+            genMipsCondition4Num();
+        else if (codeWorkNow->getType() == codeSt::FourYuan)
+            genMipsFourYuan();
+        else
+            assert(false);
+    }
+}

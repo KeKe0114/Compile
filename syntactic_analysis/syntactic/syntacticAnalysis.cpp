@@ -10,16 +10,16 @@ inline symType transferKeyToType(token_key key)
     return TYPERROR;
 }
 
-syntacticAnalysis::syntacticAnalysis(string filename, string outfile, string midfile) : lexical(filename), sym(lexical.getSym()), out(outfile), midFile(midfile), symbolist(symbols::get_instance()), errmag(errorMags::get_instance()), midcode(midCodeGen::get_instance()) {}
+syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(filename), sym(lexical.getSym()), out(outfile), symbolist(symbols::get_instance()), errmag(errorMags::get_instance()), midcode(midCodeGen::get_instance()) {}
 
 void syntacticAnalysis::printToken(token key)
 {
-    // cout << key.getName() << " " << key.getValue() << endl;
+    // out << key.getName() << " " << key.getValue() << endl;
 }
 
 void syntacticAnalysis::printLine(string s)
 {
-    // cout << s << endl;
+    // out << s << endl;
 }
 
 bool syntacticAnalysis::isTypeIdentifier(token key)
@@ -1616,11 +1616,4 @@ void syntacticAnalysis::returnStatement()
         }
     }
     printLine("<返回语句>");
-}
-
-int main(int argc, char const *argv[])
-{
-    syntacticAnalysis syntactic("testfile.txt", "error.txt", "midfile.txt");
-    syntactic.procedureCheck();
-    return 0;
 }
