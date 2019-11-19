@@ -214,7 +214,7 @@ void syntacticAnalysis::constDefine()
                         continue;
                     }
                 }
-                symAttr attr = {intConstName, symType::INT, symKind::CONST};
+                symAttr attr(intConstName, symType::INT, symKind::CONST);
                 attr.value = to_string(integer());
                 symbolist.insert(attr);
                 midcode.genMidConstState(attr.name);
@@ -283,7 +283,7 @@ void syntacticAnalysis::constDefine()
                         continue;
                     }
                 }
-                symAttr attr = {charConstName, symType::CHAR, symKind::CONST};
+                symAttr attr(charConstName, symType::CHAR, symKind::CONST);
                 string ch = "a";
                 ch[0] = character();
                 attr.value = ch;
@@ -367,7 +367,7 @@ string syntacticAnalysis::stateHead()
     else
     {
         // cout << "symType into func list:\t " << symtype << endl;
-        symAttr attr = {name, symtype, FUNC};
+        symAttr attr(name, symtype, FUNC);
         symbolist.insert(attr);
         // cout << "get symType after insert:\t " << symbolist.getNearFunc().type << endl;
     }
@@ -463,7 +463,7 @@ void syntacticAnalysis::variableDefine()
             sym = lexical.getSym();
             int len = unsignedInteger();
 
-            symAttr attr = {symname, symtype, symKind::VAR, len};
+            symAttr attr(symname, symtype, symKind::VAR, len);
             symbolist.insert(attr);
             midcode.genMidVarState(attr.name);
 
@@ -484,7 +484,7 @@ void syntacticAnalysis::variableDefine()
         }
         else
         {
-            symAttr attr = {symname, symtype, symKind::VAR};
+            symAttr attr(symname, symtype, symKind::VAR);
             symbolist.insert(attr);
             midcode.genMidVarState(attr.name);
         }
@@ -551,7 +551,7 @@ void syntacticAnalysis::funcWithoutReturn()
     }
     else
     {
-        symAttr attr = {sym.getValue(), VOID, FUNC};
+        symAttr attr(sym.getValue(), VOID, FUNC);
         symbolist.insert(attr);
     }
     symbolist.direct();
@@ -673,7 +673,7 @@ void syntacticAnalysis::mainFunc()
     }
     else
     {
-        symAttr attr = {sym.getValue(), VOID, FUNC};
+        symAttr attr(sym.getValue(), VOID, FUNC);
         symbolist.insert(attr);
         midcode.genMidFuncDef(attr.name);
     }

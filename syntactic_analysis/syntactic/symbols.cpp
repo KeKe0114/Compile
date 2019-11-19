@@ -3,7 +3,7 @@
 
 symbols::symbols()
 {
-    symAttr global_data = {"GLOBAL_DATAES", VOID, CONST};
+    symAttr global_data("GLOBAL_DATAES", VOID, CONST);
     insert(global_data);
 }
 
@@ -64,7 +64,7 @@ symAttr symbols::get(string name)
         }
     }
     assert(false);
-    symAttr attr = {"ERROR_get", STRING, CONST};
+    symAttr attr("ERROR_get", STRING, CONST);
     return attr;
 }
 
@@ -79,10 +79,6 @@ int symbols::get_id(string name)
     }
     cout << "DENUG:" << name << endl;
     assert(false);
-    symAttr *attr = new symAttr();
-    attr->name = "ERROR_get_pointer";
-    attr->type = STRING;
-    attr->kind = CONST;
     return -1;
 }
 
@@ -113,7 +109,7 @@ symAttr symbols::getNowSeg(string name)
         }
     }
     assert(false);
-    symAttr attr = {"ERROR_get_now_seg", STRING, CONST};
+    symAttr attr("ERROR_get_now_seg", STRING, CONST);
     return attr;
 }
 
@@ -135,7 +131,7 @@ symAttr symbols::getNearFunc()
         }
     }
     assert(false);
-    symAttr attr = {"ERROR_get_func", STRING, CONST};
+    symAttr attr("ERROR_get_func", STRING, CONST);
     return attr;
 }
 
@@ -153,7 +149,7 @@ bool symbols::hasNearFunc()
 
 void symbols::addArgsForNearFunc(string name, symType arg)
 {
-    symAttr attr = {name, arg, VAR};
+    symAttr attr(name, arg, VAR);
     insert(attr);
     int id = get(name).SymId;
     for (int i = idStack.size() - 1; i >= 0; i--)

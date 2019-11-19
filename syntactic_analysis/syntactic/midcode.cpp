@@ -60,7 +60,7 @@ string midCodeGen::genMid_AllocTmp(symType type)
 {
     tmpGen++;
     string name = tmp_prefix + to_string(tmpGen);
-    symAttr attr = {name, type, VAR};
+    symAttr attr(name, type, VAR);
     symbolist.insert(attr);
     return name;
 }

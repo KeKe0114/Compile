@@ -48,6 +48,21 @@ public:
     void addArgs(int id, symType arg);
     vector<symType> getArgs();
 
+    symAttr(string name, symType type, symKind kind)
+    {
+        this->name = name;
+        this->type = type;
+        this->kind = kind;
+        this->size = 0;
+    }
+
+    symAttr(string name, symType type, symKind kind, int size)
+    {
+        this->name = name;
+        this->type = type;
+        this->kind = kind;
+        this->size = size;
+    }
     void SHOW_ATTR();
 };
 
