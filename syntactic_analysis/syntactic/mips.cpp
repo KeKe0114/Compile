@@ -1,7 +1,34 @@
 #include "mips.h"
 #include "debug.h"
 
-void mipsGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op) {}
+void mipsGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op)
+{
+    if (op == codeSt::op_PLUS)
+        collect.add(target, operand1, operand2);
+    else if (op == codeSt::op_MINU)
+        collect.sub(target, operand1, operand2);
+    else if (op == codeSt::op_MULT)
+        collect.mul(target, operand1, operand2);
+    else if (op == codeSt::op_DIV)
+    {
+        collect.div(operand1, operand2);
+        collect.mflo(target);
+    }
+    else if (op == codeSt::op_LSS)
+        collect.slt(target, operand1, operand2);
+    else if (op == codeSt::op_LEQ)
+        collect.sle(target, operand1, operand2);
+    else if (op == codeSt::op_GRE)
+        collect.sgt(target, operand1, operand2);
+    else if (op == codeSt::op_GEQ)
+        collect.sge(target, operand1, operand2);
+    else if (op == codeSt::op_EQL)
+        collect.seq(target, operand1, operand2);
+    else if (op == codeSt::op_NEQ)
+        collect.sne(target, operand1, operand2);
+    else
+        assert(false);
+}
 
 void mipsGen::genMips_LwFromSymTable(mipsCollect::Register reg, symAttr *attr)
 {
@@ -90,9 +117,35 @@ void mipsGen::genMipsPrintExp()
 void mipsGen::genMipsConstState()
 {
     symAttr *attr = codeWorkNow->getOperand1();
+    string value = attr->value;
+    int num;
+    if (attr->type == INT)
+    {
+        stringstream stream;
+        stream << value;
+        stream >> num;
+    }
+    else if (attr->type == CHAR)
+    {
+        num = (int)value.c_str()[0];
+    }
+    else
+    {
+        assert(false);
+    }
     if (attr->refer == GLOBAL)
     {
-        collect.space(attr->name, attr->size);
+        collect.word(attr->name, num);
+    }
+    else if (attr->refer == FP)
+    {
+        genMips_LaFromSymTable(collect.$t0, attr);
+        collect.li(collect.$t1, num);
+        collect.sw(collect.$t1, 0, collect.$t0);
+    }
+    else
+    {
+        assert(false);
     }
 }
 
@@ -252,4 +305,181 @@ void mipsGen::genMipsFourYuan()
     genMips_LaFromSymTable(collect.$t2, target);
     genMips_DistinguishOp(collect.$t3, collect.$t0, collect.$t1, codeWorkNow->getOp());
     collect.sw(collect.$t3, 0, collect.$t2);
+}
+
+//mipsCollect
+void mipsCollect::data()
+{
+    if (textNow)
+    {
+        ss << ".data" << endl;
+        textNow = false;
+    }
+}
+void mipsCollect::text()
+{
+    if (!textNow)
+    {
+        ss << ".text" << endl;
+        textNow = true;
+    }
+}
+
+void mipsCollect::asciiz(string name, string value) /*内含data(),text()*/
+{
+    data();
+    ss << name << ": .asciiz \"" << value << "\\n\"" << endl;
+}
+void mipsCollect::space(string name, int bytes)
+{
+    data();
+    ss << name << ": .space " << bytes << endl;
+}
+void mipsCollect::word(string name, int num)
+{
+    data();
+    ss << name << ": .word " << num << endl;
+}
+
+void mipsCollect::sw(Register reg1, int offset, Register reg2)
+{
+    text();
+    ss << "sw " << Register2Str[reg1] << ", " << offset << "(" << Register2Str[reg2] << ")" << endl;
+}
+
+void mipsCollect::lw(Register reg1, int offset, Register reg2)
+{
+    text();
+    ss << "lw " << Register2Str[reg1] << ", " << offset << "(" << Register2Str[reg2] << ")" << endl;
+}
+void mipsCollect::lw(Register reg1, string name)
+{
+    text();
+    ss << "lw " << Register2Str[reg1] << ", " << name << endl;
+}
+void mipsCollect::la(Register reg1, string name)
+{
+    text();
+    ss << "la " << Register2Str[reg1] << ", " << name << endl;
+}
+void mipsCollect::la(Register reg1, int offset, Register reg2)
+{
+    text();
+    ss << "la " << Register2Str[reg1] << ", " << offset << "(" << Register2Str[reg2] << ")" << endl;
+}
+void mipsCollect::li(Register reg1, int num)
+{
+    text();
+    ss << "li " << Register2Str[reg1] << ", " << num << endl;
+}
+
+void mipsCollect::syscall(int num)
+{
+    text();
+    li(Register::$v0, num);
+    ss << "syscall" << endl;
+}
+
+void mipsCollect::labelLine(string label)
+{
+    text();
+    ss << label << ":" << endl;
+}
+
+void mipsCollect::beqz(Register reg1, string label)
+{
+    text();
+    ss << "beqz " << Register2Str[reg1] << ", " << label << endl;
+}
+void mipsCollect::bnez(Register reg1, string label)
+{
+    text();
+    ss << "bnez " << Register2Str[reg1] << ", " << label << endl;
+}
+void mipsCollect::jump(string label)
+{
+    text();
+    ss << "j " << label << endl;
+}
+
+void mipsCollect::add(Register reg1, Register reg2, int num)
+{
+    text();
+    ss << "add " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << num << endl;
+}
+void mipsCollect::add(Register reg1, Register reg2, Register reg3)
+{
+    text();
+    ss << "add " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
+}
+void mipsCollect::sub(Register reg1, Register reg2, Register reg3)
+{
+    text();
+    ss << "sub " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
+}
+void mipsCollect::mul(Register reg1, Register reg2, Register reg3)
+{
+    text();
+    ss << "mul " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
+}
+void mipsCollect::mul(Register reg1, Register reg2, int num)
+{
+    text();
+    ss << "mul " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << num << endl;
+}
+void mipsCollect::div(Register reg1, Register reg2)
+{
+    text();
+    ss << "div " << Register2Str[reg1] << ", " << Register2Str[reg2] << endl;
+}
+void mipsCollect::slt(Register reg1, Register reg2, Register reg3)
+{
+    text();
+    ss << "slt " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
+}
+void mipsCollect::sle(Register reg1, Register reg2, Register reg3)
+{
+    text();
+    ss << "sle " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
+}
+void mipsCollect::sgt(Register reg1, Register reg2, Register reg3)
+{
+    text();
+    ss << "sgt " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
+}
+void mipsCollect::sge(Register reg1, Register reg2, Register reg3)
+{
+    text();
+    ss << "sge " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
+}
+void mipsCollect::seq(Register reg1, Register reg2, Register reg3)
+{
+    text();
+    ss << "seq " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
+}
+void mipsCollect::sne(Register reg1, Register reg2, Register reg3)
+{
+    text();
+    ss << "sne " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
+}
+
+void mipsCollect::jal(string FuncName)
+{
+    text();
+    ss << "jal " << FuncName << endl;
+}
+void mipsCollect::jr(Register reg1)
+{
+    text();
+    ss << "jr " << Register2Str[reg1] << endl;
+}
+void mipsCollect::mflo(Register reg1)
+{
+    text();
+    ss << "mflo " << Register2Str[reg1] << endl;
+}
+void mipsCollect::mfhi(Register reg1)
+{
+    text();
+    ss << "mfhi " << Register2Str[reg1] << endl;
 }

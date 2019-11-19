@@ -68,12 +68,14 @@ public:
 
 private:
     stringstream ss;
+    bool textNow = true;
     void data();
     void text();
 
 public:
     void asciiz(string name, string value); /*内含data(),text()*/
     void space(string name, int bytes);
+    void word(string name, int num);
 
     void sw(Register, int, Register);
     void lw(Register, int, Register);
@@ -105,6 +107,8 @@ public:
 
     void jal(string FuncName);
     void jr(Register);
+    void mflo(Register);
+    void mfhi(Register);
 };
 
 class mipsGen
