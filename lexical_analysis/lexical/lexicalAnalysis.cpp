@@ -118,8 +118,21 @@ token lexicalAnalysis::genSym()
         c = in.get();
         while (c != '"')
         {
-            ss << c;
-            c = in.get();
+            if (c == '\\')
+            {
+                ss << c;
+                ss << c;
+                c = in.get();
+            }
+            else if (c == '\n')
+            {
+                c = in.get();
+            }
+            else
+            {
+                ss << c;
+                c = in.get();
+            }
         }
         value = ss.str();
         for (int i = 0; i < value.size(); i++)
