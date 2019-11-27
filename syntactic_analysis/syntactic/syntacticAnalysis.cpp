@@ -1360,7 +1360,12 @@ string syntacticAnalysis::invokeFuncWithReturn()
     printToken(sym);
 
     sym = lexical.getSym();
-    valueArgumentList(funcName);
+    vector<string> argsShouldPush = valueArgumentList(funcName);
+    for (int i = 0; i < argsShouldPush.size(); i++)
+    {
+        midcode.genMidArgsPush(argsShouldPush[i]);
+    }
+
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
@@ -1403,7 +1408,11 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
     printToken(sym);
 
     sym = lexical.getSym();
-    valueArgumentList(funcName);
+    vector<string> argsShouldPush = valueArgumentList(funcName);
+    for (int i = 0; i < argsShouldPush.size(); i++)
+    {
+        midcode.genMidArgsPush(argsShouldPush[i]);
+    }
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
@@ -1423,8 +1432,9 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 }
 
 // 注:此处使用了外部信息,即参数表后必须有")"
-void syntacticAnalysis::valueArgumentList(string funcName)
+vector<string> syntacticAnalysis::valueArgumentList(string funcName)
 {
+    vector<string> argsShouldPush;
     symAttr funcAttr = symbolist.get(funcName);
     // cout << "funcAttr.name:\t" << funcAttr.name << " args size:\t" << funcAttr.getArgs().size() << endl;
     vector<symType> argsTypes = funcAttr.getArgs();
@@ -1440,10 +1450,10 @@ void syntacticAnalysis::valueArgumentList(string funcName)
             errmag.errPut(sym.getLine(), errmag.D);
         }
         printLine("<值参数表>");
-        return;
+        return argsShouldPush;
     }
     expRet expret = expression();
-    midcode.genMidArgsPush(expret.tmp4val);
+    argsShouldPush.push_back(expret.tmp4val);
     symType symtype = expret.type;
     if (count < argsTypes.size() && argsTypes[count] != symtype)
     {
@@ -1455,7 +1465,7 @@ void syntacticAnalysis::valueArgumentList(string funcName)
         printToken(sym);
         sym = lexical.getSym();
         expRet expret = expression();
-        midcode.genMidArgsPush(expret.tmp4val);
+        argsShouldPush.push_back(expret.tmp4val);
         symtype = expret.type;
 
         if (count < argsTypes.size() && argsTypes[count] != symtype)
@@ -1469,6 +1479,7 @@ void syntacticAnalysis::valueArgumentList(string funcName)
         errmag.errPut(sym.getLine(), errmag.D);
     }
     printLine("<值参数表>");
+    return argsShouldPush;
 }
 
 void syntacticAnalysis::statementList()

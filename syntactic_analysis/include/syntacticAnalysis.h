@@ -79,7 +79,7 @@ private:
     int stepLength();
     string invokeFuncWithReturn();
     void invokeFuncWithoutReturn();
-    void valueArgumentList(string funcName);
+    vector<string> valueArgumentList(string funcName);
     void statementList();
     void readStatement();
     void writeStatement();
