@@ -1144,7 +1144,7 @@ void syntacticAnalysis::loopStatement()
         {
             printToken(sym);
         }
-        midcode.genMidBNZ(label_out);
+        midcode.genMidBZ(label_out);
 
         sym = lexical.getSym();
         statement();
