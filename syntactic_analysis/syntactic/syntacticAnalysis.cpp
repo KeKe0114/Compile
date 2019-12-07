@@ -1143,15 +1143,19 @@ void syntacticAnalysis::loopStatement()
 {
     if (sym.getKey() == WHILETK)
     {
-        string label_in = midcode.genMid_AllocLabel();
-        string label_out = midcode.genMid_AllocLabel();
+        string label_test = midcode.genMid_AllocLabel();
+        string label_loop = midcode.genMid_AllocLabel();
+
         printToken(sym);
         sym = lexical.getSym();
         assert(sym.getKey() == LPARENT);
         printToken(sym);
 
+        midcode.genMidGoto(label_test);
+        
+        midcode.useTempBegin();
         if (!errmag.hasErrors())
-            midcode.genMidLabelLine(label_in);
+            midcode.genMidLabelLine(label_test);
         sym = lexical.getSym();
         condition();
         // assert(sym.getKey() == RPARENT);
@@ -1167,14 +1171,14 @@ void syntacticAnalysis::loopStatement()
             printToken(sym);
         }
         if (!errmag.hasErrors())
-            midcode.genMidBZ(label_out);
+            midcode.genMidBNZ(label_loop);
+        midcode.useTempEnd();
 
         sym = lexical.getSym();
+        midcode.genMidLabelLine(label_loop);
         statement();
-        if (!errmag.hasErrors())
-            midcode.genMidGoto(label_in);
-        if (!errmag.hasErrors())
-            midcode.genMidLabelLine(label_out);
+        midcode.transportTemp();
+        midcode.clearTemp();
     }
     else if (sym.getKey() == DOTK)
     {

@@ -11,9 +11,9 @@ public:
         //读语句
         Scanf, //opeand1
         //写语句
-        PrintStr, //value
+        PrintStr,          //value
         PrintStrNoNewLine, //value
-        PrintExp, //operand1
+        PrintExp,          //operand1
         //常变量声明
         ConstVarState, //operand1
         //函数定义
@@ -108,7 +108,10 @@ public:
 class midCodeGen
 {
 private:
-    midCodeGen() : symbolist(symbols::get_instance()), label_prefix("Label"), tmp_prefix("$tmp") {}
+    midCodeGen() : symbolist(symbols::get_instance()), label_prefix("Label"), tmp_prefix("$tmp")
+    {
+        workSpace = &codes;
+    }
     midCodeGen(const midCodeGen &) = delete;
     midCodeGen &operator&(const midCodeGen &) = delete;
 
@@ -122,6 +125,8 @@ public:
 private:
     symbols &symbolist;
     vector<codeSt> codes;
+    vector<codeSt> temp;
+    vector<codeSt> *workSpace;
     int labelGen;
     int tmpGen;
     string label_prefix;
@@ -132,6 +137,20 @@ private:
 public:
     codeSt *get_midCode_by_idx(int idx) { return &codes[idx]; }
     int midCode_size() { return codes.size(); }
+
+public:
+    void useTempBegin()
+    {
+        assert(workSpace != &temp);
+        workSpace = &temp;
+    }
+    void useTempEnd()
+    {
+        assert(workSpace != &codes);
+        workSpace = &codes;
+    }
+    void clearTemp() { vector<codeSt>().swap(temp); }
+    void transportTemp() { codes.insert(codes.end(), temp.begin(), temp.end()); }
 
 public:
     void genMidFuncDef(string funcName);
