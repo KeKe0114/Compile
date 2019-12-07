@@ -1152,7 +1152,7 @@ void syntacticAnalysis::loopStatement()
         printToken(sym);
 
         midcode.genMidGoto(label_test);
-        
+
         midcode.useTempBegin();
         if (!errmag.hasErrors())
             midcode.genMidLabelLine(label_test);
@@ -1173,12 +1173,12 @@ void syntacticAnalysis::loopStatement()
         if (!errmag.hasErrors())
             midcode.genMidBNZ(label_loop);
         midcode.useTempEnd();
+        vector<codeSt> tempCode = midcode.getTempValue();
 
         sym = lexical.getSym();
         midcode.genMidLabelLine(label_loop);
         statement();
-        midcode.transportTemp();
-        midcode.clearTemp();
+        midcode.transportTemp(tempCode);
     }
     else if (sym.getKey() == DOTK)
     {
@@ -1273,14 +1273,21 @@ void syntacticAnalysis::loopStatement()
             printToken(sym);
         }
 
-        sym = lexical.getSym();
-        string label_in = midcode.genMid_AllocLabel();
-        string label_out = midcode.genMid_AllocLabel();
+        string label_test = midcode.genMid_AllocLabel();
+        string label_loop = midcode.genMid_AllocLabel();
+
+        midcode.genMidGoto(label_test);
+
+        midcode.useTempBegin();
         if (!errmag.hasErrors())
-            midcode.genMidLabelLine(label_in);
+            midcode.genMidLabelLine(label_test);
+        sym = lexical.getSym();
         condition();
         if (!errmag.hasErrors())
-            midcode.genMidBZ(label_out);
+            midcode.genMidBNZ(label_loop);
+        midcode.useTempEnd();
+        vector<codeSt> tempCode = midcode.getTempValue();
+
         // assert(sym.getKey() == SEMICN);
         if (sym.getKey() != SEMICN)
         {
@@ -1350,17 +1357,16 @@ void syntacticAnalysis::loopStatement()
         }
 
         sym = lexical.getSym();
+        midcode.genMidLabelLine(label_loop);
         statement();
         if (!errmag.hasErrors())
         {
             string step_tmp = midcode.genMidConstTmp(INT, value5);
             string erpress_end = midcode.genMidExpress(identify3_name, op4, step_tmp);
             //CHEN: 临时变量
-
             midcode.genMidValuePut(identify2_name, erpress_end);
-            midcode.genMidGoto(label_in);
-            midcode.genMidLabelLine(label_out);
         }
+        midcode.transportTemp(tempCode);
     }
     else
     {

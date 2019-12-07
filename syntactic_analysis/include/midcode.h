@@ -149,8 +149,13 @@ public:
         assert(workSpace != &codes);
         workSpace = &codes;
     }
-    void clearTemp() { vector<codeSt>().swap(temp); }
-    void transportTemp() { codes.insert(codes.end(), temp.begin(), temp.end()); }
+    vector<codeSt> getTempValue()
+    {
+        vector<codeSt> ret = temp;
+        vector<codeSt>().swap(temp);
+        return ret;
+    }
+    void transportTemp(vector<codeSt> tempCode) { codes.insert(codes.end(), tempCode.begin(), tempCode.end()); }
 
 public:
     void genMidFuncDef(string funcName);
