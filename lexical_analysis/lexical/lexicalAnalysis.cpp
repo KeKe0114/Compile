@@ -101,7 +101,7 @@ token lexicalAnalysis::genSym()
             c = in.get();
         }
         value = ss.str();
-        if (!(isalnum(value[0]) || value[0] == '_' || value[0] == '+' || value[0] == '-'))
+        if (!(isalnum(value[0]) || value[0] == '_' || value[0] == '+' || value[0] == '-' || value[0] == '*' || value[0] == '/'))
         {
             errmag.errPut(line, errmag.A);
         }

@@ -37,6 +37,9 @@ private:
         erritem(int line, ERRCODE code);
         int getLine();
         string getCodeStr();
+
+    public:
+        ERRCODE getcode() { return code; }
     };
 
 private:
@@ -58,4 +61,14 @@ public:
     void errPut(int line, ERRCODE code);
     bool hasErrors();
     string getErrorsStr();
+
+public:
+    int errSize() { return errlist.size(); }
+    bool errHasType(ERRCODE typeChk)
+    {
+        for (int i = 0; i < errlist.size(); i++)
+            if (errlist[i].getcode() == typeChk)
+                return true;
+        return false;
+    }
 };

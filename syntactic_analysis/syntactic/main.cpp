@@ -12,7 +12,7 @@ int main(int argc, char const *argv[])
     {
         cout << error.getErrorsStr();
     }
-    // else
+    else
     {
         mipsGen &mips = mipsGen::get_instance();
         mips.gen_mips_code();
