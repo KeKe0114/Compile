@@ -1,5 +1,5 @@
 #include "syntacticAnalysis.h"
-#include "mips.h"
+#include "mipsGen.h"
 #include "errorMags.h"
 
 int main(int argc, char const *argv[])

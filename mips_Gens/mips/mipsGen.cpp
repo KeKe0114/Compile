@@ -1,4 +1,4 @@
-#include "mips.h"
+#include "mipsGen.h"
 #include "debug.h"
 
 void mipsGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op)
