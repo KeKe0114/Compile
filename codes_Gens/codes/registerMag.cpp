@@ -2,7 +2,7 @@
 #include "debug.h"
 void tempRegMag::resetLocalPool()
 {
-    name2reg.clear();
+    symId2reg.clear();
     usedReg.clear();
 }
 
@@ -11,7 +11,7 @@ bool tempRegMag::hasFreeReg()
     return usedReg.size() < maxReg - minReg + 1;
 }
 
-int tempRegMag::getAFreeRegForThis(string name)
+int tempRegMag::getAFreeRegForThis(int name)
 {
     assert(hasFreeReg());
     int regFree = -1;
@@ -24,29 +24,29 @@ int tempRegMag::getAFreeRegForThis(string name)
         }
     }
     usedReg.insert(regFree);
-    name2reg.insert(pair<string, int>(name, regFree));
+    symId2reg.insert(pair<int, int>(name, regFree));
     return regFree;
 }
 
-bool tempRegMag::hasThisInReg(string name)
+bool tempRegMag::hasThisInReg(int name)
 {
-    return name2reg.find(name) != name2reg.end();
+    return symId2reg.find(name) != symId2reg.end();
 }
 
-int tempRegMag::getRegForThis(string name)
+int tempRegMag::getRegForThis(int name)
 {
     assert(hasThisInReg(name));
-    map<string, int>::iterator iter;
-    iter = name2reg.find(name);
+    map<int, int>::iterator iter;
+    iter = symId2reg.find(name);
     return iter->second;
 }
 
-void tempRegMag::updataUsefulInfo(set<string> Useful)
+void tempRegMag::updataUsefulInfo(set<int> Useful)
 {
-    set<string> shouldRemove;
+    set<int> shouldRemove;
 
-    map<string, int>::iterator iter;
-    for (iter = name2reg.begin(); iter != name2reg.end(); iter++)
+    map<int, int>::iterator iter;
+    for (iter = symId2reg.begin(); iter != symId2reg.end(); iter++)
     {
         if (Useful.find(iter->first) == Useful.end())
         {
@@ -54,19 +54,19 @@ void tempRegMag::updataUsefulInfo(set<string> Useful)
             usedReg.erase(iter->second);
         }
     }
-    set<string>::iterator itst;
+    set<int>::iterator itst;
     for (itst = shouldRemove.begin(); itst != shouldRemove.end(); itst++)
     {
-        name2reg.erase(*itst);
+        symId2reg.erase(*itst);
     }
 }
 
-string tempRegMag::randomFlushOneReg()
+int tempRegMag::randomFlushOneReg()
 {
     assert(!hasFreeReg());
-    map<string, int>::iterator it;
-    string name = it->first;
+    map<int, int>::iterator it;
+    int name = it->first;
     usedReg.erase(it->second);
-    name2reg.erase(name);
+    symId2reg.erase(name);
     return name;
 }

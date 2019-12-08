@@ -23,15 +23,15 @@ public:
 private:
     const int minReg = 0;
     const int maxReg = 9;
-    map<string, int> name2reg;
+    map<int, int> symId2reg;
     set<int> usedReg;
     
 public:
     void resetLocalPool();
     bool hasFreeReg();
-    void updataUsefulInfo(set<string> Useful);
-    string randomFlushOneReg();
-    int getAFreeRegForThis(string name);
-    bool hasThisInReg(string name);
-    int getRegForThis(string name);
+    void updataUsefulInfo(set<int> Useful);
+    int randomFlushOneReg();
+    int getAFreeRegForThis(int symId);
+    bool hasThisInReg(int symId);
+    int getRegForThis(int symId);
 };
