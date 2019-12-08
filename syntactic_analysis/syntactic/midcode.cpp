@@ -2,6 +2,75 @@
 #include "debug.h"
 #include "sstream"
 //codeSt
+
+set<int> codeSt::getLeftValue()
+{
+    set<int> ans;
+    switch (codetype)
+    {
+    //operand1
+    case Scanf:
+    case ConstVarState:
+    case FunctRetUse:
+    case AssignValue:
+    case AssignConst:
+    case ArrayValueGet:
+        ans.insert(operand1);
+        break;
+
+    //operand2
+    case ArrayValuePut:
+        ans.insert(operand2);
+        break;
+
+    //result
+    case FourYuan:
+        ans.insert(result);
+        break;
+
+    default:
+        break;
+    }
+    return ans;
+}
+
+set<int> codeSt::getRightValue()
+{
+    set<int> ans;
+    switch (codetype)
+    {
+    case PrintExp:
+    case FunctArgsPush:
+    case Condition4Num:
+        ans.insert(operand1);
+        break;
+
+    case AssignValue:
+        ans.insert(operand2);
+        break;
+
+    case ArrayValueGet:
+        ans.insert(operand2);
+        ans.insert(idx);
+        break;
+
+    case ArrayValuePut:
+        ans.insert(operand1);
+        ans.insert(idx);
+        break;
+
+    case Condition:
+    case FourYuan:
+        ans.insert(operand1);
+        ans.insert(operand2);
+        break;
+
+    default:
+        break;
+    }
+    return ans;
+}
+
 codeSt::codeSt(codeType codetype)
 {
     this->codetype = codetype;

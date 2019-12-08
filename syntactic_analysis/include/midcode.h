@@ -3,6 +3,7 @@
 #include "symbols.h"
 #include "token.h"
 using namespace std;
+
 class codeSt
 {
 public:
@@ -18,7 +19,7 @@ public:
         ConstVarState, //operand1
         //函数定义
         FunctState,           //operand1
-        FunctRetWithValue,    //operand1 operand2
+        FunctRetWithValue,    //operand1
         FunctRetWithoutValue, //operand1
         //函数调用
         FunctArgsPush, //operand1
@@ -89,6 +90,23 @@ public:
     }
 
 public:
+    set<int> getLeftValue();
+    set<int> getRightValue();
+    bool isBlockStart() { return codetype == Label; }
+    string getBlockEntry()
+    {
+        assert(isBlockStart());
+        return value_const_str;
+    }
+    bool isBlockEnd() { return codetype == BNZ || codetype == BZ || codetype == Jump; }
+    string getBlockDst()
+    {
+        assert(isBlockEnd());
+        return value_const_str;
+    }
+    bool canGodown() { return codetype != Jump; }
+
+public:
     codeSt(codeType codetype);
 
     codeSt(codeType codetype, string value);
@@ -137,6 +155,7 @@ private:
 public:
     codeSt *get_midCode_by_idx(int idx) { return &codes[idx]; }
     int midCode_size() { return codes.size(); }
+    vector<codeSt> getCodesVector() { return codes; }
 
 public:
     void useTempBegin()
