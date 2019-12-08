@@ -60,13 +60,3 @@ void tempRegMag::updataUsefulInfo(set<int> Useful)
         symId2reg.erase(*itst);
     }
 }
-
-int tempRegMag::randomFlushOneReg()
-{
-    assert(!hasFreeReg());
-    map<int, int>::iterator it;
-    int name = it->first;
-    usedReg.erase(it->second);
-    symId2reg.erase(name);
-    return name;
-}

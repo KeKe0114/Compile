@@ -89,8 +89,16 @@ private:
         addChild(father, child);
     }
 
-public:
+private:
     void genBlocksFromOrigin();
     void genUseDefInOut();
     void setBlockInAndOut();
+
+public:
+    void work()
+    {
+        genBlocksFromOrigin();
+        genUseDefInOut();
+        setBlockInAndOut();
+    }
 };
