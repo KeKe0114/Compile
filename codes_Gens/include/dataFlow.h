@@ -29,6 +29,7 @@ public:
     void genUseDefInOutForSingleLine();
     set<int> getBlockUse() { return use; }
     set<int> getBlockDef() { return def; }
+    vector<codeSt> getCodes() { return codeInBlock; }
 };
 
 class blockFlowGraph
@@ -92,4 +93,5 @@ public:
         genUseDefInOut();
         setBlockInAndOut();
     }
+    vector<block> getBlocks() { return id2block; }
 };
