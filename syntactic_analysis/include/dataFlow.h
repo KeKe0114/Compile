@@ -42,6 +42,19 @@ public:
 
 class blockFlowGraph
 {
+
+private:
+    blockFlowGraph() {}
+    blockFlowGraph(const blockFlowGraph &) = delete;
+    blockFlowGraph &operator&(blockFlowGraph &) = delete;
+
+public:
+    static blockFlowGraph &get_instance()
+    {
+        static blockFlowGraph instance;
+        return instance;
+    }
+
 private:
     /* 
      * 原中间代码中的块的顺序,按照id的顺序保持.

@@ -86,6 +86,7 @@ void blockFlowGraph::genBlocksFromOrigin()
             //build block
             int idPrev = id2block.size();
             block blockPrev(idPrev, begin, i - 1);
+            blockPrev.genBlockUseAndDef();
             id2block.push_back(blockPrev);
             begin = i;
 
@@ -105,6 +106,7 @@ void blockFlowGraph::genBlocksFromOrigin()
             // build block
             int idNow = id2block.size();
             block blockTemp(idNow, begin, i);
+            blockTemp.genBlockUseAndDef();
             id2block.push_back(blockTemp);
             begin = i + 1;
 
@@ -176,5 +178,9 @@ void blockFlowGraph::setBlockInAndOut()
     {
         id2block[i].setBlockUseDefOut(id2aliveout[i]);
         id2block[i].setBlockUseDefIn(id2alivein[i]);
+    }
+    for (int i = 0; i < id2block.size(); i++)
+    {
+        id2block[i].genUseDefInOutForSingleLine();
     }
 }
