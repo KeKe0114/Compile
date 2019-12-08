@@ -85,6 +85,7 @@ public:
     void word(string name, int num);
 
     void sw(Register, int, Register);
+    void sw(Register, string);
     void lw(Register, int, Register);
     void lw(Register, string name);
     void la(Register, string);
@@ -160,6 +161,7 @@ private:
     void genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op);
     void genMips_LwFromSymTable(mipsCollect::Register reg, symAttr *attr);
     void genMips_LaFromSymTable(mipsCollect::Register reg, symAttr *attr);
+    void genMips_SwToSymTable(mipsCollect::Register reg, symAttr *attr);
 
     void genMipsScanf();
     void genMipsPrintStr();

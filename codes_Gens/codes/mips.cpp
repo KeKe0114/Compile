@@ -62,6 +62,22 @@ void mipsGen::genMips_LaFromSymTable(mipsCollect::Register reg, symAttr *attr)
     }
 }
 
+void mipsGen::genMips_SwToSymTable(mipsCollect::Register reg, symAttr *attr)
+{
+    if (attr->refer == GLOBAL)
+    {
+        collect.sw(reg, attr->name);
+    }
+    else if (attr->refer == FP)
+    {
+        collect.sw(reg, attr->offsetRel, collect.$fp);
+    }
+    else
+    {
+        assert(false);
+    }
+}
+
 string mipsGen::genMips_AllocStrName()
 {
     strIdGen++;
@@ -83,8 +99,7 @@ void mipsGen::genMipsScanf()
     {
         assert(false);
     }
-    genMips_LaFromSymTable(collect.$t0, target);
-    collect.sw(collect.$v0, 0, collect.$t0);
+    genMips_SwToSymTable(collect.$v0, target);
 }
 
 void mipsGen::genMipsPrintStr()
@@ -106,7 +121,6 @@ void mipsGen::genMipsPrintStrNoNewLine()
     collect.la(collect.$a0, strName);
     collect.syscall(4);
 }
-
 
 void mipsGen::genMipsPrintExp()
 {
@@ -153,9 +167,8 @@ void mipsGen::genMipsConstState()
     }
     else if (attr->refer == FP)
     {
-        genMips_LaFromSymTable(collect.$t0, attr);
         collect.li(collect.$t1, num);
-        collect.sw(collect.$t1, 0, collect.$t0);
+        genMips_SwToSymTable(collect.$t1, attr);
     }
     else
     {
@@ -214,8 +227,7 @@ void mipsGen::genMipsFunctCall()
 void mipsGen::genMipsFunctRetUse()
 {
     symAttr *attr = codeWorkNow->getOperand1();
-    genMips_LaFromSymTable(collect.$t0, attr);
-    collect.sw(collect.$v0, 0, collect.$t0);
+    genMips_SwToSymTable(collect.$v0, attr);
 }
 
 void mipsGen::genMipsBNZ()
@@ -241,13 +253,11 @@ void mipsGen::genMipsAssignValue()
     symAttr *left = codeWorkNow->getOperand1();
     symAttr *right = codeWorkNow->getOperand2();
     genMips_LwFromSymTable(collect.$t0, right);
-    genMips_LaFromSymTable(collect.$t1, left);
-    collect.sw(collect.$t0, 0, collect.$t1);
+    genMips_SwToSymTable(collect.$t0, left);
 }
 void mipsGen::genMipsAssignConst()
 {
     symAttr *attr = codeWorkNow->getOperand1();
-    genMips_LaFromSymTable(collect.$t0, attr);
     string value = codeWorkNow->getValue();
     int num;
     if (attr->type == INT)
@@ -265,7 +275,7 @@ void mipsGen::genMipsAssignConst()
         assert(false);
     }
     collect.li(collect.$t1, num);
-    collect.sw(collect.$t1, 0, collect.$t0);
+    genMips_SwToSymTable(collect.$t1, attr);
 }
 
 void mipsGen::genMipsArrayValueGet()
@@ -273,25 +283,23 @@ void mipsGen::genMipsArrayValueGet()
     symAttr *array = codeWorkNow->getOperand2();
     symAttr *idx = codeWorkNow->getIdx();
     symAttr *target = codeWorkNow->getOperand1();
-    genMips_LaFromSymTable(collect.$t0, array);
     genMips_LwFromSymTable(collect.$t1, idx);
+    genMips_LaFromSymTable(collect.$t0, array);
     collect.mul(collect.$t1, collect.$t1, array->align);
     collect.add(collect.$t0, collect.$t0, collect.$t1);
     collect.lw(collect.$t1, 0, collect.$t0);
-    genMips_LaFromSymTable(collect.$t2, target);
-    collect.sw(collect.$t1, 0, collect.$t2);
+    genMips_SwToSymTable(collect.$t1, target);
 }
 void mipsGen::genMipsArrayValuePut()
 {
     symAttr *array = codeWorkNow->getOperand1();
     symAttr *idx = codeWorkNow->getIdx();
     symAttr *target = codeWorkNow->getOperand2();
-    genMips_LaFromSymTable(collect.$t0, array);
     genMips_LwFromSymTable(collect.$t1, idx);
+    genMips_LaFromSymTable(collect.$t0, array);
     collect.mul(collect.$t1, collect.$t1, array->align);
     collect.add(collect.$t0, collect.$t0, collect.$t1);
-    genMips_LaFromSymTable(collect.$t2, target);
-    collect.lw(collect.$t1, 0, collect.$t2);
+    genMips_LwFromSymTable(collect.$t1, target);
     collect.sw(collect.$t1, 0, collect.$t0);
 }
 void mipsGen::genMipsCondition()
@@ -315,9 +323,8 @@ void mipsGen::genMipsFourYuan()
     symAttr *target = codeWorkNow->getResult();
     genMips_LwFromSymTable(collect.$t0, num1);
     genMips_LwFromSymTable(collect.$t1, num2);
-    genMips_LaFromSymTable(collect.$t2, target);
     genMips_DistinguishOp(collect.$t3, collect.$t0, collect.$t1, codeWorkNow->getOp());
-    collect.sw(collect.$t3, 0, collect.$t2);
+    genMips_SwToSymTable(collect.$t3, target);
 }
 
 //mipsCollect
@@ -358,6 +365,12 @@ void mipsCollect::sw(Register reg1, int offset, Register reg2)
 {
     text();
     ss << "sw " << Register2Str[reg1] << ", " << offset << "(" << Register2Str[reg2] << ")" << endl;
+}
+
+void mipsCollect::sw(Register reg1, string label)
+{
+    text();
+    ss << "sw " << Register2Str[reg1] << ", " << label << endl;
 }
 
 void mipsCollect::lw(Register reg1, int offset, Register reg2)
