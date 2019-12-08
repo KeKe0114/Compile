@@ -222,6 +222,7 @@ string midCodeGen::genMidExpress(string operand1, token_key op, string operand2)
 
 string midCodeGen::genMidValueGet(string name)
 {
+    return name;
     symAttr attr = symbolist.get(name);
     string tmp = genMid_AllocTmp(attr.type);
     codeSt valueGet(codeSt::AssignValue, symbolist.get_id(tmp), attr.SymId);
