@@ -1,7 +1,7 @@
-#include "mipsGen.h"
+#include "mipsGraphGen.h"
 #include "debug.h"
 
-void mipsGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op)
+void mipsGraphGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op)
 {
     if (op == codeSt::op_PLUS)
         collect.add(target, operand1, operand2);
@@ -30,7 +30,7 @@ void mipsGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::R
         assert(false);
 }
 
-void mipsGen::genMips_LwFromSymTable(mipsCollect::Register reg, symAttr *attr)
+void mipsGraphGen::genMips_LwFromSymTable(mipsCollect::Register reg, symAttr *attr)
 {
     if (attr->refer == GLOBAL)
     {
@@ -46,7 +46,7 @@ void mipsGen::genMips_LwFromSymTable(mipsCollect::Register reg, symAttr *attr)
     }
 }
 
-void mipsGen::genMips_LaFromSymTable(mipsCollect::Register reg, symAttr *attr)
+void mipsGraphGen::genMips_LaFromSymTable(mipsCollect::Register reg, symAttr *attr)
 {
     if (attr->refer == GLOBAL)
     {
@@ -62,7 +62,7 @@ void mipsGen::genMips_LaFromSymTable(mipsCollect::Register reg, symAttr *attr)
     }
 }
 
-void mipsGen::genMips_SwToSymTable(mipsCollect::Register reg, symAttr *attr)
+void mipsGraphGen::genMips_SwToSymTable(mipsCollect::Register reg, symAttr *attr)
 {
     if (attr->refer == GLOBAL)
     {
@@ -78,13 +78,13 @@ void mipsGen::genMips_SwToSymTable(mipsCollect::Register reg, symAttr *attr)
     }
 }
 
-string mipsGen::genMips_AllocStrName()
+string mipsGraphGen::genMips_AllocStrName()
 {
     strIdGen++;
     return str_prefix + to_string(strIdGen);
 }
 
-void mipsGen::genMipsScanf()
+void mipsGraphGen::genMipsScanf()
 {
     symAttr *target = codeWorkNow->getOperand1();
     if (target->type == INT)
@@ -102,7 +102,7 @@ void mipsGen::genMipsScanf()
     genMips_SwToSymTable(collect.$v0, target);
 }
 
-void mipsGen::genMipsPrintStr()
+void mipsGraphGen::genMipsPrintStr()
 {
     string strName = genMips_AllocStrName();
     string value = codeWorkNow->getValue();
@@ -113,7 +113,7 @@ void mipsGen::genMipsPrintStr()
     collect.syscall(4);
 }
 
-void mipsGen::genMipsPrintStrNoNewLine()
+void mipsGraphGen::genMipsPrintStrNoNewLine()
 {
     string strName = genMips_AllocStrName();
     string value = codeWorkNow->getValue();
@@ -122,7 +122,7 @@ void mipsGen::genMipsPrintStrNoNewLine()
     collect.syscall(4);
 }
 
-void mipsGen::genMipsPrintExp()
+void mipsGraphGen::genMipsPrintExp()
 {
     symAttr *exp = codeWorkNow->getOperand1();
     genMips_LwFromSymTable(collect.$a0, exp);
@@ -142,7 +142,7 @@ void mipsGen::genMipsPrintExp()
     collect.syscall(4);
 }
 
-void mipsGen::genMipsConstState()
+void mipsGraphGen::genMipsConstState()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     string value = attr->value;
@@ -176,7 +176,7 @@ void mipsGen::genMipsConstState()
     }
 }
 
-void mipsGen::genMipsVarState()
+void mipsGraphGen::genMipsVarState()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     if (attr->refer == GLOBAL)
@@ -185,7 +185,7 @@ void mipsGen::genMipsVarState()
     }
 }
 
-void mipsGen::genMipsFunctState()
+void mipsGraphGen::genMipsFunctState()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     collect.labelLine(attr->name);
@@ -196,67 +196,66 @@ void mipsGen::genMipsFunctState()
     collect.add(collect.$sp, collect.$sp, attr->size);
 }
 
-void mipsGen::genMipsFunctRetWithValue()
+void mipsGraphGen::genMipsFunctRetWithValue()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     genMips_LwFromSymTable(collect.$v0, attr);
-    if (!codeWorkNow->isInlineRet())
-        genMipsFunctRetWithoutValue();
+    genMipsFunctRetWithoutValue();
 }
 
-void mipsGen::genMipsFunctRetWithoutValue()
+void mipsGraphGen::genMipsFunctRetWithoutValue()
 {
     collect.lw(collect.$sp, 12, collect.$fp);
     collect.lw(collect.$fp, 8, collect.$sp);
     collect.lw(collect.$ra, 4, collect.$sp);
     collect.jr(collect.$ra);
 }
-void mipsGen::genMipsFunctArgsPush()
+void mipsGraphGen::genMipsFunctArgsPush()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     genMips_LwFromSymTable(collect.$t0, attr);
     collect.sw(collect.$t0, functionCallInventArgLen + spVerticalOffset, collect.$sp);
     spVerticalOffset += 4;
 }
-void mipsGen::genMipsFunctCall()
+void mipsGraphGen::genMipsFunctCall()
 {
     spVerticalOffset = 0;
     symAttr *attr = codeWorkNow->getOperand1();
     collect.jal(attr->name);
 }
 
-void mipsGen::genMipsFunctRetUse()
+void mipsGraphGen::genMipsFunctRetUse()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     genMips_SwToSymTable(collect.$v0, attr);
 }
 
-void mipsGen::genMipsBNZ()
+void mipsGraphGen::genMipsBNZ()
 {
     collect.bnez(collect.$t9, codeWorkNow->getValue());
 }
-void mipsGen::genMipsBZ()
+void mipsGraphGen::genMipsBZ()
 {
     collect.beqz(collect.$t9, codeWorkNow->getValue());
 }
-void mipsGen::genMipsJUMP()
+void mipsGraphGen::genMipsJUMP()
 {
     collect.jump(codeWorkNow->getValue());
 }
 
-void mipsGen::genMipsLabelLine()
+void mipsGraphGen::genMipsLabelLine()
 {
     collect.labelLine(codeWorkNow->getValue());
 }
 
-void mipsGen::genMipsAssignValue()
+void mipsGraphGen::genMipsAssignValue()
 {
     symAttr *left = codeWorkNow->getOperand1();
     symAttr *right = codeWorkNow->getOperand2();
     genMips_LwFromSymTable(collect.$t0, right);
     genMips_SwToSymTable(collect.$t0, left);
 }
-void mipsGen::genMipsAssignConst()
+void mipsGraphGen::genMipsAssignConst()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     string value = codeWorkNow->getValue();
@@ -279,7 +278,7 @@ void mipsGen::genMipsAssignConst()
     genMips_SwToSymTable(collect.$t1, attr);
 }
 
-void mipsGen::genMipsArrayValueGet()
+void mipsGraphGen::genMipsArrayValueGet()
 {
     symAttr *array = codeWorkNow->getOperand2();
     symAttr *idx = codeWorkNow->getIdx();
@@ -291,7 +290,7 @@ void mipsGen::genMipsArrayValueGet()
     collect.lw(collect.$t1, 0, collect.$t0);
     genMips_SwToSymTable(collect.$t1, target);
 }
-void mipsGen::genMipsArrayValuePut()
+void mipsGraphGen::genMipsArrayValuePut()
 {
     symAttr *array = codeWorkNow->getOperand1();
     symAttr *idx = codeWorkNow->getIdx();
@@ -303,7 +302,7 @@ void mipsGen::genMipsArrayValuePut()
     genMips_LwFromSymTable(collect.$t1, target);
     collect.sw(collect.$t1, 0, collect.$t0);
 }
-void mipsGen::genMipsCondition()
+void mipsGraphGen::genMipsCondition()
 {
     symAttr *num1 = codeWorkNow->getOperand1();
     symAttr *num2 = codeWorkNow->getOperand2();
@@ -311,13 +310,13 @@ void mipsGen::genMipsCondition()
     genMips_LwFromSymTable(collect.$t1, num2);
     genMips_DistinguishOp(collect.$t9, collect.$t0, collect.$t1, codeWorkNow->getOp());
 }
-void mipsGen::genMipsCondition4Num()
+void mipsGraphGen::genMipsCondition4Num()
 {
     symAttr *num1 = codeWorkNow->getOperand1();
     genMips_LwFromSymTable(collect.$t9, num1);
 }
 
-void mipsGen::genMipsFourYuan()
+void mipsGraphGen::genMipsFourYuan()
 {
     symAttr *num1 = codeWorkNow->getOperand1();
     symAttr *num2 = codeWorkNow->getOperand2();
@@ -328,64 +327,15 @@ void mipsGen::genMipsFourYuan()
     genMips_SwToSymTable(collect.$t3, target);
 }
 
-void mipsGen::gen_mips_code()
+void mipsGraphGen::gen_mips_code()
 {
-    int size = midcode.midCode_size();
-    for (int i = 0; i < size; i++)
+    vector<block> blocks = flowGraph.getBlocks();
+    for (int i = 0; i < blocks.size(); i++)
     {
-        codeWorkNow = midcode.get_midCode_by_idx(i);
-        if (codeWorkNow->getType() == codeSt::Scanf)
-            genMipsScanf();
-        else if (codeWorkNow->getType() == codeSt::PrintStr)
-            genMipsPrintStr();
-        else if (codeWorkNow->getType() == codeSt::PrintStrNoNewLine)
-            genMipsPrintStrNoNewLine();
-        else if (codeWorkNow->getType() == codeSt::PrintExp)
-            genMipsPrintExp();
-        else if (codeWorkNow->getType() == codeSt::ConstVarState)
+        vector<codeSt> codes = blocks[i].getCodes();
+        for (int i = 0; i < codes.size(); i++)
         {
-            if (codeWorkNow->getOperand1()->kind == CONST)
-                genMipsConstState();
-            else if (codeWorkNow->getOperand1()->kind == VAR)
-                genMipsVarState();
-            else
-                assert(false);
+            
         }
-        else if (codeWorkNow->getType() == codeSt::FunctState)
-            genMipsFunctState();
-        else if (codeWorkNow->getType() == codeSt::FunctRetWithValue)
-            genMipsFunctRetWithValue();
-        else if (codeWorkNow->getType() == codeSt::FunctRetWithoutValue)
-            genMipsFunctRetWithoutValue();
-        else if (codeWorkNow->getType() == codeSt::FunctArgsPush)
-            genMipsFunctArgsPush();
-        else if (codeWorkNow->getType() == codeSt::FunctCall)
-            genMipsFunctCall();
-        else if (codeWorkNow->getType() == codeSt::FunctRetUse)
-            genMipsFunctRetUse();
-        else if (codeWorkNow->getType() == codeSt::BNZ)
-            genMipsBNZ();
-        else if (codeWorkNow->getType() == codeSt::BZ)
-            genMipsBZ();
-        else if (codeWorkNow->getType() == codeSt::Jump)
-            genMipsJUMP();
-        else if (codeWorkNow->getType() == codeSt::Label)
-            genMipsLabelLine();
-        else if (codeWorkNow->getType() == codeSt::AssignValue)
-            genMipsAssignValue();
-        else if (codeWorkNow->getType() == codeSt::AssignConst)
-            genMipsAssignConst();
-        else if (codeWorkNow->getType() == codeSt::ArrayValuePut)
-            genMipsArrayValuePut();
-        else if (codeWorkNow->getType() == codeSt::ArrayValueGet)
-            genMipsArrayValueGet();
-        else if (codeWorkNow->getType() == codeSt::Condition)
-            genMipsCondition();
-        else if (codeWorkNow->getType() == codeSt::Condition4Num)
-            genMipsCondition4Num();
-        else if (codeWorkNow->getType() == codeSt::FourYuan)
-            genMipsFourYuan();
-        else
-            assert(false);
     }
 }

@@ -9,7 +9,7 @@ using namespace std;
 class midCodeGen
 {
 private:
-    midCodeGen() : symbolist(symbols::get_instance()), label_prefix("Label"), tmp_prefix("$tmp"), inlineSwitch(false)
+    midCodeGen() : symbolist(symbols::get_instance()), label_prefix("Label"), tmp_prefix("$tmp"), inlineSwitch(true)
     {
         workSpace = &codes;
     }

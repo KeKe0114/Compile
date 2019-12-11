@@ -50,9 +50,13 @@ private:
         {
             codeSt codeTmp = codes[i];
             assert(codeTmp.getType() != codeSt::FunctState);
-            if (codeTmp.getType() == codeSt::FunctRetWithoutValue || codeTmp.getType() == codeSt::FunctRetWithValue)
+            if (codeTmp.getType() == codeSt::FunctRetWithoutValue)
             {
                 break;
+            }
+            if (codeTmp.getType() == codeSt::FunctRetWithValue)
+            {
+                codeTmp.setInlineRet();
             }
             if (symMap.find(codeTmp.operand1) != symMap.end())
             {
@@ -71,6 +75,10 @@ private:
                 codeTmp.idx = symMap[codeTmp.idx];
             }
             ans.push_back(codeTmp);
+            if (codeTmp.getType() == codeSt::FunctRetWithValue)
+            {
+                break;
+            }
         }
         return ans;
     }

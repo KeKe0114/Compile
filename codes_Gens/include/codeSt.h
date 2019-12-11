@@ -69,6 +69,7 @@ private:
 
     string value_const_str;
     op_em op;
+    bool inlineRet = false;
     codeSt();
 
 public:
@@ -76,6 +77,8 @@ public:
     int operand2;
     int result;
     int idx;
+    void setInlineRet() { inlineRet = true; }
+    bool isInlineRet() { return inlineRet; }
 
 public:
     string getValue() { return value_const_str; }
