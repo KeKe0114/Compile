@@ -499,7 +499,13 @@ void syntacticAnalysis::funcWithReturn()
     assert(sym.getKey() == LPARENT);
     printToken(sym);
     sym = lexical.getSym();
+
+    midcode.startInlineSaver(name);
+
     argumentList(name);
+
+    midcode.funcParaOverAndLocalStart();
+
     if (!errmag.hasErrors())
         midcode.genMidFuncDef(name);
     // assert(sym.getKey() == RPARENT);
@@ -515,6 +521,8 @@ void syntacticAnalysis::funcWithReturn()
         printToken(sym);
     }
 
+    midcode.inlinefuncCodeStart();
+
     sym = lexical.getSym();
     assert(sym.getKey() == LBRACE);
     printToken(sym);
@@ -523,6 +531,8 @@ void syntacticAnalysis::funcWithReturn()
     compoundStatement();
     assert(sym.getKey() == RBRACE);
     printToken(sym);
+
+    midcode.endInlineSaver(name);
 
     sym = lexical.getSym();
     printLine("<有返回值函数定义>");
@@ -560,7 +570,13 @@ void syntacticAnalysis::funcWithoutReturn()
     printToken(sym);
 
     sym = lexical.getSym();
+
+    midcode.startInlineSaver(name);
+
     argumentList(name);
+
+    midcode.funcParaOverAndLocalStart();
+
     if (!errmag.hasErrors())
         midcode.genMidFuncDef(name);
 
@@ -577,6 +593,8 @@ void syntacticAnalysis::funcWithoutReturn()
         printToken(sym);
     }
 
+    midcode.inlinefuncCodeStart();
+
     sym = lexical.getSym();
     assert(sym.getKey() == LBRACE);
     printToken(sym);
@@ -585,6 +603,8 @@ void syntacticAnalysis::funcWithoutReturn()
     compoundStatement();
     assert(sym.getKey() == RBRACE);
     printToken(sym);
+
+    midcode.endInlineSaver(name);
 
     sym = lexical.getSym();
     printLine("<无返回值函数定义>");
@@ -1404,12 +1424,19 @@ string syntacticAnalysis::invokeFuncWithReturn()
 
     sym = lexical.getSym();
     vector<string> argsShouldPush = valueArgumentList(funcName);
-    for (int i = 0; i < argsShouldPush.size(); i++)
-    {
-        if (!errmag.hasErrors())
-            midcode.genMidArgsPush(argsShouldPush[i]);
-    }
 
+    if (!errmag.hasErrors())
+    {
+        if (midcode.checkCanInline(funcName))
+        {
+            midcode.genInlineMidCode(funcName, argsShouldPush);
+        }
+        else
+            for (int i = 0; i < argsShouldPush.size(); i++)
+            {
+                midcode.genMidArgsPush(argsShouldPush[i]);
+            }
+    }
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
     {
@@ -1425,7 +1452,7 @@ string syntacticAnalysis::invokeFuncWithReturn()
 
     sym = lexical.getSym();
     printLine("<有返回值函数调用语句>");
-    if (!errmag.hasErrors())
+    if (!errmag.hasErrors() && !midcode.checkCanInline(funcName))
         midcode.genMidFuncCall(funcName);
     string ret = midcode.genMidFuncRetUse(funcName);
     //CHEN: 临时变量
@@ -1454,10 +1481,17 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 
     sym = lexical.getSym();
     vector<string> argsShouldPush = valueArgumentList(funcName);
-    for (int i = 0; i < argsShouldPush.size(); i++)
+    if (!errmag.hasErrors())
     {
-        if (!errmag.hasErrors())
-            midcode.genMidArgsPush(argsShouldPush[i]);
+        if (midcode.checkCanInline(funcName))
+        {
+            midcode.genInlineMidCode(funcName, argsShouldPush);
+        }
+        else
+            for (int i = 0; i < argsShouldPush.size(); i++)
+            {
+                midcode.genMidArgsPush(argsShouldPush[i]);
+            }
     }
     // assert(sym.getKey() == RPARENT);
     if (sym.getKey() != RPARENT)
@@ -1474,7 +1508,7 @@ void syntacticAnalysis::invokeFuncWithoutReturn()
 
     sym = lexical.getSym();
     printLine("<无返回值函数调用语句>");
-    if (!errmag.hasErrors())
+    if (!errmag.hasErrors() && !midcode.checkCanInline(funcName))
         midcode.genMidFuncCall(funcName);
 }
 

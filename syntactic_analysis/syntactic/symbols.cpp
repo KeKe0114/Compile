@@ -27,7 +27,7 @@ void symbols::redirect()
     }
     for (int i = indexes[indexes.size() - 1]; i <= idStack.size() - 1; i++)
     {
-        if (id2sym[idStack[i]].kind == VAR || id2sym[idStack[i]].kind == CONST)
+        // if (id2sym[idStack[i]].kind == VAR || id2sym[idStack[i]].kind == CONST)
         {
             id2sym[idStack[i]].refer = referNow;
             id2sym[idStack[i]].offsetRel = totSizeNow;
@@ -113,12 +113,13 @@ symAttr symbols::getNowSeg(string name)
     return attr;
 }
 
-void symbols::insert(symAttr item)
+int symbols::insert(symAttr item)
 {
     item.SymId = id2sym.size();
     item.size = item.len == 0 ? 4 : item.len * 4;
     id2sym.push_back(item);
     idStack.push_back(item.SymId);
+    return item.SymId;
 }
 
 symAttr symbols::getNearFunc()

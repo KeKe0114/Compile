@@ -93,7 +93,17 @@ public:
     void direct();
     void redirect();
 
-    void insert(symAttr item);
+    int insert(symAttr item);
+    int stackLocation() { return idStack.size(); }
+    vector<symAttr> getStackSlice(int start, int end)
+    {
+        vector<symAttr> ans;
+        for (int i = start; i < end; i++)
+        {
+            ans.push_back(id2sym[idStack[i]]);
+        }
+        return ans;
+    }
 
     bool has(string name);
     bool hasNowSeg(string name);

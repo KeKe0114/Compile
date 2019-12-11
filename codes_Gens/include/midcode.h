@@ -1,132 +1,15 @@
 #pragma once
 #include <string>
 #include "symbols.h"
-#include "token.h"
+#include "codeSt.h"
+#include "inlineMag.h"
+
 using namespace std;
-
-class codeSt
-{
-public:
-    enum codeType
-    {
-        //读语句
-        Scanf, //opeand1
-        //写语句
-        PrintStr,          //value
-        PrintStrNoNewLine, //value
-        PrintExp,          //operand1
-        //常变量声明
-        ConstVarState, //operand1
-        //函数定义
-        FunctState,           //operand1
-        FunctRetWithValue,    //operand1
-        FunctRetWithoutValue, //operand1
-        //函数调用
-        FunctArgsPush, //operand1
-        FunctCall,     //operand1
-        FunctRetUse,   //operand1
-        //跳转
-        BNZ,  //value
-        BZ,   //value
-        Jump, //value
-        //Label
-        Label, // value
-
-        //伪三元
-        AssignValue, //operand1,operand2
-
-        //三元式
-        AssignConst,   //operand1,value
-        ArrayValueGet, //operand1,operand2,idx
-        ArrayValuePut, //operand1,idx,operand2
-        Condition,     //operand1,op,operand2
-        Condition4Num, //operand1
-
-        //四元式
-        FourYuan, //operand1,op,operand2,result
-    };
-
-    enum op_em
-    {
-        op_UNKNOWNERROR = -1,
-        op_PLUS = 17,
-        op_MINU,
-        op_MULT,
-        op_DIV,
-        op_LSS,
-        op_LEQ,
-        op_GRE,
-        op_GEQ,
-        op_EQL,
-        op_NEQ,
-    };
-
-private:
-    codeType codetype;
-
-    string value_const_str;
-    int operand1;
-    int operand2;
-    int result;
-    op_em op;
-    int idx;
-    codeSt();
-
-public:
-    string getValue() { return value_const_str; }
-    symAttr *getOperand1() { return symbols::get_instance().get_pointer_by_id(operand1); }
-    symAttr *getOperand2() { return symbols::get_instance().get_pointer_by_id(operand2); }
-    symAttr *getResult() { return symbols::get_instance().get_pointer_by_id(result); }
-    symAttr *getIdx() { return symbols::get_instance().get_pointer_by_id(idx); }
-    op_em getOp() { return op; }
-    codeType getType() { return codetype; }
-
-public:
-    static op_em token_key2op_em(token_key key)
-    {
-        if (key <= 26 && key >= 17)
-            return (op_em)(int)(key);
-        return op_UNKNOWNERROR;
-    }
-
-public:
-    set<int> getLeftValue();
-    set<int> getRightValue();
-    bool isBlockStart() { return codetype == Label; }
-    string getBlockEntry()
-    {
-        assert(isBlockStart());
-        return value_const_str;
-    }
-    bool isBlockEnd() { return codetype == BNZ || codetype == BZ || codetype == Jump; }
-    string getBlockDst()
-    {
-        assert(isBlockEnd());
-        return value_const_str;
-    }
-    bool canGodown() { return codetype != Jump; }
-
-public:
-    codeSt(codeType codetype);
-
-    codeSt(codeType codetype, string value);
-    codeSt(codeType codetype, int operand1);
-
-    codeSt(codeType codetype, int operand1, int operand2);
-
-    codeSt(codeType codetype, int operand1, string value);
-    codeSt(codeType codetype, int operand1, int idx, int operand2);
-    codeSt(codeType codetype, int operand1, op_em op, int operand2);
-
-    codeSt(codeType codetype, int operand1, op_em op, int operand2, int result);
-
-    string to_string();
-};
 
 class midCodeGen
 {
 private:
-    midCodeGen() : symbolist(symbols::get_instance()), label_prefix("Label"), tmp_prefix("$tmp")
+    midCodeGen() : symbolist(symbols::get_instance()), label_prefix("Label"), tmp_prefix("$tmp"), inlineSwitch(false)
     {
         workSpace = &codes;
     }
@@ -156,6 +39,84 @@ public:
     codeSt *get_midCode_by_idx(int idx) { return &codes[idx]; }
     int midCode_size() { return codes.size(); }
     vector<codeSt> getCodesVector() { return codes; }
+    void insert(codeSt code) { codes.push_back(code); }
+
+private:
+    bool inlineSwitch;
+    map<string, inlineSaver> func2Saver;
+
+    bool funcWorkCanInline;
+    /*均为[start, end)*/
+    int funcCodeStart;
+    int funcCodeEnd;
+    int symParaStart;
+    int symParaEnd;
+    int symLocalStart;
+    int symLocalEnd;
+
+private:
+    void resetInlineRecord()
+    {
+        funcWorkCanInline = true;
+        funcCodeStart = -1;
+        funcCodeEnd = -1;
+        symParaStart = -1;
+        symParaEnd = -1;
+        symLocalStart = -1;
+        symLocalEnd = -1;
+    }
+
+    void SetCantInlineFunc()
+    {
+        funcWorkCanInline = false;
+    }
+
+public:
+    void inlinefuncCodeEnd() { funcCodeEnd = codes.size(); }
+    void funcParaStart() { symParaStart = symbolist.stackLocation(); }
+    void funcLocalEnd() { symLocalEnd = symbolist.stackLocation(); }
+
+    void startInlineSaver(string funcName)
+    {
+        resetInlineRecord();
+        funcParaStart();
+    }
+
+    void inlinefuncCodeStart() { funcCodeStart = codes.size(); }
+    void funcParaOverAndLocalStart() { symParaEnd = symLocalStart = symbolist.stackLocation(); }
+
+    void endInlineSaver(string funcName)
+    {
+        inlinefuncCodeEnd();
+        funcLocalEnd();
+        if (inlineSwitch && funcWorkCanInline && funcCodeStart > 0)
+        {
+            inlineSaver saver(funcName);
+            vector<codeSt> codeTmp;
+            for (int i = funcCodeStart; i < funcCodeEnd; i++)
+            {
+                codeTmp.push_back(codes[i]);
+            }
+            saver.setCodes(codeTmp);
+            saver.setFormalPara(symbolist.getStackSlice(symParaStart, symParaEnd));
+            saver.setSyms(symbolist.getStackSlice(symLocalStart, symLocalEnd));
+            func2Saver.insert(pair<string, inlineSaver>(funcName, saver));
+        }
+        resetInlineRecord();
+    }
+    bool checkCanInline(string funcName)
+    {
+        return func2Saver.find(funcName) != func2Saver.end() && inlineSwitch;
+    }
+    void genInlineMidCode(string funcName, vector<string> args)
+    {
+        if (inlineSwitch)
+        {
+            vector<codeSt> shouldInsert = func2Saver.find(funcName)->second.mergeInlineCode(args);
+            for (int i = 0; i < shouldInsert.size(); i++)
+                codes.push_back(shouldInsert[i]);
+        }
+    }
 
 public:
     void useTempBegin()

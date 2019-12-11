@@ -127,8 +127,9 @@ codeSt::codeSt(codeType codetype, int operand1, op_em op, int operand2, int resu
 //midCodeGen
 string midCodeGen::genMid_AllocTmp(symType type)
 {
+    string funcName = symbolist.getNearFunc().name;
     tmpGen++;
-    string name = tmp_prefix + to_string(tmpGen);
+    string name = tmp_prefix + to_string(tmpGen) + funcName;
     symAttr attr(name, type, VAR);
     symbolist.insert(attr);
     return name;
@@ -153,6 +154,7 @@ void midCodeGen::genMidArgsPush(string paraName)
 }
 void midCodeGen::genMidFuncCall(string func)
 {
+    SetCantInlineFunc();
     codeSt call(codeSt::FunctCall, symbolist.get_id(func));
     workSpace->push_back(call);
 }
@@ -271,11 +273,13 @@ void midCodeGen::genMidGoto(string Label)
 }
 void midCodeGen::genMidBNZ(string Label)
 {
+    SetCantInlineFunc();
     codeSt BNZ(codeSt::BNZ, Label);
     workSpace->push_back(BNZ);
 }
 void midCodeGen::genMidBZ(string Label)
 {
+    SetCantInlineFunc();
     codeSt BZ(codeSt::BZ, Label);
     workSpace->push_back(BZ);
 }
