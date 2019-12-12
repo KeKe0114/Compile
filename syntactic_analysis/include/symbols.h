@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
+#include "debug.h"
 using namespace std;
 
 enum symKind
@@ -48,6 +50,26 @@ public:
     vector<symType> args;
     vector<int> argsId;
     int align = 4; /*TODO: 完善更多情况*/
+
+    int getValueInt()
+    {
+        int num;
+        if (type == INT)
+        {
+            stringstream stream;
+            stream << value;
+            stream >> num;
+        }
+        else if (type == CHAR)
+        {
+            num = (int)value.c_str()[0];
+        }
+        else
+        {
+            assert(false);
+        }
+        return num;
+    }
 
     void addArgs(int id, symType arg);
     vector<symType> getArgs();

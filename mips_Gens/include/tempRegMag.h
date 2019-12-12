@@ -14,9 +14,9 @@ private:
     int RegId;
 
 public:
-    flushSt(int symId, int RegId);
-    int getSymId();
-    int getRegId();
+    flushSt(int symIdArg, int RegIdArg) : symId(symIdArg), RegId(RegIdArg) {}
+    int getSymId() { return symId; }
+    int getRegId() { return RegId; }
 };
 
 class tempRegMag

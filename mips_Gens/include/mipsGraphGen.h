@@ -3,6 +3,7 @@
 #include "dataFlow.h"
 #include "mipsCollect.h"
 #include "tempRegMag.h"
+#include "globalRegMag.h"
 #include <sstream>
 #include <vector>
 #include <string>
@@ -11,7 +12,7 @@ using namespace std;
 class mipsGraphGen
 {
 private:
-    mipsGraphGen() : tempReg(tempRegMag::get_instance()), flowGraph(blockFlowGraph::get_instance()), symbolist(symbols::get_instance()), collect(mipsCollect::get_instance()), str_prefix("$str")
+    mipsGraphGen() : tempReg(tempRegMag::get_instance()), globalReg(globalRegMag::get_instance()), flowGraph(blockFlowGraph::get_instance()), symbolist(symbols::get_instance()), collect(mipsCollect::get_instance()), str_prefix("$str")
     {
         newLine = genMips_AllocStrName();
         collect.asciiz(newLine, "\\n");
@@ -39,6 +40,7 @@ private:
     mipsCollect &collect;
     blockFlowGraph &flowGraph;
     tempRegMag &tempReg;
+    globalRegMag &globalReg;
     symbols &symbolist;
     block *blockWorkNow;
     codeSt *codeWorkNow;
@@ -48,16 +50,21 @@ private:
     string newLine;
     int functionCallInventArgLen = 16;
 
+    // CHEN: 完成全局变量向局部变量转换的平滑过渡.
+    void maintainConsistencyForNowBlock();
+
     string genMips_AllocStrName();
 
     void flushToMem(int symId, mipsCollect::Register reg);
+
+    void loadFromMem(int symId, mipsCollect::Register reg);
 
     mipsCollect::Register GetConditionReg() { return mipsCollect::getSeriesV(1); }
 
     mipsCollect::Register AllocAPureFreeReg() { return mipsCollect::getSeriesV(1); }
 
     mipsCollect::Register GetOrAllocRegisterToSym(symAttr *attr);
-    
+
     mipsCollect::Register LoadSymRealValueToRegister(symAttr *attr);
 
     void LoadSymToRegisterTold(symAttr *attr, mipsCollect::Register told);

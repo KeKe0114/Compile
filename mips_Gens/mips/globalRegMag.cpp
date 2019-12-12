@@ -36,7 +36,7 @@ void globalRegMag::genAllocResult()
     alloced = true;
     struct cmp
     {
-        bool operator()(const pair<string, int> &p1, const pair<string, int> &p2)
+        bool operator()(const pair<int, int> &p1, const pair<int, int> &p2)
         {
             return p1.second > p2.second;
         }
@@ -104,7 +104,7 @@ void globalRegMag::SHOW_ALL_SYM_NO_REG()
     set<int> ans;
     for (auto member : allSyms)
     {
-        if (sym2reg.find(member) == sym2reg.end)
+        if (sym2reg.find(member) == sym2reg.end())
         {
             ans.insert(member);
         }

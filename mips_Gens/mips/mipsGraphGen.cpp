@@ -1,5 +1,8 @@
 #include "mipsGraphGen.h"
 #include "debug.h"
+void mipsGraphGen::maintainConsistencyForNowBlock()
+{
+}
 
 string mipsGraphGen::genMips_AllocStrName()
 {
@@ -10,7 +13,9 @@ string mipsGraphGen::genMips_AllocStrName()
 void mipsGraphGen::flushToMem(int symId, mipsCollect::Register reg)
 {
     symAttr *attr = symbolist.get_pointer_by_id(symId);
-    if (attr->refer = GLOBAL)
+    if (attr->kind != VAR)
+        return;
+    if (attr->refer == GLOBAL)
         collect.sw(reg, attr->name);
     else if (attr->refer == FP)
         collect.sw(reg, attr->offsetRel, mipsCollect::getSeriesFP());
@@ -18,41 +23,132 @@ void mipsGraphGen::flushToMem(int symId, mipsCollect::Register reg)
         assert(false);
 }
 
-mipsCollect::Register mipsGraphGen::GetOrAllocRegisterToSym(symAttr *attr)
+void mipsGraphGen::loadFromMem(int symId, mipsCollect::Register reg)
 {
-    set<int> BlockUseful = blockWorkNow->getBlockUse();
-    //CHEN: 有可能这个变量在上个块中是全局变量,在这个块中就成了局部变量了...可以么?
-    //CHEN: 这个切换如何平稳的进行?
-    if (BlockUseful.find(attr->SymId) != BlockUseful.end())
+    symAttr *attr = symbolist.get_pointer_by_id(symId);
+    if (attr->kind == CONST)
     {
-        //临时变量 : 因为在块结束时,  就不需要使用了,可以认为该变量现在是临时变量
-        if (tempReg.hasThisInReg(attr->SymId))
+        collect.li(reg, attr->getValueInt());
+    }
+    else if (attr->kind == VAR)
+    {
+        if (attr->refer == GLOBAL)
         {
-            //在临时变量池中.
-            int tmpId = tempReg.getRegForThis(attr->SymId);
-            return collect.getSeriesT(tmpId);
+            collect.lw(reg, attr->name);
         }
-        else
+        else if (attr->refer == FP)
         {
-            //不在临时变量池中.
-            if (tempReg.hasFreeReg())
-            {
-                //有free寄存器.
-                int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
-                return collect.getSeriesT(tmpId);
-            }
-            else
-            {
-                //没有free寄存器.
-                flushSt shouldFlush = tempReg.flushASymNotUseNow(codeWorkNow->getRightValue());
-                flushToMem(shouldFlush.getSymId(), collect.getSeriesT(shouldFlush.getRegId()));
-                int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
-                return collect.getSeriesT(tmpId);
-            }
+            collect.lw(reg, attr->offsetRel, collect.getSeriesFP());
         }
     }
     else
     {
+        assert(false);
+    }
+}
+
+mipsCollect::Register mipsGraphGen::GetOrAllocRegisterToSym(symAttr *attr)
+{
+    set<int> BlockUseful = blockWorkNow->getBlockUse();
+    if (BlockUseful.find(attr->SymId) != BlockUseful.end())
+    {
+        if (globalReg.hasRegForSym(attr->SymId))
+        {
+            return collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
+        }
+    }
+    // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
+    if (tempReg.hasThisInReg(attr->SymId))
+    {
+        //在临时变量池中.
+        int tmpId = tempReg.getRegForThis(attr->SymId);
+        return collect.getSeriesT(tmpId);
+    }
+    else
+    {
+        //不在临时变量池中.
+        if (tempReg.hasFreeReg())
+        {
+            //有free寄存器.
+            int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
+            return collect.getSeriesT(tmpId);
+        }
+        else
+        {
+            //没有free寄存器.
+            flushSt shouldFlush = tempReg.flushASymNotUseNow(codeWorkNow->getRightValue());
+            flushToMem(shouldFlush.getSymId(), collect.getSeriesT(shouldFlush.getRegId()));
+            int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
+            return collect.getSeriesT(tmpId);
+        }
+    }
+}
+
+mipsCollect::Register mipsGraphGen::LoadSymRealValueToRegister(symAttr *attr)
+{
+    set<int> BlockUseful = blockWorkNow->getBlockUse();
+    if (BlockUseful.find(attr->SymId) != BlockUseful.end())
+    {
+        if (globalReg.hasRegForSym(attr->SymId))
+        {
+            //CHEN: 如果真正的全局变量可以使用全局寄存器,那么这里需要讨论讨论.
+            return collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
+        }
+    }
+    // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
+    if (tempReg.hasThisInReg(attr->SymId))
+    {
+        //在临时变量池中.
+        int tmpId = tempReg.getRegForThis(attr->SymId);
+        return collect.getSeriesT(tmpId);
+    }
+    else
+    {
+        //不在临时变量池中.
+        if (tempReg.hasFreeReg())
+        {
+            //有free寄存器.
+            int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
+            mipsCollect::Register ans = collect.getSeriesT(tmpId);
+            loadFromMem(attr->SymId, ans);
+            return ans;
+        }
+        else
+        {
+            //没有free寄存器.
+            flushSt shouldFlush = tempReg.flushASymNotUseNow(codeWorkNow->getRightValue());
+            flushToMem(shouldFlush.getSymId(), collect.getSeriesT(shouldFlush.getRegId()));
+            int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
+            mipsCollect::Register ans = collect.getSeriesT(tmpId);
+            loadFromMem(attr->SymId, ans);
+            return ans;
+        }
+    }
+}
+
+void mipsGraphGen::LoadSymToRegisterTold(symAttr *attr, mipsCollect::Register told)
+{
+    set<int> BlockUseful = blockWorkNow->getBlockUse();
+    if (BlockUseful.find(attr->SymId) != BlockUseful.end())
+    {
+        if (globalReg.hasRegForSym(attr->SymId))
+        {
+            mipsCollect::Register ans = collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
+            collect.move(told, ans);
+        }
+    }
+    // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
+    if (tempReg.hasThisInReg(attr->SymId))
+    {
+        //在临时变量池中.
+        int tmpId = tempReg.getRegForThis(attr->SymId);
+        mipsCollect::Register ans = collect.getSeriesT(tmpId);
+        collect.move(told, ans);
+    }
+    else
+    {
+        //不在临时变量池中.
+        loadFromMem(attr->SymId, told);
     }
 }
 
@@ -122,21 +218,7 @@ void mipsGraphGen::genMipsConstState()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     string value = attr->value;
-    int num;
-    if (attr->type == INT)
-    {
-        stringstream stream;
-        stream << value;
-        stream >> num;
-    }
-    else if (attr->type == CHAR)
-    {
-        num = (int)value.c_str()[0];
-    }
-    else
-    {
-        assert(false);
-    }
+    int num = attr->getValueInt();
     if (attr->refer == GLOBAL)
     {
         collect.word(attr->name, num);
@@ -247,21 +329,7 @@ void mipsGraphGen::genMipsAssignConst()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     string value = codeWorkNow->getValue();
-    int num;
-    if (attr->type == INT)
-    {
-        stringstream stream;
-        stream << value;
-        stream >> num;
-    }
-    else if (attr->type == CHAR)
-    {
-        num = (int)value.c_str()[0];
-    }
-    else
-    {
-        assert(false);
-    }
+    int num = attr->getValueInt();
     mipsCollect::Register leftR = GetOrAllocRegisterToSym(attr);
     collect.li(leftR, num);
     flushToMem(attr->SymId, leftR);
@@ -378,12 +446,14 @@ void mipsGraphGen::gen_mips_code()
     vector<block> blocks = flowGraph.getBlocks();
     for (int i = 0; i < blocks.size(); i++)
     {
+        blockWorkNow = &blocks[i];
         tempReg.resetLocalPool();
+        maintainConsistencyForNowBlock();
         vector<codeSt> codes = blocks[i].getCodes();
-        for (int i = 0; i < codes.size(); i++)
+        for (int j = 0; j < codes.size(); j++)
         {
-            codeWorkNow = &codes[i];
-            cout << codeWorkNow->to_string();
+            codeWorkNow = &codes[j];
+            cout << i << " " << j << " " << codeWorkNow->getType() << "\t" << codeWorkNow->to_string();
             if (codeWorkNow->getType() == codeSt::Scanf)
                 genMipsScanf();
             else if (codeWorkNow->getType() == codeSt::PrintStr)
