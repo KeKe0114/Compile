@@ -7,6 +7,55 @@ string mipsGraphGen::genMips_AllocStrName()
     return str_prefix + to_string(strIdGen);
 }
 
+void mipsGraphGen::flushToMem(int symId, mipsCollect::Register reg)
+{
+    symAttr *attr = symbolist.get_pointer_by_id(symId);
+    if (attr->refer = GLOBAL)
+        collect.sw(reg, attr->name);
+    else if (attr->refer == FP)
+        collect.sw(reg, attr->offsetRel, mipsCollect::getSeriesFP());
+    else
+        assert(false);
+}
+
+mipsCollect::Register mipsGraphGen::GetOrAllocRegisterToSym(symAttr *attr)
+{
+    set<int> BlockUseful = blockWorkNow->getBlockUse();
+    //CHEN: 有可能这个变量在上个块中是全局变量,在这个块中就成了局部变量了...可以么?
+    //CHEN: 这个切换如何平稳的进行?
+    if (BlockUseful.find(attr->SymId) != BlockUseful.end())
+    {
+        //临时变量 : 因为在块结束时,  就不需要使用了,可以认为该变量现在是临时变量
+        if (tempReg.hasThisInReg(attr->SymId))
+        {
+            //在临时变量池中.
+            int tmpId = tempReg.getRegForThis(attr->SymId);
+            return collect.getSeriesT(tmpId);
+        }
+        else
+        {
+            //不在临时变量池中.
+            if (tempReg.hasFreeReg())
+            {
+                //有free寄存器.
+                int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
+                return collect.getSeriesT(tmpId);
+            }
+            else
+            {
+                //没有free寄存器.
+                flushSt shouldFlush = tempReg.flushASymNotUseNow(codeWorkNow->getRightValue());
+                flushToMem(shouldFlush.getSymId(), collect.getSeriesT(shouldFlush.getRegId()));
+                int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
+                return collect.getSeriesT(tmpId);
+            }
+        }
+    }
+    else
+    {
+    }
+}
+
 // 主逻辑
 void mipsGraphGen::genMipsScanf()
 {

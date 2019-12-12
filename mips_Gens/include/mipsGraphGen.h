@@ -52,55 +52,13 @@ private:
 
     void flushToMem(int symId, mipsCollect::Register reg);
 
-    mipsCollect::Register GetConditionReg()
-    {
-        return mipsCollect::getSeriesV(1);
-    }
+    mipsCollect::Register GetConditionReg() { return mipsCollect::getSeriesV(1); }
 
-    mipsCollect::Register AllocAPureFreeReg()
-    {
-        return mipsCollect::getSeriesV(1);
-    }
+    mipsCollect::Register AllocAPureFreeReg() { return mipsCollect::getSeriesV(1); }
 
-    mipsCollect::Register LoadSymRealValueToRegister(symAttr *attr)
-    {
-    }
-
-    mipsCollect::Register GetOrAllocRegisterToSym(symAttr *attr)
-    {
-        set<int> BlockUseful = blockWorkNow->getBlockUse();
-        if (BlockUseful.find(attr->SymId) != BlockUseful.end())
-        {
-            //临时变量 : 在块结束时,  就不需要使用
-            if (tempReg.hasThisInReg(attr->SymId))
-            {
-                //在临时变量池中.
-                int tmpId = tempReg.getRegForThis(attr->SymId);
-                return collect.getSeriesT(tmpId);
-            }
-            else
-            {
-                //不在临时变量池中.
-                if (tempReg.hasFreeReg())
-                {
-                    //有free寄存器.
-                    int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
-                    return collect.getSeriesT(tmpId);
-                }
-                else
-                {
-                    //没有free寄存器.
-                    flushSt shouldFlush = tempReg.flushASymNotUseNow(codeWorkNow->getRightValue());
-                    flushToMem(shouldFlush.getSymId(), collect.getSeriesT(shouldFlush.getRegId()));
-                    int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
-                    return collect.getSeriesT(tmpId);
-                }
-            }
-        }
-        else
-        {
-        }
-    }
+    mipsCollect::Register GetOrAllocRegisterToSym(symAttr *attr);
+    
+    mipsCollect::Register LoadSymRealValueToRegister(symAttr *attr);
 
     void LoadSymToRegisterTold(symAttr *attr, mipsCollect::Register told);
 
@@ -136,7 +94,7 @@ private:
     void genMipsAssignConst();
     void genMipsArrayValueGet();
     void genMipsArrayValuePut();
-    void genMipsCondition(); /*CHEN: condition系列 和 BNZ系列约定寄存器用t9*/
+    void genMipsCondition(); /*CHEN: condition系列 和 BNZ系列约定寄存器用v1*/
     void genMipsCondition4Num();
 
     void genMipsFourYuan();

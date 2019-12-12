@@ -10,10 +10,7 @@ void mipsGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::R
     else if (op == codeSt::op_MULT)
         collect.mul(target, operand1, operand2);
     else if (op == codeSt::op_DIV)
-    {
-        collect.div(operand1, operand2);
-        collect.mflo(target);
-    }
+        collect.div(target, operand1, operand2);
     else if (op == codeSt::op_LSS)
         collect.slt(target, operand1, operand2);
     else if (op == codeSt::op_LEQ)
