@@ -49,8 +49,6 @@ private:
     /*均为[start, end)*/
     int funcCodeStart;
     int funcCodeEnd;
-    int symParaStart;
-    int symParaEnd;
     int symLocalStart;
     int symLocalEnd;
 
@@ -60,8 +58,6 @@ private:
         funcWorkCanInline = true;
         funcCodeStart = -1;
         funcCodeEnd = -1;
-        symParaStart = -1;
-        symParaEnd = -1;
         symLocalStart = -1;
         symLocalEnd = -1;
     }
@@ -72,18 +68,17 @@ private:
     }
 
 public:
+    void inlinefuncCodeStart() { funcCodeStart = codes.size(); }
     void inlinefuncCodeEnd() { funcCodeEnd = codes.size(); }
-    void funcParaStart() { symParaStart = symbolist.stackLocation(); }
+
+    void funcLocalStart() { symLocalStart = symbolist.stackLocation(); }
     void funcLocalEnd() { symLocalEnd = symbolist.stackLocation(); }
 
     void startInlineSaver(string funcName)
     {
         resetInlineRecord();
-        funcParaStart();
+        funcLocalStart();
     }
-
-    void inlinefuncCodeStart() { funcCodeStart = codes.size(); }
-    void funcParaOverAndLocalStart() { symParaEnd = symLocalStart = symbolist.stackLocation(); }
 
     void endInlineSaver(string funcName)
     {
@@ -98,7 +93,6 @@ public:
                 codeTmp.push_back(codes[i]);
             }
             saver.setCodes(codeTmp);
-            saver.setFormalPara(symbolist.getStackSlice(symParaStart, symParaEnd));
             saver.setSyms(symbolist.getStackSlice(symLocalStart, symLocalEnd));
             func2Saver.insert(pair<string, inlineSaver>(funcName, saver));
         }
@@ -110,7 +104,7 @@ public:
     }
     void genInlineMidCode(string funcName, vector<string> args)
     {
-        if (inlineSwitch)
+        if (checkCanInline(funcName))
         {
             vector<codeSt> shouldInsert = func2Saver.find(funcName)->second.mergeInlineCode(args);
             for (int i = 0; i < shouldInsert.size(); i++)

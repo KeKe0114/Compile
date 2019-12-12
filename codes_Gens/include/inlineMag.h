@@ -7,18 +7,17 @@
 class inlineSaver
 {
 private:
+    int round;
     string prefix;
     string funcName;
     vector<symAttr> syms;
-    vector<symAttr> para;
     vector<codeSt> codes;
     map<int, int> symMap;
     symbols &symbolist;
 
 public:
-    inlineSaver(string name) : symbolist(symbols::get_instance()), prefix("$inline") { this->funcName = name; }
+    inlineSaver(string name) : symbolist(symbols::get_instance()), prefix("$inline"), round(0) { this->funcName = name; }
     void setCodes(vector<codeSt> codes) { this->codes = codes; }
-    void setFormalPara(vector<symAttr> para) { this->para = para; }
     void setSyms(vector<symAttr> syms)
     {
         for (int i = 0; i < syms.size(); i++)
@@ -33,19 +32,18 @@ private:
     {
         if (syms.size() == 0)
             return;
-        if (symbolist.hasNowSeg(syms[0].name))
-            return;
         for (int i = 0; i < syms.size(); i++)
         {
-            int idOld = syms[i].SymId;
-            int idNew = symbolist.insert(syms[i]);
+            symAttr tmp = syms[i];
+            int idOld = tmp.SymId;
+            tmp.name = tmp.name + "round" + to_string(round);
+            int idNew = symbolist.insert(tmp);
             symMap.insert(pair<int, int>(idOld, idNew));
         }
     }
 
-    vector<codeSt> outputCodes()
+    vector<codeSt> outputCodes(vector<codeSt> ans)
     {
-        vector<codeSt> ans;
         for (int i = 0; i < codes.size(); i++)
         {
             codeSt codeTmp = codes[i];
@@ -86,14 +84,34 @@ private:
 public:
     vector<codeSt> mergeInlineCode(vector<string> argsName)
     {
+        round++;
         symMap.clear();
+        /*organize symbolist*/
+        mergeSymsToSymbols();
+
+        assert(!symMap.empty());
+        /*args push*/
+        vector<codeSt> ans;
         for (int i = 0; i < argsName.size(); i++)
         {
-            int idOld = para[i].SymId;
-            int idNew = symbolist.get(argsName[i]).SymId;
-            symMap.insert(pair<int, int>(idOld, idNew));
+            int idOld = syms[i].SymId;
+            // assert(symMap.find(idOld) != symMap.end());
+            if (symMap.find(idOld) == symMap.end())
+            {
+                cout << funcName << endl;
+                syms[i].SHOW_ATTR();
+            }
+            else
+            {
+                cout << "WORK!!!!!!!!!!!!!:\t";
+                cout << funcName << "\t";
+                syms[i].SHOW_ATTR();
+                int idNew = symMap.find(idOld)->second;
+                ans.push_back(codeSt(codeSt::AssignValue, idNew, symbolist.get_id(argsName[i])));
+            }
         }
-        mergeSymsToSymbols();
-        return outputCodes();
+
+        /*gen code*/
+        return outputCodes(ans);
     }
 };

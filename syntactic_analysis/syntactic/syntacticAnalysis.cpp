@@ -504,8 +504,6 @@ void syntacticAnalysis::funcWithReturn()
 
     argumentList(name);
 
-    midcode.funcParaOverAndLocalStart();
-
     if (!errmag.hasErrors())
         midcode.genMidFuncDef(name);
     // assert(sym.getKey() == RPARENT);
@@ -574,8 +572,6 @@ void syntacticAnalysis::funcWithoutReturn()
     midcode.startInlineSaver(name);
 
     argumentList(name);
-
-    midcode.funcParaOverAndLocalStart();
 
     if (!errmag.hasErrors())
         midcode.genMidFuncDef(name);
