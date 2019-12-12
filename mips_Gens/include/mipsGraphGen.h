@@ -54,10 +54,12 @@ private:
 
     mipsCollect::Register GetConditionReg()
     {
+        return mipsCollect::getSeriesV(1);
     }
 
     mipsCollect::Register AllocAPureFreeReg()
     {
+        return mipsCollect::getSeriesV(1);
     }
 
     mipsCollect::Register LoadSymRealValueToRegister(symAttr *attr)
@@ -67,23 +69,27 @@ private:
     mipsCollect::Register GetOrAllocRegisterToSym(symAttr *attr)
     {
         set<int> BlockUseful = blockWorkNow->getBlockUse();
-        //临时变量 : 在块结束时,  就不需要使用
         if (BlockUseful.find(attr->SymId) != BlockUseful.end())
         {
+            //临时变量 : 在块结束时,  就不需要使用
             if (tempReg.hasThisInReg(attr->SymId))
             {
+                //在临时变量池中.
                 int tmpId = tempReg.getRegForThis(attr->SymId);
                 return collect.getSeriesT(tmpId);
             }
             else
             {
+                //不在临时变量池中.
                 if (tempReg.hasFreeReg())
                 {
+                    //有free寄存器.
                     int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
                     return collect.getSeriesT(tmpId);
                 }
                 else
                 {
+                    //没有free寄存器.
                     flushSt shouldFlush = tempReg.flushASymNotUseNow(codeWorkNow->getRightValue());
                     flushToMem(shouldFlush.getSymId(), collect.getSeriesT(shouldFlush.getRegId()));
                     int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
@@ -104,6 +110,7 @@ private:
     int getConstValue(int SymId);
     int getConstType(int SymId);
 
+private:
     void genMipsScanf();
     void genMipsPrintStr();
     void genMipsPrintStrNoNewLine();
