@@ -35,8 +35,6 @@ public:
 private:
     const int minReg = 0;
     const int maxReg = 9;
-    const int fireFighter1 = 8;
-    const int fireFighter2 = 9;
     map<int, int> symId2reg;
     map<int, int> reg2SymId;
     set<int> usedReg;
@@ -61,7 +59,10 @@ public:
     // 在有free的寄存器情况下, 分配一个新的寄存器出来
     int getAFreeRegForThis(int symId);
 
-    int getAPureFreeReg();
+    // 申请一个寄存器,但是不把该寄存器标记为使用了.
+    // 即: 该寄存器的生命期到下一次寄存器申请时就结束!!!
+    // 注: 考虑到整体架构, 并没有实现该函数.
+    int getAPureFreeReg() { assert(false); }
 
     // 判断寄存器池中是否有直接可以用的,有的话就直接用
     bool hasThisInReg(int symId);
