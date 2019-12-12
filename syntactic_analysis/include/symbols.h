@@ -12,6 +12,8 @@ enum symKind
     FUNC,
 };
 
+const string symKindStrs[] = {"CONST", "VAR", "FUNC"};
+
 enum symType
 {
     TYPERROR = -1,
@@ -21,6 +23,8 @@ enum symType
     STRING,
     BOOL,
 };
+
+const string symTypeStrs[] = {"VOID", "INT", "CHAR", "STRING", "BOOL"};
 
 enum offsetRefer
 {
@@ -66,6 +70,18 @@ public:
         this->len = len;
         this->size = 0;
         this->offsetRel = 0;
+    }
+    string typeStr()
+    {
+        if (type == TYPERROR)
+        {
+            return "TYPERROR";
+        }
+        return symTypeStrs[type];
+    }
+    string kindStr()
+    {
+        return symKindStrs[kind];
     }
     void SHOW_ATTR();
 };

@@ -60,3 +60,14 @@ void tempRegMag::updataUsefulInfo(set<int> Useful)
         symId2reg.erase(*itst);
     }
 }
+
+bool tempRegMag::askIfHasFreeReg(set<int> Useful)
+{
+    updataUsefulInfo(Useful);
+    return hasFreeReg();
+}
+
+set<int> tempRegMag::askAllUsedReg(set<int> Useful)
+{
+    return usedReg;
+}

@@ -95,17 +95,14 @@ public:
         for (int i = 0; i < argsName.size(); i++)
         {
             int idOld = syms[i].SymId;
-            // assert(symMap.find(idOld) != symMap.end());
             if (symMap.find(idOld) == symMap.end())
             {
                 cout << funcName << endl;
                 syms[i].SHOW_ATTR();
+                assert(false);
             }
             else
             {
-                cout << "WORK!!!!!!!!!!!!!:\t";
-                cout << funcName << "\t";
-                syms[i].SHOW_ATTR();
                 int idNew = symMap.find(idOld)->second;
                 ans.push_back(codeSt(codeSt::AssignValue, idNew, symbolist.get_id(argsName[i])));
             }

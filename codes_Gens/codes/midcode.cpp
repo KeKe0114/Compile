@@ -309,12 +309,12 @@ void midCodeGen::genMidPrintfExp(string name)
 string codeSt::to_string()
 {
     stringstream ssp;
-    if (codetype == codeSt::Scanf)
+    if (codetype == Scanf)
     {
         symAttr scanfAttr = symbols::get_instance().get_by_id(operand1);
         ssp << "scanf " << scanfAttr.name << "@" << scanfAttr.SymId << endl;
     }
-    if (codetype == PrintExp)
+    else if (codetype == PrintExp)
     {
         string type_str;
         symAttr printAttr = symbols::get_instance().get_by_id(operand1);
@@ -329,15 +329,83 @@ string codeSt::to_string()
         else
         {
             type_str = "UNKNOWN ERROR";
+            assert(false);
         }
         ssp << "printExp:" << printAttr.name << "%" << type_str << endl;
     }
-    if (codetype == PrintStr)
+    else if (codetype == PrintStr)
     {
         ssp << "printStr:" << value_const_str << endl;
     }
-    if (codetype == AssignValue)
+    else if (codetype == ConstVarState)
     {
+        symAttr *attr = getOperand1();
+        ssp << attr->kindStr() << " " << attr->typeStr() << " " << attr->name << attr->value << endl;
+    }
+    else if (codetype == FunctState)
+    {
+        symAttr *attr = getOperand1();
+        ssp << attr->kindStr() << " " << attr->typeStr() << " " << attr->name << endl;
+    }
+    else if (codetype == FunctRetWithValue)
+    {
+        ssp << "RET " << getOperand1()->name << endl;
+    }
+    else if (codetype == FunctRetWithoutValue)
+    {
+        ssp << "RET" << endl;
+    }
+    else if (codetype == FunctArgsPush)
+    {
+        ssp << "PUSH " << getOperand1()->name << endl;
+    }
+    else if (codetype == FunctCall)
+    {
+        ssp << "CALL " << getOperand1()->name << endl;
+    }
+    else if (codetype == FunctRetUse)
+    {
+        ssp << getOperand1()->name << " = RET" << endl;
+    }
+    else if (codetype == BNZ)
+    {
+        ssp << "BNZ" << value_const_str << endl;
+    }
+    else if (codetype == BZ)
+    {
+        ssp << "BZ" << value_const_str << endl;
+    }
+    else if (codetype == Jump)
+    {
+        ssp << "GOTO" << value_const_str << endl;
+    }
+    else if (codetype == Label)
+    {
+        ssp << value_const_str << ":" << endl;
+    }
+    else if (codetype == AssignValue)
+    {
+        ssp << getOperand1()->name << " = " << getOperand2()->name << endl;
+    }
+    else if (codetype == ArrayValueGet)
+    {
+        ssp << getOperand1()->name << " = " << getOperand2()->name << "[" << getIdx()->name << "]" << endl;
+    }
+    else if (codetype == ArrayValuePut)
+    {
+        ssp << getOperand1()->name << "[" << getIdx()->name << "] = " << getOperand2()->name << endl;
+    }
+    else if (codetype == Condition)
+    {
+        ssp << getOperand1()->name << " " << getOpStr() << " " << getOperand2()->name << endl;
+    }
+    else if (codetype == Condition4Num)
+    {
+        ssp << getOperand1()->name << " " << getOpStr() << " " << getValue() << endl;
+    }
+    else if (codetype == FourYuan)
+    {
+        ssp << getResult()->name << "=" << getOperand1()->name << " " << getOpStr() << " " << getOperand2()->name << endl;
     }
     return ssp.str();
 }

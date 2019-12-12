@@ -81,6 +81,10 @@ void blockFlowGraph::genBlocksFromOrigin()
     {
         if (i > 0 && originCodes[i].isBlockStart() && originCodes[i - 1].isBlockEnd())
         {
+            // build graph : label
+            int idNow = id2block.size();
+            string entryLabel = originCodes[i].getBlockEntry();
+            entryLabel2block.insert(pair<string, int>(entryLabel, idNow));
         }
         else if (originCodes[i].isBlockStart())
         {
@@ -133,6 +137,10 @@ void blockFlowGraph::genBlocksFromOrigin()
     {
         int father = it->first;
         map<string, int>::iterator child_it = entryLabel2block.find(it->second);
+        if (child_it == entryLabel2block.end())
+        {
+            cout << it->second << endl;
+        }
         assert(child_it != entryLabel2block.end());
         int child = child_it->second;
         addRelationFatherChild(father, child);

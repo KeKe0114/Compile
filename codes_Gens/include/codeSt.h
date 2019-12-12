@@ -7,6 +7,8 @@
 
 using namespace std;
 
+const string op_strs[] = {"+", "-", "*", "/", "<", "<=", ">", ">=", "==", "!="};
+
 class codeSt
 {
 public:
@@ -21,9 +23,9 @@ public:
         //常变量声明
         ConstVarState, //operand1
         //函数定义
-        FunctState,           //operand1
-        FunctRetWithValue,    //operand1
-        FunctRetWithoutValue, //operand1
+        FunctState,        //operand1
+        FunctRetWithValue, //operand1
+        FunctRetWithoutValue,
         //函数调用
         FunctArgsPush, //operand1
         FunctCall,     //operand1
@@ -87,6 +89,14 @@ public:
     symAttr *getResult() { return symbols::get_instance().get_pointer_by_id(result); }
     symAttr *getIdx() { return symbols::get_instance().get_pointer_by_id(idx); }
     op_em getOp() { return op; }
+    string getOpStr()
+    {
+        if (op == op_UNKNOWNERROR)
+        {
+            return "UNKNOWN";
+        }
+        return op_strs[op - 17];
+    }
     codeType getType() { return codetype; }
 
 public:

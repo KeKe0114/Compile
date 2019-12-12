@@ -14,12 +14,12 @@ syntacticAnalysis::syntacticAnalysis(string filename, string outfile) : lexical(
 
 void syntacticAnalysis::printToken(token key)
 {
-    cout << key.getName() << " " << key.getValue() << " " << key.getLine() << endl;
+    // cout << key.getName() << " " << key.getValue() << " " << key.getLine() << endl;
 }
 
 void syntacticAnalysis::printLine(string s)
 {
-    cout << s << endl;
+    // cout << s << endl;
 }
 
 bool syntacticAnalysis::isTypeIdentifier(token key)
