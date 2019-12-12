@@ -61,13 +61,28 @@ void tempRegMag::updataUsefulInfo(set<int> Useful)
     }
 }
 
-bool tempRegMag::askIfHasFreeReg(set<int> Useful)
-{
-    updataUsefulInfo(Useful);
-    return hasFreeReg();
-}
-
 set<int> tempRegMag::askAllUsedReg(set<int> Useful)
 {
     return usedReg;
+}
+
+flushSt tempRegMag::flushASymNotUseNow(set<int> SymUse)
+{
+    map<int, int>::iterator iter;
+    for (iter = symId2reg.begin(); iter != symId2reg.end(); iter++)
+    {
+        if (SymUse.find(iter->first) == SymUse.end())
+        {
+            flushSt ret(iter->first, iter->second);
+            usedReg.erase(iter->second);
+            symId2reg.erase(iter);
+            return ret;
+        }
+    }
+    assert(false);
+    /* 下面的代码只是为了抑制warning,运行到这里说明出错了 */
+    flushSt ret(iter->first, iter->second);
+    usedReg.erase(iter->second);
+    symId2reg.erase(iter);
+    return ret;
 }
