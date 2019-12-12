@@ -333,9 +333,11 @@ void mipsGraphGen::gen_mips_code()
 {
     flowGraph.work();
     vector<block> blocks = flowGraph.getBlocks();
+    cout << "***************************************************blocksize:" << blocks.size() << endl;
     for (int i = 0; i < blocks.size(); i++)
     {
         vector<codeSt> codes = blocks[i].getCodes();
+        cout << "********************************************************************block: " << i << " codesize: " << codes.size() << endl;
         for (int i = 0; i < codes.size(); i++)
         {
             codeWorkNow = &codes[i];

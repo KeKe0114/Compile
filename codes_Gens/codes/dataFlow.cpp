@@ -128,7 +128,7 @@ void blockFlowGraph::genBlocksFromOrigin()
     }
     end = originCodes.size();
     id = id2block.size();
-    block blockTemp(id, begin, end);
+    block blockTemp(id, begin, end - 1);
     id2block.push_back(blockTemp);
 
     // build father child

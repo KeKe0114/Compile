@@ -337,6 +337,10 @@ string codeSt::to_string()
     {
         ssp << "printStr:\t" << value_const_str << endl;
     }
+    else if (codetype == PrintStrNoNewLine)
+    {
+        ssp << "printStrNoNewLine:\t" << value_const_str << endl;
+    }
     else if (codetype == ConstVarState)
     {
         symAttr *attr = getOperand1();
@@ -387,6 +391,10 @@ string codeSt::to_string()
     {
         ssp << getOperand1()->name << "\t=\t" << getOperand2()->name << endl;
     }
+    else if (codetype == AssignConst)
+    {
+        ssp << getOperand1()->name << "\t=\t" << getValue() << endl;
+    }
     else if (codetype == ArrayValueGet)
     {
         ssp << getOperand1()->name << "\t=\t" << getOperand2()->name << "[\t" << getIdx()->name << "\t]" << endl;
@@ -406,6 +414,11 @@ string codeSt::to_string()
     else if (codetype == FourYuan)
     {
         ssp << getResult()->name << "\t=\t" << getOperand1()->name << "\t" << getOpStr() << "\t" << getOperand2()->name << endl;
+    }
+    else
+    {
+        cout << codetype << endl;
+        assert(false);
     }
     return ssp.str();
 }
