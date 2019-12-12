@@ -331,25 +331,25 @@ string codeSt::to_string()
             type_str = "UNKNOWN ERROR";
             assert(false);
         }
-        ssp << "printExp:" << printAttr.name << "%" << type_str << endl;
+        ssp << "printExp:\t" << printAttr.name << "%" << type_str << endl;
     }
     else if (codetype == PrintStr)
     {
-        ssp << "printStr:" << value_const_str << endl;
+        ssp << "printStr:\t" << value_const_str << endl;
     }
     else if (codetype == ConstVarState)
     {
         symAttr *attr = getOperand1();
-        ssp << attr->kindStr() << " " << attr->typeStr() << " " << attr->name << attr->value << endl;
+        ssp << attr->kindStr() << "\t" << attr->typeStr() << "\t" << attr->name << attr->value << endl;
     }
     else if (codetype == FunctState)
     {
         symAttr *attr = getOperand1();
-        ssp << attr->kindStr() << " " << attr->typeStr() << " " << attr->name << endl;
+        ssp << attr->kindStr() << "\t" << attr->typeStr() << "\t" << attr->name << endl;
     }
     else if (codetype == FunctRetWithValue)
     {
-        ssp << "RET " << getOperand1()->name << endl;
+        ssp << "RET\t" << getOperand1()->name << endl;
     }
     else if (codetype == FunctRetWithoutValue)
     {
@@ -357,27 +357,27 @@ string codeSt::to_string()
     }
     else if (codetype == FunctArgsPush)
     {
-        ssp << "PUSH " << getOperand1()->name << endl;
+        ssp << "PUSH\t" << getOperand1()->name << endl;
     }
     else if (codetype == FunctCall)
     {
-        ssp << "CALL " << getOperand1()->name << endl;
+        ssp << "CALL\t" << getOperand1()->name << endl;
     }
     else if (codetype == FunctRetUse)
     {
-        ssp << getOperand1()->name << " = RET" << endl;
+        ssp << getOperand1()->name << "\t=\tRET" << endl;
     }
     else if (codetype == BNZ)
     {
-        ssp << "BNZ" << value_const_str << endl;
+        ssp << "BNZ\t" << value_const_str << endl;
     }
     else if (codetype == BZ)
     {
-        ssp << "BZ" << value_const_str << endl;
+        ssp << "BZ\t" << value_const_str << endl;
     }
     else if (codetype == Jump)
     {
-        ssp << "GOTO" << value_const_str << endl;
+        ssp << "GOTO\t" << value_const_str << endl;
     }
     else if (codetype == Label)
     {
@@ -385,27 +385,27 @@ string codeSt::to_string()
     }
     else if (codetype == AssignValue)
     {
-        ssp << getOperand1()->name << " = " << getOperand2()->name << endl;
+        ssp << getOperand1()->name << "\t=\t" << getOperand2()->name << endl;
     }
     else if (codetype == ArrayValueGet)
     {
-        ssp << getOperand1()->name << " = " << getOperand2()->name << "[" << getIdx()->name << "]" << endl;
+        ssp << getOperand1()->name << "\t=\t" << getOperand2()->name << "[\t" << getIdx()->name << "\t]" << endl;
     }
     else if (codetype == ArrayValuePut)
     {
-        ssp << getOperand1()->name << "[" << getIdx()->name << "] = " << getOperand2()->name << endl;
+        ssp << getOperand1()->name << "[\t" << getIdx()->name << "\t]\t=\t" << getOperand2()->name << endl;
     }
     else if (codetype == Condition)
     {
-        ssp << getOperand1()->name << " " << getOpStr() << " " << getOperand2()->name << endl;
+        ssp << getOperand1()->name << "\t" << getOpStr() << "\t" << getOperand2()->name << endl;
     }
     else if (codetype == Condition4Num)
     {
-        ssp << getOperand1()->name << " " << getOpStr() << " " << getValue() << endl;
+        ssp << getOperand1()->name << "\t" << getOpStr() << "\t" << getValue() << endl;
     }
     else if (codetype == FourYuan)
     {
-        ssp << getResult()->name << "=" << getOperand1()->name << " " << getOpStr() << " " << getOperand2()->name << endl;
+        ssp << getResult()->name << "\t=\t" << getOperand1()->name << "\t" << getOpStr() << "\t" << getOperand2()->name << endl;
     }
     return ssp.str();
 }
