@@ -40,6 +40,7 @@ private:
     blockFlowGraph &flowGraph;
     tempRegMag &tempReg;
     symbols &symbolist;
+    block *blockWorkNow;
     codeSt *codeWorkNow;
     int strIdGen;
     string str_prefix;
@@ -48,10 +49,60 @@ private:
     int functionCallInventArgLen = 16;
 
     string genMips_AllocStrName();
-    void genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op);
-    void genMips_LwFromSymTable(mipsCollect::Register reg, symAttr *attr);
-    void genMips_LaFromSymTable(mipsCollect::Register reg, symAttr *attr);
-    void genMips_SwToSymTable(mipsCollect::Register reg, symAttr *attr);
+
+    void flushToMem(int symId, mipsCollect::Register reg);
+
+    mipsCollect::Register GetConditionReg()
+    {
+    }
+
+    mipsCollect::Register AllocAPureFreeReg()
+    {
+    }
+
+    mipsCollect::Register LoadSymRealValueToRegister(symAttr *attr)
+    {
+    }
+
+    mipsCollect::Register GetOrAllocRegisterToSym(symAttr *attr)
+    {
+        set<int> BlockUseful = blockWorkNow->getBlockUse();
+        //临时变量 : 在块结束时,  就不需要使用
+        if (BlockUseful.find(attr->SymId) != BlockUseful.end())
+        {
+            if (tempReg.hasThisInReg(attr->SymId))
+            {
+                int tmpId = tempReg.getRegForThis(attr->SymId);
+                return collect.getSeriesT(tmpId);
+            }
+            else
+            {
+                if (tempReg.hasFreeReg())
+                {
+                    int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
+                    return collect.getSeriesT(tmpId);
+                }
+                else
+                {
+                    flushSt shouldFlush = tempReg.flushASymNotUseNow(codeWorkNow->getRightValue());
+                    flushToMem(shouldFlush.getSymId(), collect.getSeriesT(shouldFlush.getRegId()));
+                    int tmpId = tempReg.getAFreeRegForThis(attr->SymId);
+                    return collect.getSeriesT(tmpId);
+                }
+            }
+        }
+        else
+        {
+        }
+    }
+
+    void LoadSymToRegisterTold(symAttr *attr, mipsCollect::Register told);
+
+    //判断一个attr是否是const
+    // CHEN: genConstState
+    bool IsAConstSym(int SymId);
+    int getConstValue(int SymId);
+    int getConstType(int SymId);
 
     void genMipsScanf();
     void genMipsPrintStr();
@@ -82,4 +133,6 @@ private:
     void genMipsCondition4Num();
 
     void genMipsFourYuan();
+
+    void genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op);
 };

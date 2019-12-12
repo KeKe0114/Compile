@@ -46,6 +46,11 @@ void mipsCollect::sw(Register reg1, string label)
     text();
     ss << "sw " << Register2Str[reg1] << ", " << label << endl;
 }
+void mipsCollect::sw(Register reg1, string name, Register reg2)
+{
+    text();
+    ss << "sw " << Register2Str[reg1] << ", " << name << "(" << Register2Str[reg2] << ")" << endl;
+}
 
 void mipsCollect::lw(Register reg1, int offset, Register reg2)
 {
@@ -56,6 +61,11 @@ void mipsCollect::lw(Register reg1, string name)
 {
     text();
     ss << "lw " << Register2Str[reg1] << ", " << name << endl;
+}
+void mipsCollect::lw(Register reg1, string name, Register reg2)
+{
+    text();
+    ss << "lw " << Register2Str[reg1] << ", " << name << "(" << Register2Str[reg2] << ")" << endl;
 }
 void mipsCollect::la(Register reg1, string name)
 {
@@ -101,7 +111,11 @@ void mipsCollect::jump(string label)
     text();
     ss << "j " << label << endl;
 }
-
+void mipsCollect::move(Register reg1, Register reg2)
+{
+    text();
+    ss << "move " << Register2Str[reg1] << ", " << Register2Str[reg2] << endl;
+}
 void mipsCollect::add(Register reg1, Register reg2, int num)
 {
     text();
@@ -127,10 +141,10 @@ void mipsCollect::mul(Register reg1, Register reg2, int num)
     text();
     ss << "mul " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << num << endl;
 }
-void mipsCollect::div(Register reg1, Register reg2)
+void mipsCollect::div(Register reg1, Register reg2, Register reg3)
 {
     text();
-    ss << "div " << Register2Str[reg1] << ", " << Register2Str[reg2] << endl;
+    ss << "div " << Register2Str[reg1] << ", " << Register2Str[reg2] << ", " << Register2Str[reg3] << endl;
 }
 void mipsCollect::slt(Register reg1, Register reg2, Register reg3)
 {

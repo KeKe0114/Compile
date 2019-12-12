@@ -1,54 +1,6 @@
 #include "mipsGraphGen.h"
 #include "debug.h"
 
-void mipsGraphGen::genMips_LwFromSymTable(mipsCollect::Register reg, symAttr *attr)
-{
-    if (attr->refer == GLOBAL)
-    {
-        collect.lw(reg, attr->name);
-    }
-    else if (attr->refer == FP)
-    {
-        collect.lw(reg, attr->offsetRel, collect.$fp);
-    }
-    else
-    {
-        assert(false);
-    }
-}
-
-void mipsGraphGen::genMips_LaFromSymTable(mipsCollect::Register reg, symAttr *attr)
-{
-    if (attr->refer == GLOBAL)
-    {
-        collect.la(reg, attr->name);
-    }
-    else if (attr->refer == FP)
-    {
-        collect.la(reg, attr->offsetRel, collect.$fp);
-    }
-    else
-    {
-        assert(false);
-    }
-}
-
-void mipsGraphGen::genMips_SwToSymTable(mipsCollect::Register reg, symAttr *attr)
-{
-    if (attr->refer == GLOBAL)
-    {
-        collect.sw(reg, attr->name);
-    }
-    else if (attr->refer == FP)
-    {
-        collect.sw(reg, attr->offsetRel, collect.$fp);
-    }
-    else
-    {
-        assert(false);
-    }
-}
-
 string mipsGraphGen::genMips_AllocStrName()
 {
     strIdGen++;
@@ -72,7 +24,9 @@ void mipsGraphGen::genMipsScanf()
         target->SHOW_ATTR();
         assert(false);
     }
-    genMips_SwToSymTable(collect.$v0, target);
+    mipsCollect::Register targetR = GetOrAllocRegisterToSym(target);
+    mipsCollect::Register v0R = mipsCollect::getSeriesV(0);
+    collect.move(targetR, v0R);
 }
 
 void mipsGraphGen::genMipsPrintStr()
@@ -80,9 +34,9 @@ void mipsGraphGen::genMipsPrintStr()
     string strName = genMips_AllocStrName();
     string value = codeWorkNow->getValue();
     collect.asciiz(strName, value);
-    collect.la(collect.$a0, strName);
+    collect.la(mipsCollect::getSeriesA(0), strName);
     collect.syscall(4);
-    collect.la(collect.$a0, newLine);
+    collect.la(mipsCollect::getSeriesA(0), newLine);
     collect.syscall(4);
 }
 
@@ -91,14 +45,14 @@ void mipsGraphGen::genMipsPrintStrNoNewLine()
     string strName = genMips_AllocStrName();
     string value = codeWorkNow->getValue();
     collect.asciiz(strName, value);
-    collect.la(collect.$a0, strName);
+    collect.la(mipsCollect::getSeriesA(0), strName);
     collect.syscall(4);
 }
 
 void mipsGraphGen::genMipsPrintExp()
 {
     symAttr *exp = codeWorkNow->getOperand1();
-    genMips_LwFromSymTable(collect.$a0, exp);
+    LoadSymToRegisterTold(exp, mipsCollect::getSeriesA(0));
     if (exp->type == INT)
     {
         collect.syscall(1);
@@ -111,7 +65,7 @@ void mipsGraphGen::genMipsPrintExp()
     {
         assert(false);
     }
-    collect.la(collect.$a0, newLine);
+    collect.la(mipsCollect::getSeriesA(0), newLine);
     collect.syscall(4);
 }
 
@@ -140,8 +94,9 @@ void mipsGraphGen::genMipsConstState()
     }
     else if (attr->refer == FP)
     {
-        collect.li(collect.$t1, num);
-        genMips_SwToSymTable(collect.$t1, attr);
+        mipsCollect::Register tmp = GetOrAllocRegisterToSym(attr);
+        collect.li(tmp, num);
+        flushToMem(attr->SymId, tmp);
     }
     else
     {
@@ -161,33 +116,44 @@ void mipsGraphGen::genMipsVarState()
 void mipsGraphGen::genMipsFunctState()
 {
     symAttr *attr = codeWorkNow->getOperand1();
+    mipsCollect::Register raR = mipsCollect::getSeriesRA();
+    mipsCollect::Register fpR = mipsCollect::getSeriesFP();
+    mipsCollect::Register spR = mipsCollect::getSeriesSP();
+    mipsCollect::Register zeroR = mipsCollect::getSeriesZero();
     collect.labelLine(attr->name);
-    collect.sw(collect.$ra, 4, collect.$sp);
-    collect.sw(collect.$fp, 8, collect.$sp);
-    collect.sw(collect.$sp, 12, collect.$sp);
-    collect.add(collect.$fp, collect.$sp, collect.$ZERO);
-    collect.add(collect.$sp, collect.$sp, attr->size);
+    collect.sw(raR, 4, spR);
+    collect.sw(fpR, 8, spR);
+    collect.sw(spR, 12, spR);
+    collect.add(fpR, spR, zeroR);
+    collect.add(spR, spR, attr->size);
 }
 
 void mipsGraphGen::genMipsFunctRetWithValue()
 {
     symAttr *attr = codeWorkNow->getOperand1();
-    genMips_LwFromSymTable(collect.$v0, attr);
-    genMipsFunctRetWithoutValue();
+    mipsCollect::Register v0R = mipsCollect::getSeriesV(0);
+    LoadSymToRegisterTold(attr, v0R);
+    if (!codeWorkNow->isInlineRet())
+        genMipsFunctRetWithoutValue();
 }
 
 void mipsGraphGen::genMipsFunctRetWithoutValue()
 {
-    collect.lw(collect.$sp, 12, collect.$fp);
-    collect.lw(collect.$fp, 8, collect.$sp);
-    collect.lw(collect.$ra, 4, collect.$sp);
-    collect.jr(collect.$ra);
+    mipsCollect::Register raR = mipsCollect::getSeriesRA();
+    mipsCollect::Register fpR = mipsCollect::getSeriesFP();
+    mipsCollect::Register spR = mipsCollect::getSeriesSP();
+    collect.lw(spR, 12, fpR);
+    collect.lw(fpR, 8, spR);
+    collect.lw(raR, 4, spR);
+    collect.jr(raR);
 }
+
 void mipsGraphGen::genMipsFunctArgsPush()
 {
     symAttr *attr = codeWorkNow->getOperand1();
-    genMips_LwFromSymTable(collect.$t0, attr);
-    collect.sw(collect.$t0, functionCallInventArgLen + spVerticalOffset, collect.$sp);
+    mipsCollect::Register spR = mipsCollect::getSeriesSP();
+    mipsCollect::Register tmp = LoadSymRealValueToRegister(attr);
+    collect.sw(tmp, functionCallInventArgLen + spVerticalOffset, spR);
     spVerticalOffset += 4;
 }
 void mipsGraphGen::genMipsFunctCall()
@@ -200,33 +166,33 @@ void mipsGraphGen::genMipsFunctCall()
 void mipsGraphGen::genMipsFunctRetUse()
 {
     symAttr *attr = codeWorkNow->getOperand1();
-    genMips_SwToSymTable(collect.$v0, attr);
+    mipsCollect::Register tmp = GetOrAllocRegisterToSym(attr);
+    mipsCollect::Register v0R = mipsCollect::getSeriesV(0);
+    collect.move(tmp, v0R);
 }
 
 void mipsGraphGen::genMipsBNZ()
 {
-    collect.bnez(collect.$t9, codeWorkNow->getValue());
+    collect.bnez(GetConditionReg(), codeWorkNow->getValue());
 }
 void mipsGraphGen::genMipsBZ()
 {
-    collect.beqz(collect.$t9, codeWorkNow->getValue());
+    collect.beqz(GetConditionReg(), codeWorkNow->getValue());
 }
 void mipsGraphGen::genMipsJUMP()
 {
     collect.jump(codeWorkNow->getValue());
 }
-
 void mipsGraphGen::genMipsLabelLine()
 {
     collect.labelLine(codeWorkNow->getValue());
 }
-
 void mipsGraphGen::genMipsAssignValue()
 {
     symAttr *left = codeWorkNow->getOperand1();
     symAttr *right = codeWorkNow->getOperand2();
-    genMips_LwFromSymTable(collect.$t0, right);
-    genMips_SwToSymTable(collect.$t0, left);
+    mipsCollect::Register leftR = GetOrAllocRegisterToSym(left);
+    LoadSymToRegisterTold(right, leftR);
 }
 void mipsGraphGen::genMipsAssignConst()
 {
@@ -247,8 +213,9 @@ void mipsGraphGen::genMipsAssignConst()
     {
         assert(false);
     }
-    collect.li(collect.$t1, num);
-    genMips_SwToSymTable(collect.$t1, attr);
+    mipsCollect::Register leftR = GetOrAllocRegisterToSym(attr);
+    collect.li(leftR, num);
+    flushToMem(attr->SymId, leftR);
 }
 
 void mipsGraphGen::genMipsArrayValueGet()
@@ -256,37 +223,66 @@ void mipsGraphGen::genMipsArrayValueGet()
     symAttr *array = codeWorkNow->getOperand2();
     symAttr *idx = codeWorkNow->getIdx();
     symAttr *target = codeWorkNow->getOperand1();
-    genMips_LwFromSymTable(collect.$t1, idx);
-    genMips_LaFromSymTable(collect.$t0, array);
-    collect.mul(collect.$t1, collect.$t1, array->align);
-    collect.add(collect.$t0, collect.$t0, collect.$t1);
-    collect.lw(collect.$t1, 0, collect.$t0);
-    genMips_SwToSymTable(collect.$t1, target);
+
+    mipsCollect::Register targetR = GetOrAllocRegisterToSym(target);
+    mipsCollect::Register idxR = LoadSymRealValueToRegister(idx);
+    mipsCollect::Register pureFree = targetR;
+    collect.mul(pureFree, idxR, array->align);
+
+    if (array->refer == GLOBAL)
+    {
+        string arrayName = array->name;
+        collect.lw(targetR, arrayName, pureFree);
+    }
+    else if (array->refer == FP)
+    {
+        int offset2Fp = array->offsetRel;
+        collect.add(pureFree, pureFree, mipsCollect::getSeriesFP());
+        collect.lw(targetR, offset2Fp, pureFree);
+    }
+    else
+    {
+        assert(false);
+    }
 }
 void mipsGraphGen::genMipsArrayValuePut()
 {
     symAttr *array = codeWorkNow->getOperand1();
     symAttr *idx = codeWorkNow->getIdx();
     symAttr *target = codeWorkNow->getOperand2();
-    genMips_LwFromSymTable(collect.$t1, idx);
-    genMips_LaFromSymTable(collect.$t0, array);
-    collect.mul(collect.$t1, collect.$t1, array->align);
-    collect.add(collect.$t0, collect.$t0, collect.$t1);
-    genMips_LwFromSymTable(collect.$t1, target);
-    collect.sw(collect.$t1, 0, collect.$t0);
+
+    mipsCollect::Register targetR = LoadSymRealValueToRegister(target);
+    mipsCollect::Register idxR = LoadSymRealValueToRegister(idx);
+    mipsCollect::Register pureFree = AllocAPureFreeReg();
+    collect.mul(pureFree, idxR, array->align);
+
+    if (array->refer == GLOBAL)
+    {
+        string arrayName = array->name;
+        collect.sw(targetR, arrayName, pureFree);
+    }
+    else if (array->refer == FP)
+    {
+        int offset2Fp = array->offsetRel;
+        collect.add(pureFree, pureFree, mipsCollect::getSeriesFP());
+        collect.sw(targetR, offset2Fp, pureFree);
+    }
 }
+
 void mipsGraphGen::genMipsCondition()
 {
     symAttr *num1 = codeWorkNow->getOperand1();
     symAttr *num2 = codeWorkNow->getOperand2();
-    genMips_LwFromSymTable(collect.$t0, num1);
-    genMips_LwFromSymTable(collect.$t1, num2);
-    genMips_DistinguishOp(collect.$t9, collect.$t0, collect.$t1, codeWorkNow->getOp());
+    mipsCollect::Register num1R = LoadSymRealValueToRegister(num1);
+    mipsCollect::Register num2R = LoadSymRealValueToRegister(num2);
+    mipsCollect::Register condTmp = GetConditionReg();
+    genMips_DistinguishOp(condTmp, num1R, num2R, codeWorkNow->getOp());
 }
 void mipsGraphGen::genMipsCondition4Num()
 {
     symAttr *num1 = codeWorkNow->getOperand1();
-    genMips_LwFromSymTable(collect.$t9, num1);
+    mipsCollect::Register condTmp = GetConditionReg();
+    LoadSymToRegisterTold(num1, condTmp);
 }
 
 void mipsGraphGen::genMipsFourYuan()
@@ -294,10 +290,11 @@ void mipsGraphGen::genMipsFourYuan()
     symAttr *num1 = codeWorkNow->getOperand1();
     symAttr *num2 = codeWorkNow->getOperand2();
     symAttr *target = codeWorkNow->getResult();
-    genMips_LwFromSymTable(collect.$t0, num1);
-    genMips_LwFromSymTable(collect.$t1, num2);
-    genMips_DistinguishOp(collect.$t3, collect.$t0, collect.$t1, codeWorkNow->getOp());
-    genMips_SwToSymTable(collect.$t3, target);
+    mipsCollect::Register num1R = LoadSymRealValueToRegister(num1);
+    mipsCollect::Register num2R = LoadSymRealValueToRegister(num2);
+    mipsCollect::Register targetR = GetOrAllocRegisterToSym(num2);
+
+    genMips_DistinguishOp(targetR, num1R, num2R, codeWorkNow->getOp());
 }
 
 void mipsGraphGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op)
@@ -309,10 +306,7 @@ void mipsGraphGen::genMips_DistinguishOp(mipsCollect::Register target, mipsColle
     else if (op == codeSt::op_MULT)
         collect.mul(target, operand1, operand2);
     else if (op == codeSt::op_DIV)
-    {
-        collect.div(operand1, operand2);
-        collect.mflo(target);
-    }
+        collect.div(target, operand1, operand2);
     else if (op == codeSt::op_LSS)
         collect.slt(target, operand1, operand2);
     else if (op == codeSt::op_LEQ)
@@ -333,11 +327,10 @@ void mipsGraphGen::gen_mips_code()
 {
     flowGraph.work();
     vector<block> blocks = flowGraph.getBlocks();
-    cout << "***************************************************blocksize:" << blocks.size() << endl;
     for (int i = 0; i < blocks.size(); i++)
     {
+        tempReg.resetLocalPool();
         vector<codeSt> codes = blocks[i].getCodes();
-        cout << "********************************************************************block: " << i << " codesize: " << codes.size() << endl;
         for (int i = 0; i < codes.size(); i++)
         {
             codeWorkNow = &codes[i];

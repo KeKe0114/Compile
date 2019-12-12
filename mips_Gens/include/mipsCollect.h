@@ -70,6 +70,47 @@ public:
         $ra,
     };
 
+    static Register getSeriesFP()
+    {
+        return Register::$fp;
+    }
+    static Register getSeriesGP()
+    {
+        return Register::$gp;
+    }
+    static Register getSeriesSP()
+    {
+        return Register::$sp;
+    }
+    static Register getSeriesRA()
+    {
+        return Register::$ra;
+    }
+    static Register getSeriesZero()
+    {
+        return Register::$ZERO;
+    }
+    static Register getSeriesS(int id)
+    {
+        assert(id >= 0 && id <= 7);
+        return (Register)($s0 + id);
+    }
+    static Register getSeriesT(int id)
+    {
+        assert(id >= 0 && id <= 9);
+        return (Register)($t0 + id);
+    }
+    static Register getSeriesA(int id)
+    {
+        assert(id >= 0 && id <= 3);
+        return (Register)($a0 + id);
+    }
+    static Register getSeriesV(int id)
+    {
+        assert(id >= 0 && id <= 1);
+        return (Register)($v0 + id);
+    }
+
 public:
     string get_mips_str() { return ss.str(); }
 
@@ -86,8 +127,10 @@ public:
 
     void sw(Register, int, Register);
     void sw(Register, string);
+    void sw(Register, string name, Register);
     void lw(Register, int, Register);
     void lw(Register, string name);
+    void lw(Register, string name, Register);
     void la(Register, string);
     void la(Register, int, Register);
     void li(Register, int);
@@ -100,12 +143,13 @@ public:
     void bnez(Register, string);
     void jump(string);
 
+    void move(Register, Register);
     void add(Register, Register, int);
     void add(Register, Register, Register);
     void sub(Register, Register, Register);
     void mul(Register, Register, Register);
     void mul(Register, Register, int);
-    void div(Register, Register);
+    void div(Register, Register, Register);
     void slt(Register, Register, Register);
     void sle(Register, Register, Register);
     void sgt(Register, Register, Register);
