@@ -13,7 +13,6 @@ set<int> codeSt::getLeftValue()
     case FunctRetUse:
     case AssignValue:
     case AssignConst:
-    case ArrayValueGet:
         if (getOperand1()->refer == FP)
             ans.insert(operand1);
         break;
@@ -23,10 +22,11 @@ set<int> codeSt::getLeftValue()
             ans.insert(operand1);
         break;
 
-    //operand2
+    //operand1
+    case ArrayValueGet:
     case ArrayValuePut:
-        if (getOperand2()->refer == FP)
-            ans.insert(operand2);
+        if (getOperand1()->refer == FP)
+            ans.insert(operand1);
         break;
 
     //result
@@ -67,8 +67,8 @@ set<int> codeSt::getRightValue()
         break;
 
     case ArrayValuePut:
-        if (getOperand1()->refer == FP)
-            ans.insert(operand1);
+        if (getOperand2()->refer == FP)
+            ans.insert(operand2);
         if (getIdx()->refer == FP)
             ans.insert(idx);
         break;
