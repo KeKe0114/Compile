@@ -33,7 +33,25 @@ int main(int argc, char const *argv[])
                 conflict.insert(conTmp.begin(), conTmp.end());
                 funcReg.addConflictFamily(conflict);
             }
+            for (int j = 0; j < blocks.size(); j++)
+            {
+                set<int> conflict = blocks[j].getBlockAliveIn();
+                set<int> conTmp = blocks[j].getBlockAliveOut();
+                conflict.insert(conTmp.begin(), conTmp.end());
+
+                set<int> def = blocks[j].getBlockDef();
+                for (auto item : def)
+                {
+                    if (funcReg.VarPassBlocks(item))
+                    {
+                        conflict.insert(item);
+                    }
+                }
+                funcReg.addConflictFamily(conflict);
+            }
+
             funcReg.genAllocResult();
+            funcReg.SHOW_ALL_SYM_HAS_REG();
             globalReg.checkInToBeMag(Scopes[i].getName(), funcReg);
         }
 
