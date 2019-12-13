@@ -15,6 +15,7 @@ private:
     std::map<int, std::set<int>> sym2conflict;
     std::set<int> allSyms;
     std::vector<int> regUsed;
+    std::set<int> inGlobalRegs;
 
 private:
     int score(int symId);
@@ -28,11 +29,14 @@ public:
     void genAllocResult();
 
     // use
-    //检查该变量是否可以使用全局寄存器的变量
+    //检查该变量是否可以跨越基本块
     bool VarPassBlocks(int symId) { return allSyms.find(symId) != allSyms.end(); }
-
+    
     // 检查可不可以为当前sym分配寄存器.
     bool hasRegForSym(int symId);
+
+    // 如果可以,还要判断是否存的是有效值.
+    bool inNowGlobalRegs(int symId) { return inGlobalRegs.find(symId) != inGlobalRegs.end(); }
 
     // 如果可以,那么为当前sym分配寄存器.
     int getRegForSym(int symId);

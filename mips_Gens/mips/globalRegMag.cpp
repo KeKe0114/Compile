@@ -97,6 +97,7 @@ int funcScopeRegMag::getRegForSym(int symId)
 {
     assert(alloced);
     assert(hasRegForSym(symId));
+    inGlobalRegs.insert(symId);
     return sym2reg.find(symId)->second;
 }
 

@@ -89,7 +89,14 @@ mipsCollect::Register mipsGraphGen::LoadSymRealValueToRegister(symAttr *attr)
 {
     if (globalReg.getRegMag(funcNameWorkNow).hasRegForSym(attr->SymId))
     {
-        return collect.getSeriesS(globalReg.getRegMag(funcNameWorkNow).getRegForSym(attr->SymId));
+        if (globalReg.getRegMag(funcNameWorkNow).inNowGlobalRegs(attr->SymId))
+            return collect.getSeriesS(globalReg.getRegMag(funcNameWorkNow).getRegForSym(attr->SymId));
+        else
+        {
+            mipsCollect::Register reg = collect.getSeriesS(globalReg.getRegMag(funcNameWorkNow).getRegForSym(attr->SymId));
+            loadFromMem(attr->SymId, reg);
+            return reg;
+        }
     }
     // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
     if (tempReg.hasThisInReg(attr->SymId))
@@ -126,9 +133,19 @@ void mipsGraphGen::LoadSymToRegisterTold(symAttr *attr, mipsCollect::Register to
 {
     if (globalReg.getRegMag(funcNameWorkNow).hasRegForSym(attr->SymId))
     {
-        mipsCollect::Register ans = collect.getSeriesS(globalReg.getRegMag(funcNameWorkNow).getRegForSym(attr->SymId));
-        collect.move(told, ans);
-        return;
+        if (globalReg.getRegMag(funcNameWorkNow).inNowGlobalRegs(attr->SymId))
+        {
+            mipsCollect::Register ans = collect.getSeriesS(globalReg.getRegMag(funcNameWorkNow).getRegForSym(attr->SymId));
+            collect.move(told, ans);
+            return;
+        }
+        else
+        {
+            mipsCollect::Register ans = collect.getSeriesS(globalReg.getRegMag(funcNameWorkNow).getRegForSym(attr->SymId));
+            loadFromMem(attr->SymId, ans);
+            collect.move(told, ans);
+            return;
+        }
     }
     // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
     if (tempReg.hasThisInReg(attr->SymId))
@@ -294,6 +311,7 @@ void mipsGraphGen::genMipsFunctArgsPush()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     mipsCollect::Register spR = mipsCollect::getSeriesSP();
+    tempReg.SHOW_USEDREG();
     mipsCollect::Register tmp = LoadSymRealValueToRegister(attr);
     collect.sw(tmp, functionCallInventArgLen + spVerticalOffset, spR);
     spVerticalOffset += 4;
@@ -445,8 +463,7 @@ void mipsGraphGen::genMipsFourYuan()
     symAttr *target = codeWorkNow->getResult();
     mipsCollect::Register num1R = LoadSymRealValueToRegister(num1);
     mipsCollect::Register num2R = LoadSymRealValueToRegister(num2);
-    mipsCollect::Register targetR = GetOrAllocRegisterToSym(num2);
-
+    mipsCollect::Register targetR = GetOrAllocRegisterToSym(target);
     genMips_DistinguishOp(targetR, num1R, num2R, codeWorkNow->getOp());
     flushToMemIfGlobal(target->SymId, targetR);
 }
