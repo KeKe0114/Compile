@@ -14,6 +14,7 @@ private:
     std::map<int, std::set<int>> reg2sym;
     std::map<int, std::set<int>> sym2conflict;
     std::set<int> allSyms;
+    std::vector<int> regUsed;
 
 private:
     int score(int symId);
@@ -38,6 +39,19 @@ public:
 
     // 如果不可以,没办法了,那你用局部寄存器吧.并且告诉我你用了局部寄存器,方便出块儿的时候捞你上来.
     // 算了,你也不用告诉我了,你自己解决吧.
+
+    // 返回所有当前函数需要使用的全局寄存器.
+    std::vector<int> getAllRegsUseThisScope()
+    {
+        if (regUsed.empty())
+        {
+            for (auto item : sym2reg)
+            {
+                regUsed.push_back(item.second);
+            }
+        }
+        return regUsed;
+    }
 
 public:
     void SHOW_ALL_SYM_NO_REG();
