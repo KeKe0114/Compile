@@ -10,21 +10,22 @@ void block::genBlockUseAndDef()
         set<int> rightSet = iter->getRightValue();
         for (right = rightSet.begin(); right != rightSet.end(); right++)
         {
-            if (use.find(*right) == use.end())
+            if (def.find(*right) == def.end())
             {
-                def.insert(*right);
+                use.insert(*right);
             }
         }
         set<int>::iterator left;
         set<int> leftSet = iter->getLeftValue();
         for (left = leftSet.begin(); left != leftSet.end(); left++)
         {
-            if (def.find(*left) == def.end())
+            if (use.find(*left) == use.end())
             {
                 def.insert(*left);
             }
         }
     }
+    // SHOW_CODE_AND_USE_DEF();
 }
 
 void block::setBlockUseDefIn(set<int> alivein)
@@ -148,10 +149,10 @@ void funcScope::genUseDefInOut()
         id2aliveout.insert(pair<int, set<int>>(i, set<int>()));
     }
     //work
-    bool noChange = true;
+    bool noChange = false;
     while (!noChange)
     {
-        bool noChange = true;
+        noChange = true;
         for (int i = id2block.size() - 1; i >= 0; i--)
         {
             //calculate id2aliveout[i] = union children's id2alivein

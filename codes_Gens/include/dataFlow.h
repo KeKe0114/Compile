@@ -37,6 +37,28 @@ public:
     set<int> getCodeOut(int idx) { return idx2aliveout[idx]; }
     set<int> getBlockAliveIn() { return alivein; }
     set<int> getBlockAliveOut() { return aliveout; }
+
+public:
+    void SHOW_CODE_AND_USE_DEF()
+    {
+        cout << "code:" << endl;
+        for (int i = 0; i < codeInBlock.size(); i++)
+        {
+            cout << codeInBlock[i].to_string();
+        }
+        cout << "use:" << endl;
+        for (auto i : use)
+        {
+            cout << i << " ";
+        }
+        cout << endl;
+        cout << "def:" << endl;
+        for (auto i : def)
+        {
+            cout << i << " ";
+        }
+        cout << endl;
+    }
 };
 
 class funcScope
@@ -53,6 +75,51 @@ private:
     map<int, set<int>> id2father;
     map<int, set<int>> id2alivein;
     map<int, set<int>> id2aliveout;
+
+public:
+    void SHOW_SET_INNER()
+    {
+        cout << "***********id2child:" << endl;
+        for (auto i : id2child)
+        {
+            cout << "block " << i.first << " :\t";
+            for (auto j : i.second)
+            {
+                cout << j << " ";
+            }
+            cout << endl;
+        }
+        cout << "***********id2father:" << endl;
+        for (auto i : id2father)
+        {
+            cout << "block " << i.first << " :\t";
+            for (auto j : i.second)
+            {
+                cout << j << " ";
+            }
+            cout << endl;
+        }
+        cout << "***********id2alivein:" << endl;
+        for (auto i : id2alivein)
+        {
+            cout << "block " << i.first << " :\t";
+            for (auto j : i.second)
+            {
+                cout << j << " ";
+            }
+            cout << endl;
+        }
+        cout << "***********id2aliveout:" << endl;
+        for (auto i : id2aliveout)
+        {
+            cout << "block " << i.first << " :\t";
+            for (auto j : i.second)
+            {
+                cout << j << " ";
+            }
+            cout << endl;
+        }
+    }
 
 public:
     funcScope(string Name, vector<codeSt> funcCode)
@@ -94,6 +161,7 @@ public:
     {
         genBlocksFromOrigin();
         genUseDefInOut();
+        // SHOW_SET_INNER();
         setBlockInAndOut();
     }
     vector<block> getBlocks() { return id2block; }
