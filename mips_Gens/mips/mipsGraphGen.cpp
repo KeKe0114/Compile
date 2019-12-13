@@ -54,9 +54,9 @@ void mipsGraphGen::loadFromMem(int symId, mipsCollect::Register reg)
 
 mipsCollect::Register mipsGraphGen::GetOrAllocRegisterToSym(symAttr *attr)
 {
-    if (globalReg.hasRegForSym(attr->SymId))
+    if (globalReg.getRegMag(funcNameWorkNow).hasRegForSym(attr->SymId))
     {
-        return collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
+        return collect.getSeriesS(globalReg.getRegMag(funcNameWorkNow).getRegForSym(attr->SymId));
     }
     // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
     if (tempReg.hasThisInReg(attr->SymId))
@@ -87,9 +87,9 @@ mipsCollect::Register mipsGraphGen::GetOrAllocRegisterToSym(symAttr *attr)
 
 mipsCollect::Register mipsGraphGen::LoadSymRealValueToRegister(symAttr *attr)
 {
-    if (globalReg.hasRegForSym(attr->SymId))
+    if (globalReg.getRegMag(funcNameWorkNow).hasRegForSym(attr->SymId))
     {
-        return collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
+        return collect.getSeriesS(globalReg.getRegMag(funcNameWorkNow).getRegForSym(attr->SymId));
     }
     // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
     if (tempReg.hasThisInReg(attr->SymId))
@@ -124,9 +124,9 @@ mipsCollect::Register mipsGraphGen::LoadSymRealValueToRegister(symAttr *attr)
 
 void mipsGraphGen::LoadSymToRegisterTold(symAttr *attr, mipsCollect::Register told)
 {
-    if (globalReg.hasRegForSym(attr->SymId))
+    if (globalReg.getRegMag(funcNameWorkNow).hasRegForSym(attr->SymId))
     {
-        mipsCollect::Register ans = collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
+        mipsCollect::Register ans = collect.getSeriesS(globalReg.getRegMag(funcNameWorkNow).getRegForSym(attr->SymId));
         collect.move(told, ans);
         return;
     }
@@ -253,7 +253,6 @@ void mipsGraphGen::genMipsFunctState()
     collect.sw(spR, 12, spR);
     collect.add(fpR, spR, zeroR);
     collect.add(spR, spR, attr->size);
-    
 }
 
 void mipsGraphGen::genMipsFunctRetWithValue()
@@ -485,6 +484,7 @@ void mipsGraphGen::gen_mips_code()
     vector<funcScope> Scopes = flowGraph.getFuncScopes();
     for (int i = 0; i < Scopes.size(); i++)
     {
+        funcNameWorkNow = Scopes[i].getName();
         vector<block> blocks = Scopes[i].getBlocks();
         for (int j = 0; j < blocks.size(); j++)
         {
@@ -502,7 +502,7 @@ void mipsGraphGen::gen_mips_code()
             set<int> symsUseReg = tempReg.askAllSymUseRegNow();
             for (auto sym : symsUseReg)
             {
-                if (globalReg.VarPassBlocks(sym))
+                if (globalReg.getRegMag(funcNameWorkNow).VarPassBlocks(sym))
                 {
                     flushToMem(sym, collect.getSeriesT(tempReg.getRegForThis(sym)));
                 }

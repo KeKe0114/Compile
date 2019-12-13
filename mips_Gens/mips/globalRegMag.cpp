@@ -5,12 +5,12 @@
 
 using namespace std;
 
-int globalRegMag::score(int symId)
+int funcScopeRegMag::score(int symId)
 {
     return sym2conflict[symId].size();
 }
 
-void globalRegMag::addConflictFamily(std::set<int> family)
+void funcScopeRegMag::addConflictFamily(std::set<int> family)
 {
     assert(!alloced);
     allSyms.insert(family.begin(), family.end());
@@ -30,7 +30,7 @@ void globalRegMag::addConflictFamily(std::set<int> family)
             }
 }
 
-void globalRegMag::genAllocResult()
+void funcScopeRegMag::genAllocResult()
 {
     assert(!alloced);
     alloced = true;
@@ -85,20 +85,20 @@ void globalRegMag::genAllocResult()
     }
 }
 
-bool globalRegMag::hasRegForSym(int symId)
+bool funcScopeRegMag::hasRegForSym(int symId)
 {
     assert(alloced);
     return sym2reg.find(symId) != sym2reg.end();
 }
 
-int globalRegMag::getRegForSym(int symId)
+int funcScopeRegMag::getRegForSym(int symId)
 {
     assert(alloced);
     assert(hasRegForSym(symId));
     return sym2reg.find(symId)->second;
 }
 
-void globalRegMag::SHOW_ALL_SYM_NO_REG()
+void funcScopeRegMag::SHOW_ALL_SYM_NO_REG()
 {
     assert(alloced);
     set<int> ans;
@@ -116,7 +116,7 @@ void globalRegMag::SHOW_ALL_SYM_NO_REG()
     }
     cout << endl;
 }
-void globalRegMag::SHOW_ALL_SYM_HAS_REG()
+void funcScopeRegMag::SHOW_ALL_SYM_HAS_REG()
 {
     assert(alloced);
     cout << "SYMS_HAS_REG:\t";

@@ -45,6 +45,7 @@ private:
     tempRegMag &tempReg;
     globalRegMag &globalReg;
     symbols &symbolist;
+    string funcNameWorkNow;
     block *blockWorkNow;
     codeSt *codeWorkNow;
     int strIdGen;

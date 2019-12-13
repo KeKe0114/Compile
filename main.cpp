@@ -24,15 +24,19 @@ int main(int argc, char const *argv[])
         vector<funcScope> Scopes = flowGraph.getFuncScopes();
         for (int i = 0; i < Scopes.size(); i++)
         {
+            funcScopeRegMag funcReg;
             vector<block> blocks = Scopes[i].getBlocks();
             for (int j = 0; j < blocks.size(); j++)
             {
-                globalReg.addConflictFamily(blocks[j].getBlockAliveIn());
-                globalReg.addConflictFamily(blocks[j].getBlockAliveOut());
+                set<int> conflict = blocks[j].getBlockAliveIn();
+                set<int> conTmp = blocks[j].getBlockAliveOut();
+                conflict.insert(conTmp.begin(), conTmp.end());
+                funcReg.addConflictFamily(conflict);
             }
+            funcReg.genAllocResult();
+            globalReg.checkInToBeMag(Scopes[i].getName(), funcReg);
         }
-        globalReg.genAllocResult();
-        
+
         mipsGraphGen &mips = mipsGraphGen::get_instance();
         mips.gen_mips_code();
         string ss = mips.get_mips_str();

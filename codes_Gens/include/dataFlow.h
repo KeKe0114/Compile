@@ -97,6 +97,7 @@ public:
         setBlockInAndOut();
     }
     vector<block> getBlocks() { return id2block; }
+    string getName() { return funcName; }
 };
 
 class blockFlowGraph

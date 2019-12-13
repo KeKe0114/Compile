@@ -1,23 +1,13 @@
 #pragma once
 #include <set>
 #include <map>
+#include <vector>
+#include "debug.h"
 
-class globalRegMag
+class funcScopeRegMag
 {
 private:
-    globalRegMag() : alloced(false) {}
-    globalRegMag(const globalRegMag &) = delete;
-    globalRegMag &operator&(const globalRegMag &) = delete;
-
-public:
-    static globalRegMag &get_instance()
-    {
-        static globalRegMag instance;
-        return instance;
-    }
-
-private:
-    bool alloced;
+    bool alloced = false;
     int minReg = 0;
     int maxReg = 7;
     std::map<int, int> sym2reg;
@@ -52,4 +42,42 @@ public:
 public:
     void SHOW_ALL_SYM_NO_REG();
     void SHOW_ALL_SYM_HAS_REG();
+};
+
+class globalRegMag
+{
+private:
+    globalRegMag() {}
+    globalRegMag(const globalRegMag &) = delete;
+    globalRegMag &operator&(const globalRegMag &) = delete;
+
+public:
+    static globalRegMag &get_instance()
+    {
+        static globalRegMag instance;
+        return instance;
+    }
+
+private:
+    std::map<std::string, int> regMagsId;
+    std::vector<funcScopeRegMag> regMags;
+
+public:
+    void checkInToBeMag(std::string funcName, funcScopeRegMag regMag)
+    {
+        int id = regMags.size();
+        regMags.push_back(regMag);
+        regMagsId.insert(make_pair(funcName, id));
+    }
+
+    funcScopeRegMag getRegMag(std::string funcName)
+    {
+        if (regMagsId.find(funcName) != regMagsId.end())
+        {
+            int num = regMagsId.find(funcName)->second;
+            return regMags[num];
+        }
+        assert(false);
+        return regMags[0];
+    }
 };
