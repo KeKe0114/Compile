@@ -23,13 +23,20 @@ private:
 
 public:
     block(int idArg, vector<codeSt> codes) : id(idArg), codeInBlock(codes) {}
+    //for work
+    set<int> getBlockUse() { return use; }
+    set<int> getBlockDef() { return def; }
     void genBlockUseAndDef();
     void setBlockUseDefIn(set<int> alivein);
     void setBlockUseDefOut(set<int> aliveout);
     void genUseDefInOutForSingleLine();
-    set<int> getBlockUse() { return use; }
-    set<int> getBlockDef() { return def; }
+
+    //for get
     vector<codeSt> getCodes() { return codeInBlock; }
+    set<int> getCodeIn(int idx) { return idx2alivein[idx]; }
+    set<int> getCodeOut(int idx) { return idx2aliveout[idx]; }
+    set<int> getBlockAliveIn() { return alivein; }
+    set<int> getBlockAliveOut() { return aliveout; }
 };
 
 class funcScope

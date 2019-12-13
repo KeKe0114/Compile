@@ -61,11 +61,6 @@ void tempRegMag::updataUsefulInfo(set<int> Useful)
     }
 }
 
-set<int> tempRegMag::askAllUsedReg(set<int> Useful)
-{
-    return usedReg;
-}
-
 flushSt tempRegMag::flushASymNotUseNow(set<int> SymUse)
 {
     map<int, int>::iterator iter;

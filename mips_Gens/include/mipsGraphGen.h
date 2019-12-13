@@ -59,6 +59,7 @@ private:
     string genMips_AllocStrName();
 
     void flushToMem(int symId, mipsCollect::Register reg);
+    void flushToMemIfGlobal(int symId, mipsCollect::Register reg);
 
     void loadFromMem(int symId, mipsCollect::Register reg);
 

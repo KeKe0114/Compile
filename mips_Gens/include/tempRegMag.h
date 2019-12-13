@@ -37,13 +37,22 @@ private:
     const int minReg = 0;
     const int maxReg = 9;
     map<int, int> symId2reg;
-    map<int, int> reg2SymId;
     set<int> usedReg;
 
 private:
     void removeSymAndFreeHisReg(int symId);
 
 public:
+    void SHOW_USEDREG()
+    {
+        cout << "USED_TMP_REG:";
+        for (auto item : symId2reg)
+        {
+            cout << item.first << "->" << item.second << "\t";
+        }
+        cout << endl;
+    }
+
     void resetLocalPool();
 
     // 判断是否有可用寄存器
@@ -69,6 +78,14 @@ public:
     bool hasThisInReg(int symId);
     int getRegForThis(int symId);
 
-    // 查看所有还会被使用的寄存器
-    set<int> askAllUsedReg(set<int> Useful);
+    //查看所有使用临时寄存器的变量
+    set<int> askAllSymUseRegNow()
+    {
+        set<int> symAns;
+        for (auto item : symId2reg)
+        {
+            symAns.insert(item.first);
+        }
+        return symAns;
+    }
 };

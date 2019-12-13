@@ -1,6 +1,7 @@
 #include "syntacticAnalysis.h"
 #include "mipsGen.h"
 #include "mipsGraphGen.h"
+#include "globalRegMag.h"
 #include "dataFlow.h"
 #include "errorMags.h"
 
@@ -16,10 +17,22 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        // blockFlowGraph &flowGraph = blockFlowGraph::get_instance();
-        // flowGraph.work();
-        // mipsGen &mips = mipsGen::get_instance();
-        // mips.gen_mips_code();
+        blockFlowGraph &flowGraph = blockFlowGraph::get_instance();
+        flowGraph.genfuncDivide();
+
+        globalRegMag &globalReg = globalRegMag::get_instance();
+        vector<funcScope> Scopes = flowGraph.getFuncScopes();
+        for (int i = 0; i < Scopes.size(); i++)
+        {
+            vector<block> blocks = Scopes[i].getBlocks();
+            for (int j = 0; j < blocks.size(); j++)
+            {
+                globalReg.addConflictFamily(blocks[j].getBlockAliveIn());
+                globalReg.addConflictFamily(blocks[j].getBlockAliveOut());
+            }
+        }
+        globalReg.genAllocResult();
+        
         mipsGraphGen &mips = mipsGraphGen::get_instance();
         mips.gen_mips_code();
         string ss = mips.get_mips_str();

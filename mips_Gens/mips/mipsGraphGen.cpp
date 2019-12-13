@@ -1,8 +1,5 @@
 #include "mipsGraphGen.h"
 #include "debug.h"
-void mipsGraphGen::maintainConsistencyForNowBlock()
-{
-}
 
 string mipsGraphGen::genMips_AllocStrName()
 {
@@ -21,6 +18,14 @@ void mipsGraphGen::flushToMem(int symId, mipsCollect::Register reg)
         collect.sw(reg, attr->offsetRel, mipsCollect::getSeriesFP());
     else
         assert(false);
+}
+void mipsGraphGen::flushToMemIfGlobal(int symId, mipsCollect::Register reg)
+{
+    symAttr *attr = symbolist.get_pointer_by_id(symId);
+    if (attr->refer == GLOBAL)
+    {
+        flushToMem(symId, reg);
+    }
 }
 
 void mipsGraphGen::loadFromMem(int symId, mipsCollect::Register reg)
@@ -49,13 +54,9 @@ void mipsGraphGen::loadFromMem(int symId, mipsCollect::Register reg)
 
 mipsCollect::Register mipsGraphGen::GetOrAllocRegisterToSym(symAttr *attr)
 {
-    set<int> BlockUseful = blockWorkNow->getBlockUse();
-    if (BlockUseful.find(attr->SymId) != BlockUseful.end())
+    if (globalReg.hasRegForSym(attr->SymId))
     {
-        if (globalReg.hasRegForSym(attr->SymId))
-        {
-            return collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
-        }
+        return collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
     }
     // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
     if (tempReg.hasThisInReg(attr->SymId))
@@ -86,14 +87,9 @@ mipsCollect::Register mipsGraphGen::GetOrAllocRegisterToSym(symAttr *attr)
 
 mipsCollect::Register mipsGraphGen::LoadSymRealValueToRegister(symAttr *attr)
 {
-    set<int> BlockUseful = blockWorkNow->getBlockUse();
-    if (BlockUseful.find(attr->SymId) != BlockUseful.end())
+    if (globalReg.hasRegForSym(attr->SymId))
     {
-        if (globalReg.hasRegForSym(attr->SymId))
-        {
-            //CHEN: 如果真正的全局变量可以使用全局寄存器,那么这里需要讨论讨论.
-            return collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
-        }
+        return collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
     }
     // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
     if (tempReg.hasThisInReg(attr->SymId))
@@ -128,14 +124,11 @@ mipsCollect::Register mipsGraphGen::LoadSymRealValueToRegister(symAttr *attr)
 
 void mipsGraphGen::LoadSymToRegisterTold(symAttr *attr, mipsCollect::Register told)
 {
-    set<int> BlockUseful = blockWorkNow->getBlockUse();
-    if (BlockUseful.find(attr->SymId) != BlockUseful.end())
+    if (globalReg.hasRegForSym(attr->SymId))
     {
-        if (globalReg.hasRegForSym(attr->SymId))
-        {
-            mipsCollect::Register ans = collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
-            collect.move(told, ans);
-        }
+        mipsCollect::Register ans = collect.getSeriesS(globalReg.getRegForSym(attr->SymId));
+        collect.move(told, ans);
+        return;
     }
     // 走到这里:要么是全局变量但是没有寄存器,要么是局部变量
     if (tempReg.hasThisInReg(attr->SymId))
@@ -144,11 +137,13 @@ void mipsGraphGen::LoadSymToRegisterTold(symAttr *attr, mipsCollect::Register to
         int tmpId = tempReg.getRegForThis(attr->SymId);
         mipsCollect::Register ans = collect.getSeriesT(tmpId);
         collect.move(told, ans);
+        return;
     }
     else
     {
         //不在临时变量池中.
         loadFromMem(attr->SymId, told);
+        return;
     }
 }
 
@@ -172,6 +167,7 @@ void mipsGraphGen::genMipsScanf()
     mipsCollect::Register targetR = GetOrAllocRegisterToSym(target);
     mipsCollect::Register v0R = mipsCollect::getSeriesV(0);
     collect.move(targetR, v0R);
+    flushToMemIfGlobal(target->SymId, targetR);
 }
 
 void mipsGraphGen::genMipsPrintStr()
@@ -227,7 +223,7 @@ void mipsGraphGen::genMipsConstState()
     {
         mipsCollect::Register tmp = GetOrAllocRegisterToSym(attr);
         collect.li(tmp, num);
-        flushToMem(attr->SymId, tmp);
+        // flushToMem(attr->SymId, tmp);
     }
     else
     {
@@ -300,6 +296,7 @@ void mipsGraphGen::genMipsFunctRetUse()
     mipsCollect::Register tmp = GetOrAllocRegisterToSym(attr);
     mipsCollect::Register v0R = mipsCollect::getSeriesV(0);
     collect.move(tmp, v0R);
+    flushToMemIfGlobal(attr->SymId, tmp);
 }
 
 void mipsGraphGen::genMipsBNZ()
@@ -324,6 +321,7 @@ void mipsGraphGen::genMipsAssignValue()
     symAttr *right = codeWorkNow->getOperand2();
     mipsCollect::Register leftR = GetOrAllocRegisterToSym(left);
     LoadSymToRegisterTold(right, leftR);
+    flushToMemIfGlobal(left->SymId, leftR);
 }
 void mipsGraphGen::genMipsAssignConst()
 {
@@ -332,7 +330,7 @@ void mipsGraphGen::genMipsAssignConst()
     int num = attr->getValueInt();
     mipsCollect::Register leftR = GetOrAllocRegisterToSym(attr);
     collect.li(leftR, num);
-    // flushToMem(attr->SymId, leftR);
+    flushToMemIfGlobal(attr->SymId, leftR);
 }
 
 void mipsGraphGen::genMipsArrayValueGet()
@@ -350,12 +348,14 @@ void mipsGraphGen::genMipsArrayValueGet()
     {
         string arrayName = array->name;
         collect.lw(targetR, arrayName, pureFree);
+        flushToMemIfGlobal(target->SymId, targetR);
     }
     else if (array->refer == FP)
     {
         int offset2Fp = array->offsetRel;
         collect.add(pureFree, pureFree, mipsCollect::getSeriesFP());
         collect.lw(targetR, offset2Fp, pureFree);
+        flushToMemIfGlobal(target->SymId, targetR);
     }
     else
     {
@@ -412,6 +412,7 @@ void mipsGraphGen::genMipsFourYuan()
     mipsCollect::Register targetR = GetOrAllocRegisterToSym(num2);
 
     genMips_DistinguishOp(targetR, num1R, num2R, codeWorkNow->getOp());
+    flushToMemIfGlobal(target->SymId, targetR);
 }
 
 void mipsGraphGen::genMips_DistinguishOp(mipsCollect::Register target, mipsCollect::Register operand1, mipsCollect::Register operand2, codeSt::op_em op)
@@ -442,7 +443,6 @@ void mipsGraphGen::genMips_DistinguishOp(mipsCollect::Register target, mipsColle
 
 void mipsGraphGen::gen_mips_code()
 {
-    flowGraph.genfuncDivide();
     vector<codeSt> globalStates = flowGraph.getGlobalState();
     for (int i = 0; i < globalStates.size(); i++)
     {
@@ -461,19 +461,29 @@ void mipsGraphGen::gen_mips_code()
             assert(false);
     }
     vector<funcScope> Scopes = flowGraph.getFuncScopes();
-    for (int k = 0; k < Scopes.size(); k++)
+    for (int i = 0; i < Scopes.size(); i++)
     {
-        vector<block> blocks = Scopes[k].getBlocks();
-        for (int i = 0; i < blocks.size(); i++)
+        vector<block> blocks = Scopes[i].getBlocks();
+        for (int j = 0; j < blocks.size(); j++)
         {
-            blockWorkNow = &blocks[i];
+            blockWorkNow = &blocks[j];
             tempReg.resetLocalPool();
-            maintainConsistencyForNowBlock();
-            vector<codeSt> codes = blocks[i].getCodes();
-            for (int j = 0; j < codes.size(); j++)
+            vector<codeSt> codes = blocks[j].getCodes();
+            for (int h = 0; h < codes.size(); h++)
             {
-                codeWorkNow = &codes[j];
-                handOutToSolve(i, j);
+                codeWorkNow = &codes[h];
+                tempReg.SHOW_USEDREG();
+                tempReg.updataUsefulInfo(blockWorkNow->getCodeIn(h));
+                tempReg.SHOW_USEDREG();
+                handOutToSolve(j, h);
+            }
+            set<int> symsUseReg = tempReg.askAllSymUseRegNow();
+            for (auto sym : symsUseReg)
+            {
+                if (globalReg.VarPassBlocks(sym))
+                {
+                    flushToMem(sym, collect.getSeriesT(tempReg.getRegForThis(sym)));
+                }
             }
         }
     }

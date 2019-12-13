@@ -29,11 +29,16 @@ private:
     int score(int symId);
 
 public:
+    // work
     // 完善冲突信息
     void addConflictFamily(std::set<int> family);
 
     // 离线计算: 分配寄存器
     void genAllocResult();
+
+    // use
+    //检查该变量是否可以使用全局寄存器的变量
+    bool VarPassBlocks(int symId) { return allSyms.find(symId) != allSyms.end(); }
 
     // 检查可不可以为当前sym分配寄存器.
     bool hasRegForSym(int symId);
