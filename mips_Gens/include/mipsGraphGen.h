@@ -32,6 +32,9 @@ public:
         return instance;
     }
 
+private:
+    void handOutToSolve(int blockNum, int codeNum);
+
 public:
     void gen_mips_code();
     string get_mips_str() { return collect.get_mips_str(); }

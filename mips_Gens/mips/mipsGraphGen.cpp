@@ -442,71 +442,97 @@ void mipsGraphGen::genMips_DistinguishOp(mipsCollect::Register target, mipsColle
 
 void mipsGraphGen::gen_mips_code()
 {
-    flowGraph.work();
-    vector<block> blocks = flowGraph.getBlocks();
-    for (int i = 0; i < blocks.size(); i++)
+    flowGraph.genfuncDivide();
+    vector<codeSt> globalStates = flowGraph.getGlobalState();
+    for (int i = 0; i < globalStates.size(); i++)
     {
-        blockWorkNow = &blocks[i];
-        tempReg.resetLocalPool();
-        maintainConsistencyForNowBlock();
-        vector<codeSt> codes = blocks[i].getCodes();
-        for (int j = 0; j < codes.size(); j++)
+        codeWorkNow = &globalStates[i];
+        cout << i << " " << codeWorkNow->getType() << "\t" << codeWorkNow->to_string();
+        if (codeWorkNow->getType() == codeSt::ConstVarState)
         {
-            codeWorkNow = &codes[j];
-            cout << i << " " << j << " " << codeWorkNow->getType() << "\t" << codeWorkNow->to_string();
-            if (codeWorkNow->getType() == codeSt::Scanf)
-                genMipsScanf();
-            else if (codeWorkNow->getType() == codeSt::PrintStr)
-                genMipsPrintStr();
-            else if (codeWorkNow->getType() == codeSt::PrintStrNoNewLine)
-                genMipsPrintStrNoNewLine();
-            else if (codeWorkNow->getType() == codeSt::PrintExp)
-                genMipsPrintExp();
-            else if (codeWorkNow->getType() == codeSt::ConstVarState)
-            {
-                if (codeWorkNow->getOperand1()->kind == CONST)
-                    genMipsConstState();
-                else if (codeWorkNow->getOperand1()->kind == VAR)
-                    genMipsVarState();
-                else
-                    assert(false);
-            }
-            else if (codeWorkNow->getType() == codeSt::FunctState)
-                genMipsFunctState();
-            else if (codeWorkNow->getType() == codeSt::FunctRetWithValue)
-                genMipsFunctRetWithValue();
-            else if (codeWorkNow->getType() == codeSt::FunctRetWithoutValue)
-                genMipsFunctRetWithoutValue();
-            else if (codeWorkNow->getType() == codeSt::FunctArgsPush)
-                genMipsFunctArgsPush();
-            else if (codeWorkNow->getType() == codeSt::FunctCall)
-                genMipsFunctCall();
-            else if (codeWorkNow->getType() == codeSt::FunctRetUse)
-                genMipsFunctRetUse();
-            else if (codeWorkNow->getType() == codeSt::BNZ)
-                genMipsBNZ();
-            else if (codeWorkNow->getType() == codeSt::BZ)
-                genMipsBZ();
-            else if (codeWorkNow->getType() == codeSt::Jump)
-                genMipsJUMP();
-            else if (codeWorkNow->getType() == codeSt::Label)
-                genMipsLabelLine();
-            else if (codeWorkNow->getType() == codeSt::AssignValue)
-                genMipsAssignValue();
-            else if (codeWorkNow->getType() == codeSt::AssignConst)
-                genMipsAssignConst();
-            else if (codeWorkNow->getType() == codeSt::ArrayValuePut)
-                genMipsArrayValuePut();
-            else if (codeWorkNow->getType() == codeSt::ArrayValueGet)
-                genMipsArrayValueGet();
-            else if (codeWorkNow->getType() == codeSt::Condition)
-                genMipsCondition();
-            else if (codeWorkNow->getType() == codeSt::Condition4Num)
-                genMipsCondition4Num();
-            else if (codeWorkNow->getType() == codeSt::FourYuan)
-                genMipsFourYuan();
+            if (codeWorkNow->getOperand1()->kind == CONST)
+                genMipsConstState();
+            else if (codeWorkNow->getOperand1()->kind == VAR)
+                genMipsVarState();
             else
                 assert(false);
         }
+        else
+            assert(false);
     }
+    vector<funcScope> Scopes = flowGraph.getFuncScopes();
+    for (int k = 0; k < Scopes.size(); k++)
+    {
+        vector<block> blocks = Scopes[k].getBlocks();
+        for (int i = 0; i < blocks.size(); i++)
+        {
+            blockWorkNow = &blocks[i];
+            tempReg.resetLocalPool();
+            maintainConsistencyForNowBlock();
+            vector<codeSt> codes = blocks[i].getCodes();
+            for (int j = 0; j < codes.size(); j++)
+            {
+                codeWorkNow = &codes[j];
+                handOutToSolve(i, j);
+            }
+        }
+    }
+}
+
+void mipsGraphGen::handOutToSolve(int blockNum, int codeNum)
+{
+    cout << blockNum << " " << codeNum << " " << codeWorkNow->getType() << "\t" << codeWorkNow->to_string();
+    if (codeWorkNow->getType() == codeSt::Scanf)
+        genMipsScanf();
+    else if (codeWorkNow->getType() == codeSt::PrintStr)
+        genMipsPrintStr();
+    else if (codeWorkNow->getType() == codeSt::PrintStrNoNewLine)
+        genMipsPrintStrNoNewLine();
+    else if (codeWorkNow->getType() == codeSt::PrintExp)
+        genMipsPrintExp();
+    else if (codeWorkNow->getType() == codeSt::ConstVarState)
+    {
+        if (codeWorkNow->getOperand1()->kind == CONST)
+            genMipsConstState();
+        else if (codeWorkNow->getOperand1()->kind == VAR)
+            genMipsVarState();
+        else
+            assert(false);
+    }
+    else if (codeWorkNow->getType() == codeSt::FunctState)
+        genMipsFunctState();
+    else if (codeWorkNow->getType() == codeSt::FunctRetWithValue)
+        genMipsFunctRetWithValue();
+    else if (codeWorkNow->getType() == codeSt::FunctRetWithoutValue)
+        genMipsFunctRetWithoutValue();
+    else if (codeWorkNow->getType() == codeSt::FunctArgsPush)
+        genMipsFunctArgsPush();
+    else if (codeWorkNow->getType() == codeSt::FunctCall)
+        genMipsFunctCall();
+    else if (codeWorkNow->getType() == codeSt::FunctRetUse)
+        genMipsFunctRetUse();
+    else if (codeWorkNow->getType() == codeSt::BNZ)
+        genMipsBNZ();
+    else if (codeWorkNow->getType() == codeSt::BZ)
+        genMipsBZ();
+    else if (codeWorkNow->getType() == codeSt::Jump)
+        genMipsJUMP();
+    else if (codeWorkNow->getType() == codeSt::Label)
+        genMipsLabelLine();
+    else if (codeWorkNow->getType() == codeSt::AssignValue)
+        genMipsAssignValue();
+    else if (codeWorkNow->getType() == codeSt::AssignConst)
+        genMipsAssignConst();
+    else if (codeWorkNow->getType() == codeSt::ArrayValuePut)
+        genMipsArrayValuePut();
+    else if (codeWorkNow->getType() == codeSt::ArrayValueGet)
+        genMipsArrayValueGet();
+    else if (codeWorkNow->getType() == codeSt::Condition)
+        genMipsCondition();
+    else if (codeWorkNow->getType() == codeSt::Condition4Num)
+        genMipsCondition4Num();
+    else if (codeWorkNow->getType() == codeSt::FourYuan)
+        genMipsFourYuan();
+    else
+        assert(false);
 }

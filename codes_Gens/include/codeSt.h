@@ -110,6 +110,7 @@ public:
 public:
     set<int> getLeftValue();
     set<int> getRightValue();
+    bool isFuncStart() { return codetype == FunctState; }
     bool isBlockStart() { return codetype == Label; }
     string getBlockEntry()
     {

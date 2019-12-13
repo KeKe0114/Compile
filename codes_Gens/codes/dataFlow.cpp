@@ -1,13 +1,6 @@
 #include "dataFlow.h"
 #include <algorithm>
 
-block::block(int id, int start, int end)
-{
-    this->id = id;
-    vector<codeSt> originCodes = midCodeGen::get_instance().getCodesVector();
-    codeInBlock.insert(codeInBlock.end(), originCodes.begin() + start, originCodes.begin() + end + 1);
-}
-
 void block::genBlockUseAndDef()
 {
     vector<codeSt>::iterator iter;
@@ -69,12 +62,11 @@ void block::genUseDefInOutForSingleLine()
     }
 }
 
-void blockFlowGraph::genBlocksFromOrigin()
+void funcScope::genBlocksFromOrigin()
 {
     map<int, string> blockId2dstLabel;
     map<string, int> entryLabel2block;
 
-    vector<codeSt> originCodes = midCodeGen::get_instance().getCodesVector();
     int begin, end, id;
     begin = 0;
     for (int i = 0; i < originCodes.size(); i++)
@@ -90,7 +82,7 @@ void blockFlowGraph::genBlocksFromOrigin()
         {
             //build block
             int idPrev = id2block.size();
-            block blockPrev(idPrev, begin, i - 1);
+            block blockPrev(idPrev, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + i - 1));
             blockPrev.genBlockUseAndDef();
             id2block.push_back(blockPrev);
             begin = i;
@@ -110,7 +102,7 @@ void blockFlowGraph::genBlocksFromOrigin()
         {
             // build block
             int idNow = id2block.size();
-            block blockTemp(idNow, begin, i);
+            block blockTemp(idNow, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + i));
             blockTemp.genBlockUseAndDef();
             id2block.push_back(blockTemp);
             begin = i + 1;
@@ -128,7 +120,7 @@ void blockFlowGraph::genBlocksFromOrigin()
     }
     end = originCodes.size();
     id = id2block.size();
-    block blockTemp(id, begin, end - 1);
+    block blockTemp(id, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + end - 1));
     id2block.push_back(blockTemp);
 
     // build father child
@@ -147,7 +139,7 @@ void blockFlowGraph::genBlocksFromOrigin()
     }
 }
 
-void blockFlowGraph::genUseDefInOut()
+void funcScope::genUseDefInOut()
 {
     //init
     for (int i = 0; i < id2block.size(); i++)
@@ -181,7 +173,7 @@ void blockFlowGraph::genUseDefInOut()
     }
 }
 
-void blockFlowGraph::setBlockInAndOut()
+void funcScope::setBlockInAndOut()
 {
     for (int i = 0; i < id2block.size(); i++)
     {
@@ -191,5 +183,62 @@ void blockFlowGraph::setBlockInAndOut()
     for (int i = 0; i < id2block.size(); i++)
     {
         id2block[i].genUseDefInOutForSingleLine();
+    }
+}
+
+void blockFlowGraph::genfuncDivide()
+{
+    vector<codeSt> originCodes = midCodeGen::get_instance().getCodesVector();
+    vector<int> funcStart;
+    for (int i = 0; i < originCodes.size(); i++)
+    {
+        if (originCodes[i].isFuncStart())
+        {
+            funcStart.push_back(i);
+        }
+    }
+    cout << "****************";
+    for (auto i : funcStart)
+    {
+        cout << i << " ";
+    }
+    cout << endl;
+    assert(funcStart.size() >= 1);
+    globalVarStates.insert(globalVarStates.end(), originCodes.begin(), originCodes.begin() + funcStart[0]);
+    for (int i = 0; i < funcStart.size() - 1; i++)
+    {
+        /* [start, end) */
+        int start = funcStart[i];
+        int end = funcStart[i + 1];
+        assert(originCodes[start].getType() == codeSt::FunctState);
+        string funcName = originCodes[start].getOperand1()->name;
+        funcScope scope(funcName, vector<codeSt>(originCodes.begin() + start, originCodes.begin() + end));
+        scope.work();
+        func2Flows.push_back(scope);
+    }
+    int start = funcStart[funcStart.size() - 1];
+    assert(originCodes[start].getType() == codeSt::FunctState);
+    string funcName = originCodes[start].getOperand1()->name;
+    funcScope scope(funcName, vector<codeSt>(originCodes.begin() + start, originCodes.end()));
+    scope.work();
+    func2Flows.push_back(scope);
+    // SHOW_FUNCSCOPES();
+}
+
+void blockFlowGraph::SHOW_FUNCSCOPES()
+{
+    // cout << "into" << endl;
+    for (int i = 0; i < func2Flows.size(); i++)
+    {
+        funcScope Flows = func2Flows[i];
+        vector<block> blocks = Flows.getBlocks();
+        for (int j = 0; j < blocks.size(); j++)
+        {
+            vector<codeSt> codes = blocks[j].getCodes();
+            for (int k = 0; k < codes.size(); k++)
+            {
+                cout << codes[k].to_string();
+            }
+        }
     }
 }

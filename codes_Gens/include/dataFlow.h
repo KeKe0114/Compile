@@ -22,7 +22,7 @@ private:
     map<int, set<int>> idx2aliveout;
 
 public:
-    block(int id, int start, int end); /* [start, end] */
+    block(int idArg, vector<codeSt> codes) : id(idArg), codeInBlock(codes) {}
     void genBlockUseAndDef();
     void setBlockUseDefIn(set<int> alivein);
     void setBlockUseDefOut(set<int> aliveout);
@@ -32,31 +32,27 @@ public:
     vector<codeSt> getCodes() { return codeInBlock; }
 };
 
-class blockFlowGraph
+class funcScope
 {
-
-private:
-    blockFlowGraph() {}
-    blockFlowGraph(const blockFlowGraph &) = delete;
-    blockFlowGraph &operator&(blockFlowGraph &) = delete;
-
-public:
-    static blockFlowGraph &get_instance()
-    {
-        static blockFlowGraph instance;
-        return instance;
-    }
-
 private:
     /* 
      * 原中间代码中的块的顺序,按照id的顺序保持.
      * 语句j在语句i的后面意味着语句j所在的块id大于等于语句i所在的块id.
      */
+    string funcName;
+    vector<codeSt> originCodes;
     vector<block> id2block;
     map<int, set<int>> id2child;
     map<int, set<int>> id2father;
     map<int, set<int>> id2alivein;
     map<int, set<int>> id2aliveout;
+
+public:
+    funcScope(string Name, vector<codeSt> funcCode)
+    {
+        this->funcName = Name;
+        originCodes = funcCode;
+    }
 
 private:
     void addFather(int id, int father)
@@ -94,4 +90,30 @@ public:
         setBlockInAndOut();
     }
     vector<block> getBlocks() { return id2block; }
+};
+
+class blockFlowGraph
+{
+
+private:
+    blockFlowGraph() {}
+    blockFlowGraph(const blockFlowGraph &) = delete;
+    blockFlowGraph &operator&(blockFlowGraph &) = delete;
+
+public:
+    static blockFlowGraph &get_instance()
+    {
+        static blockFlowGraph instance;
+        return instance;
+    }
+
+private:
+    vector<codeSt> globalVarStates;
+    vector<funcScope> func2Flows;
+
+public:
+    void genfuncDivide();
+    vector<codeSt> getGlobalState() { return globalVarStates; }
+    vector<funcScope> getFuncScopes() { return func2Flows; }
+    void SHOW_FUNCSCOPES();
 };
