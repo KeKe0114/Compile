@@ -253,6 +253,7 @@ void mipsGraphGen::genMipsFunctState()
     collect.sw(spR, 12, spR);
     collect.add(fpR, spR, zeroR);
     collect.add(spR, spR, attr->size);
+    
 }
 
 void mipsGraphGen::genMipsFunctRetWithValue()
@@ -287,7 +288,14 @@ void mipsGraphGen::genMipsFunctCall()
 {
     spVerticalOffset = 0;
     symAttr *attr = codeWorkNow->getOperand1();
+    set<int> useAfterFunc = tempReg.askAllSymUseRegNow();
+    for (auto item : useAfterFunc)
+    {
+        flushToMem(item, collect.getSeriesT(tempReg.getRegForThis(item)));
+    }
+    tempReg.resetLocalPool();
     collect.jal(attr->name);
+    tempReg.resetLocalPool();
 }
 
 void mipsGraphGen::genMipsFunctRetUse()
