@@ -82,7 +82,7 @@ void funcScope::genBlocksFromOrigin()
         {
             //build block
             int idPrev = id2block.size();
-            block blockPrev(idPrev, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + i - 1));
+            block blockPrev(idPrev, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + i));
             blockPrev.genBlockUseAndDef();
             id2block.push_back(blockPrev);
             begin = i;
@@ -102,7 +102,7 @@ void funcScope::genBlocksFromOrigin()
         {
             // build block
             int idNow = id2block.size();
-            block blockTemp(idNow, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + i));
+            block blockTemp(idNow, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + i + 1));
             blockTemp.genBlockUseAndDef();
             id2block.push_back(blockTemp);
             begin = i + 1;
@@ -120,7 +120,7 @@ void funcScope::genBlocksFromOrigin()
     }
     end = originCodes.size();
     id = id2block.size();
-    block blockTemp(id, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + end - 1));
+    block blockTemp(id, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + end));
     id2block.push_back(blockTemp);
 
     // build father child

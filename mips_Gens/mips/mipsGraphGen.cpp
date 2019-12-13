@@ -327,7 +327,21 @@ void mipsGraphGen::genMipsAssignConst()
 {
     symAttr *attr = codeWorkNow->getOperand1();
     string value = codeWorkNow->getValue();
-    int num = attr->getValueInt();
+    int num;
+    if (attr->type == INT)
+    {
+        stringstream stream;
+        stream << value;
+        stream >> num;
+    }
+    else if (attr->type == CHAR)
+    {
+        num = (int)value.c_str()[0];
+    }
+    else
+    {
+        assert(false);
+    }
     mipsCollect::Register leftR = GetOrAllocRegisterToSym(attr);
     collect.li(leftR, num);
     flushToMemIfGlobal(attr->SymId, leftR);
@@ -472,9 +486,9 @@ void mipsGraphGen::gen_mips_code()
             for (int h = 0; h < codes.size(); h++)
             {
                 codeWorkNow = &codes[h];
-                tempReg.SHOW_USEDREG();
+                // tempReg.SHOW_USEDREG();
                 tempReg.updataUsefulInfo(blockWorkNow->getCodeIn(h));
-                tempReg.SHOW_USEDREG();
+                // tempReg.SHOW_USEDREG();
                 handOutToSolve(j, h);
             }
             set<int> symsUseReg = tempReg.askAllSymUseRegNow();
