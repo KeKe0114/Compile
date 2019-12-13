@@ -49,6 +49,7 @@ set<int> codeSt::getRightValue()
     case PrintExp:
     case FunctArgsPush:
     case FunctRetWithValue:
+    case FunctInlineRetWithValue:
     case Condition4Num:
         if (getOperand1()->refer == FP)
             ans.insert(operand1);
@@ -430,6 +431,14 @@ string codeSt::to_string()
     else if (codetype == FourYuan)
     {
         ssp << getResult()->name << "\t=\t" << getOperand1()->name << "\t" << getOpStr() << "\t" << getOperand2()->name << endl;
+    }
+    else if (codetype == FunctInlineRetWithValue)
+    {
+        ssp << "INLINE_RET\t" << getOperand1()->name << endl;
+    }
+    else if (codetype == FunctInlineRetWithoutValue)
+    {
+        ssp << "INLINE_RET" << endl;
     }
     else
     {

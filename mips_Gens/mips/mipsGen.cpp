@@ -354,6 +354,12 @@ void mipsGen::gen_mips_code()
             genMipsFunctRetWithValue();
         else if (codeWorkNow->getType() == codeSt::FunctRetWithoutValue)
             genMipsFunctRetWithoutValue();
+
+        else if (codeWorkNow->getType() == codeSt::FunctInlineRetWithValue)
+            genMipsFunctRetWithValue();
+        else if (codeWorkNow->getType() == codeSt::FunctInlineRetWithoutValue)
+            genMipsFunctRetWithoutValue();
+            
         else if (codeWorkNow->getType() == codeSt::FunctArgsPush)
             genMipsFunctArgsPush();
         else if (codeWorkNow->getType() == codeSt::FunctCall)

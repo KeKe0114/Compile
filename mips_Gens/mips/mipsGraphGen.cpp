@@ -535,9 +535,9 @@ void mipsGraphGen::gen_mips_code()
             for (int h = 0; h < codes.size(); h++)
             {
                 codeWorkNow = &codes[h];
-                // tempReg.SHOW_USEDREG();
+                tempReg.SHOW_USEDREG();
                 tempReg.updataUsefulInfo(blockWorkNow->getCodeIn(h));
-                // tempReg.SHOW_USEDREG();
+                tempReg.SHOW_USEDREG();
                 handOutToSolve(j, h);
             }
             set<int> symsUseReg = tempReg.askAllSymUseRegNow();
@@ -578,6 +578,12 @@ void mipsGraphGen::handOutToSolve(int blockNum, int codeNum)
         genMipsFunctRetWithValue();
     else if (codeWorkNow->getType() == codeSt::FunctRetWithoutValue)
         genMipsFunctRetWithoutValue();
+
+    else if (codeWorkNow->getType() == codeSt::FunctInlineRetWithValue)
+        genMipsFunctRetWithValue();
+    else if (codeWorkNow->getType() == codeSt::FunctInlineRetWithoutValue)
+        genMipsFunctRetWithoutValue();
+
     else if (codeWorkNow->getType() == codeSt::FunctArgsPush)
         genMipsFunctArgsPush();
     else if (codeWorkNow->getType() == codeSt::FunctCall)

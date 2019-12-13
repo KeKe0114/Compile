@@ -23,9 +23,11 @@ public:
         //常变量声明
         ConstVarState, //operand1
         //函数定义
-        FunctState,        //operand1
-        FunctRetWithValue, //operand1
+        FunctState,              //operand1
+        FunctRetWithValue,       //operand1
+        FunctInlineRetWithValue, //operand1
         FunctRetWithoutValue,
+        FunctInlineRetWithoutValue,
         //函数调用
         FunctArgsPush, //operand1
         FunctCall,     //operand1
@@ -79,8 +81,14 @@ public:
     int operand2;
     int result;
     int idx;
-    void setInlineRet() { inlineRet = true; }
-    bool isInlineRet() { return inlineRet; }
+    void setInlineRet()
+    {
+        if (codetype == FunctRetWithValue)
+            codetype = FunctInlineRetWithValue;
+        if (codetype == FunctRetWithoutValue)
+            codetype = FunctInlineRetWithoutValue;
+    }
+    bool isInlineRet() { return codetype == FunctInlineRetWithoutValue || codetype == FunctInlineRetWithValue; }
 
 public:
     string getValue() { return value_const_str; }
