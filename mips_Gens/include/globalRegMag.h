@@ -43,13 +43,6 @@ public:
     // 返回所有当前函数需要使用的全局寄存器.
     std::vector<int> getAllRegsUseThisScope()
     {
-        if (regUsed.empty())
-        {
-            for (auto item : sym2reg)
-            {
-                regUsed.push_back(item.second);
-            }
-        }
         return regUsed;
     }
 
@@ -84,7 +77,7 @@ public:
         regMagsId.insert(make_pair(funcName, id));
     }
 
-    funcScopeRegMag getRegMag(std::string funcName)
+    funcScopeRegMag &getRegMag(std::string funcName)
     {
         if (regMagsId.find(funcName) != regMagsId.end())
         {

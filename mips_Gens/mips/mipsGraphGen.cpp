@@ -256,7 +256,7 @@ void mipsGraphGen::genMipsFunctState()
     vector<int> willUse = globalReg.getRegMag(funcNameWorkNow).getAllRegsUseThisScope();
     for (int i = 0; i < willUse.size(); i++)
     {
-        collect.sw(collect.getSeriesS(i), i * 4, spR);
+        collect.sw(collect.getSeriesS(willUse[i]), i * 4, spR);
     }
     collect.add(spR, spR, willUse.size() * 4);
 }
@@ -281,7 +281,7 @@ void mipsGraphGen::genMipsFunctRetWithoutValue()
         collect.add(spR, spR, -willUse.size() * 4);
         for (int i = 0; i < willUse.size(); i++)
         {
-            collect.lw(collect.getSeriesS(i), i * 4, spR);
+            collect.lw(collect.getSeriesS(willUse[i]), i * 4, spR);
         }
         collect.lw(spR, 12, fpR);
         collect.lw(fpR, 8, spR);

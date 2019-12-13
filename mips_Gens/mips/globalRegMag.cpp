@@ -82,6 +82,8 @@ void funcScopeRegMag::genAllocResult()
             sym2reg.insert(make_pair(member, i));
         }
         reg2sym.insert(make_pair(i, iRegFamily));
+        if (iRegFamily.size() > 0)
+            regUsed.push_back(i);
     }
 }
 
