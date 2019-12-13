@@ -88,8 +88,8 @@ public:
         symMap.clear();
         /*organize symbolist*/
         mergeSymsToSymbols();
-
-        assert(!symMap.empty());
+        
+        // assert(!symMap.empty());
         /*args push*/
         vector<codeSt> ans;
         for (int i = 0; i < argsName.size(); i++)
