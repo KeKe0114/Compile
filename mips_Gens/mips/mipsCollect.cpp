@@ -19,6 +19,11 @@ void mipsCollect::text()
     }
 }
 
+void mipsCollect::comment(string comments)
+{
+    ss << " #  " << comments << endl;
+}
+
 void mipsCollect::asciiz(string name, string value) /*内坫data(),text()*/
 {
     data();

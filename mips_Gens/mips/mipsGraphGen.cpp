@@ -275,7 +275,16 @@ void mipsGraphGen::genMipsFunctState()
     {
         collect.sw(collect.getSeriesS(willUse[i]), i * 4, spR);
     }
-    collect.add(spR, spR, willUse.size() * 4);
+    if (willUse.size() > 0)
+        collect.add(spR, spR, willUse.size() * 4);
+    // 保证全局寄存器的一致性: 尤其是切换块,切换函数时.
+    vector<int> argsId = attr->getArgsId();
+    collect.comment("load args into regs");
+    for (auto item : argsId)
+    {
+        LoadSymRealValueToRegister(symbolist.get_pointer_by_id(item));
+    }
+    collect.comment("load done");
 }
 
 void mipsGraphGen::genMipsFunctRetWithValue()

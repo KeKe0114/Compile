@@ -73,6 +73,7 @@ public:
 
     void addArgs(int id, symType arg);
     vector<symType> getArgs();
+    vector<int> getArgsId() { return argsId; }
 
     symAttr(string name, symType type, symKind kind)
     {

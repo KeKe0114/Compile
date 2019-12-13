@@ -121,6 +121,7 @@ private:
     void text();
 
 public:
+    void comment(string comments);
     void asciiz(string name, string value); /*内含data(),text()*/
     void space(string name, int bytes);
     void word(string name, int num);
