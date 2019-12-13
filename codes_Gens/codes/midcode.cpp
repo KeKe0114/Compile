@@ -10,22 +10,29 @@ set<int> codeSt::getLeftValue()
     {
     //operand1
     case Scanf:
-    case ConstVarState:
     case FunctRetUse:
     case AssignValue:
     case AssignConst:
     case ArrayValueGet:
-        ans.insert(operand1);
+        if (getOperand1()->refer == FP)
+            ans.insert(operand1);
+        break;
+
+    case ConstVarState:
+        if (getOperand1()->kind == CONST && getOperand1()->refer == FP)
+            ans.insert(operand1);
         break;
 
     //operand2
     case ArrayValuePut:
-        ans.insert(operand2);
+        if (getOperand2()->refer == FP)
+            ans.insert(operand2);
         break;
 
     //result
     case FourYuan:
-        ans.insert(result);
+        if (getResult()->refer == FP)
+            ans.insert(result);
         break;
 
     default:
@@ -41,28 +48,37 @@ set<int> codeSt::getRightValue()
     {
     case PrintExp:
     case FunctArgsPush:
+    case FunctRetWithValue:
     case Condition4Num:
-        ans.insert(operand1);
+        if (getOperand1()->refer == FP)
+            ans.insert(operand1);
         break;
 
     case AssignValue:
-        ans.insert(operand2);
+        if (getOperand2()->refer == FP)
+            ans.insert(operand2);
         break;
 
     case ArrayValueGet:
-        ans.insert(operand2);
-        ans.insert(idx);
+        if (getOperand2()->refer == FP)
+            ans.insert(operand2);
+        if (getIdx()->refer == FP)
+            ans.insert(idx);
         break;
 
     case ArrayValuePut:
-        ans.insert(operand1);
-        ans.insert(idx);
+        if (getOperand1()->refer == FP)
+            ans.insert(operand1);
+        if (getIdx()->refer == FP)
+            ans.insert(idx);
         break;
 
     case Condition:
     case FourYuan:
-        ans.insert(operand1);
-        ans.insert(operand2);
+        if (getOperand1()->refer == FP)
+            ans.insert(operand1);
+        if (getOperand2()->refer == FP)
+            ans.insert(operand2);
         break;
 
     default:

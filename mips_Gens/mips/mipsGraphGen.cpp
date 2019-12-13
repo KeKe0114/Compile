@@ -332,7 +332,7 @@ void mipsGraphGen::genMipsAssignConst()
     int num = attr->getValueInt();
     mipsCollect::Register leftR = GetOrAllocRegisterToSym(attr);
     collect.li(leftR, num);
-    flushToMem(attr->SymId, leftR);
+    // flushToMem(attr->SymId, leftR);
 }
 
 void mipsGraphGen::genMipsArrayValueGet()
