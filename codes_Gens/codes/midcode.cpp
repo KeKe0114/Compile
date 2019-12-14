@@ -426,7 +426,7 @@ string codeSt::to_string()
     }
     else if (codetype == Condition4Num)
     {
-        ssp << getOperand1()->name << "\t" << getOpStr() << "\t" << getValue() << endl;
+        ssp << getOperand1()->name << "\t=\t0" << endl;
     }
     else if (codetype == FourYuan)
     {
