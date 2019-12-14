@@ -304,7 +304,8 @@ void mipsGraphGen::genMipsFunctRetWithoutValue()
         mipsCollect::Register fpR = mipsCollect::getSeriesFP();
         mipsCollect::Register spR = mipsCollect::getSeriesSP();
         vector<int> willUse = globalReg.getRegMag(funcNameWorkNow).getAllRegsUseThisScope();
-        collect.add(spR, spR, -willUse.size() * 4);
+        if (willUse.size() > 0)
+            collect.add(spR, spR, -willUse.size() * 4);
         for (int i = 0; i < willUse.size(); i++)
         {
             collect.lw(collect.getSeriesS(willUse[i]), i * 4, spR);
