@@ -117,6 +117,14 @@ int symbols::insert(symAttr item)
 {
     item.SymId = id2sym.size();
     item.size = item.len == 0 ? 4 : item.len * 4;
+    if (indexes.size() == 1)
+    {
+        item.refer = GLOBAL;
+    }
+    else
+    {
+        item.refer = FP;
+    }
     id2sym.push_back(item);
     idStack.push_back(item.SymId);
     return item.SymId;

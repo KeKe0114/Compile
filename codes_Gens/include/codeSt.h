@@ -148,4 +148,7 @@ public: //  访问接口: 基本块和流图
         return value_const_str;
     }
     bool canGodown() { return codetype != Jump; }
+
+public:
+    bool changeLeftValue(int newValue);
 };

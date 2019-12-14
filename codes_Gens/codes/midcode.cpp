@@ -2,6 +2,31 @@
 #include "debug.h"
 #include "sstream"
 //codeSt
+bool codeSt::changeLeftValue(int newValue)
+{
+    switch (codetype)
+    {
+    case Scanf:
+    case FunctRetUse:
+    case AssignValue:
+    case AssignConst:
+        operand1 = newValue;
+        return true;
+        break;
+
+    case ArrayValueGet:
+        operand1 = newValue;
+        return true;
+
+    case FourYuan:
+        result = newValue;
+        return true;
+
+    default:
+        break;
+    }
+    return false;
+}
 
 set<int> codeSt::getLeftValue()
 {
@@ -251,6 +276,22 @@ string midCodeGen::genMidValueGet(string name)
 
 void midCodeGen::genMidValuePut(string name, string value)
 {
+    if (isTmp(value) && hasLastCode())
+    {
+        int value_id = symbolist.get_id(value);
+        codeSt last = getLastCode();
+        set<int> left = last.getLeftValue();
+        if (left.find(value_id) != left.end())
+        {
+            if (last.changeLeftValue(symbolist.get_id(name)))
+            {
+                workSpace->pop_back();
+                workSpace->push_back(last);
+                return;
+            }
+        }
+    }
+    // 走到这里说明不能合并上一句
     codeSt valuePut(codeSt::AssignValue, symbolist.get_id(name), symbolist.get_id(value));
     workSpace->push_back(valuePut);
 }

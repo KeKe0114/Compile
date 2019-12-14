@@ -166,4 +166,9 @@ public: //  接口: 访问接口
     int midCode_size() { return codes.size(); }
     vector<codeSt> getCodesVector() { return codes; }
     void insert(codeSt code) { codes.push_back(code); }
+
+private: // 接口: 内部访问接口
+    bool hasLastCode() { return workSpace->size() > 0; }
+    codeSt getLastCode() { return (*workSpace)[workSpace->size() - 1]; }
+    bool isTmp(string name) { return name.find(tmp_prefix) == 0; }
 };
