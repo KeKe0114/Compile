@@ -128,14 +128,32 @@ public: //  接口: 函数内联
     {
         return func2Saver.find(funcName) != func2Saver.end() && inlineSwitch;
     }
-    void genInlineMidCode(string funcName, vector<string> args)
+    string genInlineMidCode(string funcName, vector<string> args)
     {
         if (checkCanInline(funcName))
         {
             vector<codeSt> shouldInsert = func2Saver.find(funcName)->second.mergeInlineCode(args);
             for (int i = 0; i < shouldInsert.size(); i++)
-                codes.push_back(shouldInsert[i]);
+            {
+                if (i == shouldInsert.size() - 1)
+                {
+                    codeSt codeFin = shouldInsert[i];
+                    if (codeFin.isInlineRet())
+                    {
+                        return codeFin.getOperand1()->name;
+                    }
+                    else
+                    {
+                        codes.push_back(shouldInsert[i]);
+                    }
+                }
+                else
+                {
+                    codes.push_back(shouldInsert[i]);
+                }
+            }
         }
+        return "NO_INLINE_RET";
     }
 
 private: // 变量: 循环语句

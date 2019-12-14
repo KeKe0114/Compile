@@ -1400,6 +1400,7 @@ int syntacticAnalysis::stepLength()
 
 string syntacticAnalysis::invokeFuncWithReturn()
 {
+    string ret = "";
     assert(sym.getKey() == IDENFR);
     printToken(sym);
     string funcName = sym.getValue();
@@ -1425,7 +1426,7 @@ string syntacticAnalysis::invokeFuncWithReturn()
     {
         if (midcode.checkCanInline(funcName))
         {
-            midcode.genInlineMidCode(funcName, argsShouldPush);
+            ret = midcode.genInlineMidCode(funcName, argsShouldPush);
         }
         else
             for (int i = 0; i < argsShouldPush.size(); i++)
@@ -1449,8 +1450,10 @@ string syntacticAnalysis::invokeFuncWithReturn()
     sym = lexical.getSym();
     printLine("<有返回值函数调用语句>");
     if (!errmag.hasErrors() && !midcode.checkCanInline(funcName))
+    {
         midcode.genMidFuncCall(funcName);
-    string ret = midcode.genMidFuncRetUse(funcName);
+        ret = midcode.genMidFuncRetUse(funcName);
+    }
     //CHEN: 临时变量
     return ret;
 }

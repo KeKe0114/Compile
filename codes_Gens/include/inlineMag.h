@@ -44,9 +44,10 @@ private: // 函数: 符号的转化
 
     vector<codeSt> outputCodes(vector<codeSt> ans)
     {
-        for (int i = 0; i < codes.size(); i++)
+        vector<codeSt> ansNew;
+        for (int i = 0; i < ans.size(); i++)
         {
-            codeSt codeTmp = codes[i];
+            codeSt codeTmp = ans[i];
             assert(codeTmp.getType() != codeSt::FunctState);
             if (codeTmp.getType() == codeSt::FunctRetWithoutValue)
             {
@@ -72,13 +73,13 @@ private: // 函数: 符号的转化
             {
                 codeTmp.idx = symMap[codeTmp.idx];
             }
-            ans.push_back(codeTmp);
+            ansNew.push_back(codeTmp);
             if (codeTmp.getType() == codeSt::FunctRetWithValue)
             {
                 break;
             }
         }
-        return ans;
+        return ansNew;
     }
 
 public: //  接口: 函数使用处
@@ -90,24 +91,75 @@ public: //  接口: 函数使用处
         mergeSymsToSymbols();
 
         /*args push*/
-        vector<codeSt> ans;
+        map<int, int> argsMap;
         for (int i = 0; i < argsName.size(); i++)
         {
             int idOld = syms[i].SymId;
-            if (symMap.find(idOld) == symMap.end())
-            {
-                cout << funcName << endl;
-                syms[i].SHOW_ATTR();
-                assert(false);
-            }
-            else
-            {
-                int idNew = symMap.find(idOld)->second;
-                ans.push_back(codeSt(codeSt::AssignValue, idNew, symbolist.get_id(argsName[i])));
-            }
+            int argsId = symbolist.get_id(argsName[i]);
+            argsMap.insert(pair<int, int>(idOld, argsId));
         }
+        vector<codeSt> ans;
+        bool arriveRet = false;
+        for (int i = 0; i < codes.size(); i++)
+        {
+            codeSt codeNow = codes[i];
+            switch (codeNow.getType())
+            {
+            case codeSt::PrintExp:
+            case codeSt::FunctArgsPush:
+            case codeSt::FunctRetWithValue:
+            case codeSt::FunctInlineRetWithValue:
+            case codeSt::Condition4Num:
+                if (argsMap.find(codeNow.operand1) != argsMap.end())
+                    codeNow.operand1 = argsMap.find(codeNow.operand1)->second;
+                break;
 
-        /*gen code*/
+            case codeSt::AssignValue:
+                if (argsMap.find(codeNow.operand2) != argsMap.end())
+                    codeNow.operand2 = argsMap.find(codeNow.operand2)->second;
+                break;
+
+            case codeSt::ArrayValueGet:
+            case codeSt::ArrayValuePut:
+                if (argsMap.find(codeNow.operand2) != argsMap.end())
+                    codeNow.operand2 = argsMap.find(codeNow.operand2)->second;
+                if (argsMap.find(codeNow.idx) != argsMap.end())
+                    codeNow.idx = argsMap.find(codeNow.idx)->second;
+                break;
+
+            case codeSt::Condition:
+            case codeSt::FourYuan:
+                if (argsMap.find(codeNow.operand1) != argsMap.end())
+                    codeNow.operand1 = argsMap.find(codeNow.operand1)->second;
+                if (argsMap.find(codeNow.operand2) != argsMap.end())
+                    codeNow.operand2 = argsMap.find(codeNow.operand2)->second;
+                break;
+
+            default:
+                break;
+            }
+            switch (codeNow.getType())
+            {
+            case codeSt::Scanf:
+            case codeSt::FunctRetUse:
+            case codeSt::AssignValue:
+            case codeSt::AssignConst:
+            case codeSt::ConstVarState:
+            case codeSt::ArrayValueGet:
+            case codeSt::ArrayValuePut:
+                argsMap.erase(codeNow.operand1);
+                break;
+            case codeSt::FourYuan:
+                argsMap.erase(codeNow.result);
+                break;
+
+            default:
+                break;
+            }
+            ans.push_back(codeNow);
+            if (arriveRet)
+                break;
+        }
         return outputCodes(ans);
     }
 };
