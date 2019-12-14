@@ -535,9 +535,9 @@ void mipsGraphGen::gen_mips_code()
             for (int h = 0; h < codes.size(); h++)
             {
                 codeWorkNow = &codes[h];
-                tempReg.SHOW_USEDREG();
+                // tempReg.SHOW_USEDREG();
                 tempReg.updataUsefulInfo(blockWorkNow->getCodeIn(h));
-                tempReg.SHOW_USEDREG();
+                // tempReg.SHOW_USEDREG();
                 handOutToSolve(j, h);
             }
             set<int> symsUseReg = tempReg.askAllSymUseRegNow();
