@@ -42,18 +42,18 @@ public: //  接口: 访问
 public: //  接口: DEBUG
     void SHOW_CODE_AND_USE_DEF()
     {
-        cout << "code:" << endl;
+        cout << "code: ";
         for (int i = 0; i < codeInBlock.size(); i++)
         {
             cout << codeInBlock[i].to_string();
         }
-        cout << "use:" << endl;
+        cout << "use: ";
         for (auto i : use)
         {
             cout << i << " ";
         }
         cout << endl;
-        cout << "def:" << endl;
+        cout << "def: ";
         for (auto i : def)
         {
             cout << i << " ";
@@ -80,6 +80,26 @@ private: // 变量
 public: //  接口: DEBUG
     void SHOW_SET_INNER()
     {
+        cout << "funcName: " << funcName << endl;
+        for (int i = 0; i < id2block.size(); i++)
+        {
+            cout << "block " << i << " def: ";
+            set<int> UseDef = id2block[i].getBlockDef();
+            for (auto i : UseDef)
+            {
+                cout << i << " ";
+            }
+            cout << endl;
+            cout << "block " << i << " use: ";
+            UseDef = id2block[i].getBlockUse();
+            for (auto i : UseDef)
+            {
+                cout << i << " ";
+            }
+            cout << endl;
+
+        }
+
         cout << "***********id2child:" << endl;
         for (auto i : id2child)
         {
@@ -162,7 +182,7 @@ public: //  接口: 工作 和 访问
     {
         genBlocksFromOrigin();
         genUseDefInOut();
-        // SHOW_SET_INNER();
+        SHOW_SET_INNER();
         setBlockInAndOut();
     }
     vector<block> getBlocks() { return id2block; }

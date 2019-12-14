@@ -25,7 +25,7 @@ void block::genBlockUseAndDef()
             }
         }
     }
-    // SHOW_CODE_AND_USE_DEF();
+    SHOW_CODE_AND_USE_DEF();
 }
 
 void block::setBlockUseDefIn(set<int> alivein)
@@ -122,6 +122,7 @@ void funcScope::genBlocksFromOrigin()
     end = originCodes.size();
     id = id2block.size();
     block blockTemp(id, vector<codeSt>(originCodes.begin() + begin, originCodes.begin() + end));
+    blockTemp.genBlockUseAndDef();
     id2block.push_back(blockTemp);
 
     // build father child
