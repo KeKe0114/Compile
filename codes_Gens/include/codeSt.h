@@ -11,7 +11,7 @@ const string op_strs[] = {"+", "-", "*", "/", "<", "<=", ">", ">=", "==", "!="};
 
 class codeSt
 {
-public:
+public: //  enum类
     enum codeType
     {
         //读语句
@@ -68,19 +68,42 @@ public:
         op_NEQ,
     };
 
-private:
+private: // 变量
     codeType codetype;
-
     string value_const_str;
     op_em op;
     bool inlineRet = false;
     codeSt();
 
-public:
+public: //  变量
     int operand1;
     int operand2;
     int result;
     int idx;
+
+public: //  构造器
+    codeSt(codeType codetype);
+
+    codeSt(codeType codetype, string value);
+    codeSt(codeType codetype, int operand1);
+
+    codeSt(codeType codetype, int operand1, int operand2);
+
+    codeSt(codeType codetype, int operand1, string value);
+    codeSt(codeType codetype, int operand1, int idx, int operand2);
+    codeSt(codeType codetype, int operand1, op_em op, int operand2);
+
+    codeSt(codeType codetype, int operand1, op_em op, int operand2, int result);
+
+public: //  接口: OP类型的转化
+    static op_em token_key2op_em(token_key key)
+    {
+        if (key <= 26 && key >= 17)
+            return (op_em)(int)(key);
+        return op_UNKNOWNERROR;
+    }
+
+public: //  接口: 内联函数相关
     void setInlineRet()
     {
         if (codetype == FunctRetWithValue)
@@ -90,7 +113,7 @@ public:
     }
     bool isInlineRet() { return codetype == FunctInlineRetWithoutValue || codetype == FunctInlineRetWithValue; }
 
-public:
+public: //  访问接口: 各个字段的值.
     string getValue() { return value_const_str; }
     symAttr *getOperand1() { return symbols::get_instance().get_pointer_by_id(operand1); }
     symAttr *getOperand2() { return symbols::get_instance().get_pointer_by_id(operand2); }
@@ -106,16 +129,9 @@ public:
         return op_strs[op - 17];
     }
     codeType getType() { return codetype; }
+    string to_string();
 
-public:
-    static op_em token_key2op_em(token_key key)
-    {
-        if (key <= 26 && key >= 17)
-            return (op_em)(int)(key);
-        return op_UNKNOWNERROR;
-    }
-
-public:
+public: //  访问接口: 基本块和流图
     set<int> getLeftValue();
     set<int> getRightValue();
     bool isFuncStart() { return codetype == FunctState; }
@@ -132,20 +148,4 @@ public:
         return value_const_str;
     }
     bool canGodown() { return codetype != Jump; }
-
-public:
-    codeSt(codeType codetype);
-
-    codeSt(codeType codetype, string value);
-    codeSt(codeType codetype, int operand1);
-
-    codeSt(codeType codetype, int operand1, int operand2);
-
-    codeSt(codeType codetype, int operand1, string value);
-    codeSt(codeType codetype, int operand1, int idx, int operand2);
-    codeSt(codeType codetype, int operand1, op_em op, int operand2);
-
-    codeSt(codeType codetype, int operand1, op_em op, int operand2, int result);
-
-    string to_string();
 };

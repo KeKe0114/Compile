@@ -8,7 +8,7 @@ using namespace std;
 
 class midCodeGen
 {
-private:
+private: // 单例模式
     midCodeGen() : symbolist(symbols::get_instance()), label_prefix("Label"), tmp_prefix("$tmp"), inlineSwitch(true)
     {
         workSpace = &codes;
@@ -16,32 +16,58 @@ private:
     midCodeGen(const midCodeGen &) = delete;
     midCodeGen &operator&(const midCodeGen &) = delete;
 
-public:
+public: //  单例模式
     static midCodeGen &get_instance()
     {
         static midCodeGen instance;
         return instance;
     }
 
-private:
+private: // 变量: 生成中间代码
     symbols &symbolist;
     vector<codeSt> codes;
-    vector<codeSt> temp;
-    vector<codeSt> *workSpace;
     int labelGen;
     int tmpGen;
     string label_prefix;
     string tmp_prefix;
 
+private: // 函数: 生成中间代码
     string genMid_AllocTmp(symType type);
 
-public:
-    codeSt *get_midCode_by_idx(int idx) { return &codes[idx]; }
-    int midCode_size() { return codes.size(); }
-    vector<codeSt> getCodesVector() { return codes; }
-    void insert(codeSt code) { codes.push_back(code); }
+public: //  接口: 生成中间代码
+    void genMidFuncDef(string funcName);
 
-private:
+    void genMidArgsPush(string paraName);
+    void genMidFuncCall(string func);
+    void genMidFuncRet(string name);
+    string genMidFuncRetUse(string funcName);
+
+    void genMidVarState(string name);
+    void genMidConstState(string name);
+
+    string genMid_AllocLabel();
+    void genMidLabelLine(string Label);
+    string genMidConstTmp(symType type, string value);
+    string genMidExpress(string operand1, token_key op, string operand2);
+    string genMidToINT(string operand1);
+    string genMidValueGet(string name);
+    void genMidValuePut(string name, string value);
+    string genMidArrayValueGet(string array, string idx);
+    void genMidArrayValuePut(string array, string idx, string value);
+
+    void genMidCondition(string operand1, token_key op, string operand2);
+    void genMidCondition4Num(string operand1);
+    void genMidGoto(string Label);
+    void genMidBNZ(string Label);
+    void genMidBZ(string Label);
+
+    void genMidScanf(string name);
+    void genMidPrintfStr(string str);
+    void genMidPrintfStrNoNewLine(string str);
+
+    void genMidPrintfExp(string name);
+
+private: // 变量: 函数内联
     bool inlineSwitch;
     map<string, inlineSaver> func2Saver;
 
@@ -52,7 +78,7 @@ private:
     int symLocalStart;
     int symLocalEnd;
 
-private:
+private: // 函数: 函数内联
     void resetInlineRecord()
     {
         funcWorkCanInline = true;
@@ -67,7 +93,7 @@ private:
         funcWorkCanInline = false;
     }
 
-public:
+public: //  接口: 函数内联
     void inlinefuncCodeStart() { funcCodeStart = codes.size(); }
     void inlinefuncCodeEnd() { funcCodeEnd = codes.size(); }
 
@@ -112,7 +138,11 @@ public:
         }
     }
 
-public:
+private: // 变量: 循环语句
+    vector<codeSt> temp;
+    vector<codeSt> *workSpace;
+
+public: //  接口: 循环语句
     void useTempBegin()
     {
         assert(workSpace != &temp);
@@ -131,36 +161,9 @@ public:
     }
     void transportTemp(vector<codeSt> tempCode) { codes.insert(codes.end(), tempCode.begin(), tempCode.end()); }
 
-public:
-    void genMidFuncDef(string funcName);
-
-    void genMidArgsPush(string paraName);
-    void genMidFuncCall(string func);
-    void genMidFuncRet(string name);
-    string genMidFuncRetUse(string funcName);
-
-    void genMidVarState(string name);
-    void genMidConstState(string name);
-
-    string genMid_AllocLabel();
-    void genMidLabelLine(string Label);
-    string genMidConstTmp(symType type, string value);
-    string genMidExpress(string operand1, token_key op, string operand2);
-    string genMidToINT(string operand1);
-    string genMidValueGet(string name);
-    void genMidValuePut(string name, string value);
-    string genMidArrayValueGet(string array, string idx);
-    void genMidArrayValuePut(string array, string idx, string value);
-
-    void genMidCondition(string operand1, token_key op, string operand2);
-    void genMidCondition4Num(string operand1);
-    void genMidGoto(string Label);
-    void genMidBNZ(string Label);
-    void genMidBZ(string Label);
-
-    void genMidScanf(string name);
-    void genMidPrintfStr(string str);
-    void genMidPrintfStrNoNewLine(string str);
-
-    void genMidPrintfExp(string name);
+public: //  接口: 访问接口
+    codeSt *get_midCode_by_idx(int idx) { return &codes[idx]; }
+    int midCode_size() { return codes.size(); }
+    vector<codeSt> getCodesVector() { return codes; }
+    void insert(codeSt code) { codes.push_back(code); }
 };

@@ -10,7 +10,7 @@ using namespace std;
 class block
 {
 
-private:
+private: // 变量
     int id;
     vector<codeSt> codeInBlock;
 
@@ -21,7 +21,7 @@ private:
     map<int, set<int>> idx2alivein;
     map<int, set<int>> idx2aliveout;
 
-public:
+public: //  接口: 工作
     block(int idArg, vector<codeSt> codes) : id(idArg), codeInBlock(codes) {}
     //for work
     set<int> getBlockUse() { return use; }
@@ -31,6 +31,7 @@ public:
     void setBlockUseDefOut(set<int> aliveout);
     void genUseDefInOutForSingleLine();
 
+public: //  接口: 访问
     //for get
     vector<codeSt> getCodes() { return codeInBlock; }
     set<int> getCodeIn(int idx) { return idx2alivein[idx]; }
@@ -38,7 +39,7 @@ public:
     set<int> getBlockAliveIn() { return alivein; }
     set<int> getBlockAliveOut() { return aliveout; }
 
-public:
+public: //  接口: DEBUG
     void SHOW_CODE_AND_USE_DEF()
     {
         cout << "code:" << endl;
@@ -63,7 +64,7 @@ public:
 
 class funcScope
 {
-private:
+private: // 变量
     /* 
      * 原中间代码中的块的顺序,按照id的顺序保持.
      * 语句j在语句i的后面意味着语句j所在的块id大于等于语句i所在的块id.
@@ -76,7 +77,7 @@ private:
     map<int, set<int>> id2alivein;
     map<int, set<int>> id2aliveout;
 
-public:
+public: //  接口: DEBUG
     void SHOW_SET_INNER()
     {
         cout << "***********id2child:" << endl;
@@ -121,14 +122,14 @@ public:
         }
     }
 
-public:
+public: //  构造器
     funcScope(string Name, vector<codeSt> funcCode)
     {
         this->funcName = Name;
         originCodes = funcCode;
     }
 
-private:
+private: // 函数: 完善流信息
     void addFather(int id, int father)
     {
         if (id2father.find(id) == id2father.end())
@@ -151,12 +152,12 @@ private:
         addChild(father, child);
     }
 
-private:
+private: // 函数: 工作细节
     void genBlocksFromOrigin();
     void genUseDefInOut();
     void setBlockInAndOut();
 
-public:
+public: //  接口: 工作 和 访问
     void work()
     {
         genBlocksFromOrigin();
@@ -171,25 +172,27 @@ public:
 class blockFlowGraph
 {
 
-private:
+private: // 单例模式
     blockFlowGraph() {}
     blockFlowGraph(const blockFlowGraph &) = delete;
     blockFlowGraph &operator&(blockFlowGraph &) = delete;
 
-public:
+public: //  单例模式
     static blockFlowGraph &get_instance()
     {
         static blockFlowGraph instance;
         return instance;
     }
 
-private:
+private: // 变量
     vector<codeSt> globalVarStates;
     vector<funcScope> func2Flows;
 
-public:
+public: //  接口: 工作 和 访问
     void genfuncDivide();
     vector<codeSt> getGlobalState() { return globalVarStates; }
     vector<funcScope> getFuncScopes() { return func2Flows; }
+
+public: //  接口: DEBUG
     void SHOW_FUNCSCOPES();
 };

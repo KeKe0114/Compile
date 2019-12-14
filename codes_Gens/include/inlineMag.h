@@ -6,7 +6,7 @@
 
 class inlineSaver
 {
-private:
+private: // 变量
     int round;
     string prefix;
     string funcName;
@@ -15,7 +15,7 @@ private:
     map<int, int> symMap;
     symbols &symbolist;
 
-public:
+public: //  接口: 函数定义处
     inlineSaver(string name) : symbolist(symbols::get_instance()), prefix("$inline"), round(0) { this->funcName = name; }
     void setCodes(vector<codeSt> codes) { this->codes = codes; }
     void setSyms(vector<symAttr> syms)
@@ -27,7 +27,7 @@ public:
         this->syms = syms;
     }
 
-private:
+private: // 函数: 符号的转化
     void mergeSymsToSymbols()
     {
         if (syms.size() == 0)
@@ -36,7 +36,7 @@ private:
         {
             symAttr tmp = syms[i];
             int idOld = tmp.SymId;
-            tmp.name = tmp.name + "round" + to_string(round);
+            tmp.name = tmp.name + "R" + to_string(round);
             int idNew = symbolist.insert(tmp);
             symMap.insert(pair<int, int>(idOld, idNew));
         }
@@ -81,15 +81,14 @@ private:
         return ans;
     }
 
-public:
+public: //  接口: 函数使用处
     vector<codeSt> mergeInlineCode(vector<string> argsName)
     {
         round++;
         symMap.clear();
         /*organize symbolist*/
         mergeSymsToSymbols();
-        
-        // assert(!symMap.empty());
+
         /*args push*/
         vector<codeSt> ans;
         for (int i = 0; i < argsName.size(); i++)
